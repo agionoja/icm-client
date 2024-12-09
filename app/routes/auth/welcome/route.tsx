@@ -1,0 +1,49 @@
+import { AuthContainer } from "../components/auth-container";
+import { BlueButton } from "~/components/button";
+import { Link } from "react-router";
+import { AuthHeading } from "~/routes/auth/components/auth-heading";
+
+function Main() {
+  return (
+    <div className="flex w-full flex-grow flex-col items-center justify-center bg-white">
+      <Link
+        className={"flex w-full justify-center"}
+        to={"/auth/register/options"}
+      >
+        <BlueButton className="w-full">Sign Up</BlueButton>
+      </Link>
+
+      <div className="flex w-full items-center gap-2 px-20 py-2 lg:px-32 lg:py-4">
+        <div className="h-0.5 flex-grow bg-gray-300"></div>
+        <span className="text-gray-500">Or</span>
+        <div className="h-0.5 flex-grow bg-gray-300"></div>
+      </div>
+
+      <div>
+        <p className={"text-[9px] lg:text-sm"}>
+          Already have an account?{" "}
+          <Link to={"/auth/login"} className={"inline text-primary"}>
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function Welcome() {
+  return (
+    <>
+      <AuthContainer next={"/auth/register/options"}>
+        <div className="flex h-full w-full flex-col items-center gap-4 lg:gap-8">
+          <AuthHeading
+            heading={"Welcome to ICM Tech"}
+            text={" Swift ad Cool life made Easy!"}
+          />
+
+          <Main />
+        </div>
+      </AuthContainer>
+    </>
+  );
+}

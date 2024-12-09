@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*html,*/
+/*body {*/
+/*  @apply bg-white dark:bg-gray-950;*/
+
+/*  @media (prefers-color-scheme: dark) {*/
+/*    color-scheme: dark;*/
+/*  }*/
+/*}*/
+
+@layer base {
+  body {
+    @apply text-sm;
+  }
+}
+
+@layer components {
+  .auth-container-px {
+    @apply px-4 lg:px-10;
+  }
+
+  .auth-input {
+    @apply w-full max-w-[14rem] rounded-lg lg:max-w-[22.5rem];
+  }
+
+  .auth-border-gray {
+    @apply border-2 border-gray-200;
+  }
+
+  .auth-padding {
+    @apply px-2 py-1.5 lg:py-2;
+  }
+}
