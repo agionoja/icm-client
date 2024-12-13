@@ -1,18 +1,16 @@
-// eslint-disable-next-line import/no-unresolved
-import { Route } from "./+types/root";
+import type { Route } from "./+types/root";
 import {
   data,
   Links,
-  LinksFunction,
-  LoaderFunctionArgs,
+  type LinksFunction,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
 } from "react-router";
 import "./app.css";
-import { useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { type ReactNode, useEffect } from "react";
+import { Bounce, toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-international-phone/style.css";
 import { getToast } from "remix-toast";
@@ -30,9 +28,32 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const { toast, headers } = await getToast(request);
+export function Layout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <ToastContainer
+          autoClose={5000}
+          draggable={true}
+          theme={"light"}
+          transition={Bounce}
+        />
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
 
+export async function loader({ request }: Route.LoaderArgs) {
+  const { toast, headers } = await getToast(request);
   return data(
     { toast },
     {
@@ -43,26 +64,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function App({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
-    if (loaderData.toast && loaderData.toast)
+    if (loaderData.toast)
       toast(loaderData.toast.message, {
         type: loaderData.toast.type,
       });
   }, [loaderData.toast]);
 
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <ToastContainer theme={"light"} />
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
+  return <Outlet />;
 }

@@ -1,10 +1,9 @@
-// eslint-disable-next-line import/no-unresolved
-import { Route } from "./+types/route";
+import type { Route } from "./+types/route";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
 import {
   data,
   redirect,
-  SubmitFunction,
+  type SubmitFunction,
   useFetcher,
   useNavigation,
 } from "react-router";

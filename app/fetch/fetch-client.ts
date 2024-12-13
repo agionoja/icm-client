@@ -1,5 +1,5 @@
-import { FormEncType } from "react-router";
-import {
+import type { FormEncType } from "react-router";
+import type {
   ApiResponseMany,
   ApiResponseOne,
   QueryDto,
@@ -8,7 +8,7 @@ import {
 import { envConfigCamelCase } from "~/env-config";
 import qs from "qs";
 import { logger } from "~/fetch/logger";
-import { ProgressArgs, ProgressMonitor } from "~/fetch/progess";
+import { type ProgressArgs, ProgressMonitor } from "~/fetch/progess";
 
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

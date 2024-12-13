@@ -1,13 +1,17 @@
-import React from "react";
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Link, useNavigate } from "react-router";
 import { ArrowLeft, ArrowRight } from "~/components/icons";
 
 type Props = {
   previous?: string;
   next?: string;
-  children: React.ReactNode;
-  childrenContainerProps?: React.HTMLAttributes<HTMLDivElement>;
-  nextBtnProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  children: ReactNode;
+  childrenContainerProps?: HTMLAttributes<HTMLDivElement>;
+  nextBtnProps?: ButtonHTMLAttributes<HTMLButtonElement>;
 };
 
 export function AuthContainer({
@@ -18,7 +22,7 @@ export function AuthContainer({
   childrenContainerProps: { className, ...rest } = {},
 }: Props) {
   return (
-    <div className="min:h-[40rem] flex w-full flex-col justify-between gap-8 rounded-4xl bg-white py-10 shadow-lg lg:min-h-[54rem] lg:w-[40rem]">
+    <div className="min:h-[40rem] flex w-full flex-col justify-between gap-8 rounded-4xl bg-white px-4 py-10 shadow-lg md:px-10 lg:min-h-[54rem] lg:w-[40rem]">
       <Header next={next} previous={previous} nextBtnProps={nextBtnProps} />
       <main
         className={`auth-container-px flex flex-col gap-8 ${className}`}

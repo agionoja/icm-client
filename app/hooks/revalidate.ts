@@ -1,6 +1,5 @@
 import { useRevalidator } from "react-router";
 import { useEffect } from "react";
-import { useOnline } from "~/hooks/listeners";
 
 interface BaseOptions {
   enabled?: boolean;

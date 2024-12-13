@@ -4,7 +4,7 @@ import {
   SlArrowRight,
   SlArrowUp,
 } from "react-icons/sl";
-import { IconBaseProps } from "react-icons";
+import type { IconBaseProps } from "react-icons";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { BsDot } from "react-icons/bs";
 import { LuEye, LuEyeOff } from "react-icons/lu";

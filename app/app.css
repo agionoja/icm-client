@@ -23,7 +23,7 @@
   }
 
   .auth-input {
-    @apply w-full max-w-[14rem] rounded-lg lg:max-w-[22.5rem];
+    @apply w-full rounded-lg;
   }
 
   .auth-border-gray {

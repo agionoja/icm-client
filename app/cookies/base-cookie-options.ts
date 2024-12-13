@@ -1,4 +1,4 @@
-import { CookieOptions } from "react-router";
+import type { CookieOptions } from "react-router";
 import { envConfig } from "~/env-config";
 
 export const baseCookieOptions: CookieOptions = {

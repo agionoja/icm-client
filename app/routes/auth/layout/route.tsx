@@ -1,12 +1,11 @@
 import { Link, Outlet } from "react-router";
-import React from "react";
 import logo from "~/assets/logos/SVG/Primary Logo - Full Color.svg";
 
 export default function AuthLayout() {
   return (
     <div
       className={
-        "flex h-screen min-h-[900px] items-center justify-center bg-white bg-auth-pattern-mobile bg-contain bg-top bg-no-repeat px-4 text-black lg:bg-auth-pattern-desktop lg:px-28 lg:py-20"
+        "flex h-screen min-h-[900px] items-center justify-center bg-white bg-auth-pattern-mobile bg-contain bg-top bg-no-repeat text-black lg:bg-auth-pattern-desktop lg:px-28 lg:py-20"
       }
     >
       <div

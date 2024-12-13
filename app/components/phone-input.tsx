@@ -1,7 +1,7 @@
 import {
   PhoneInput as Phone,
-  PhoneInputProps,
-  PhoneInputRefType,
+  type PhoneInputProps,
+  type PhoneInputRefType,
 } from "react-international-phone";
 import { useEffect, useRef, useState } from "react";
 import { isValidPhoneNumber } from "libphonenumber-js";

@@ -1,5 +1,5 @@
 import {
-  RouteConfig,
+  type RouteConfig,
   prefix,
   layout,
   index,
@@ -44,44 +44,46 @@ export default [
     ]),
   ]),
 
-  ...prefix("settings", [
-    layout(settings("layout/route"), [
-      route("personal-info", settings("personal-info/route")),
-      route("configuration", settings("configuration/route")),
-      route("security", settings("security/route")),
-    ]),
-  ]),
-
-  ...prefix("user", [
-    layout(user("layout/route"), [
-      route("airline", user("airline/route")),
-      route("airtime", user("airtime/route")),
-      route("cable", user("cable/route")),
-      route("crypto", user("crypto/route")),
-      route("dashboard", user("dashboard/route")),
-      route("data", user("data/route")),
-      route("gift-card", user("gift-card/route")),
-      route("wallet", user("wallet/route")),
-      route("transactions", user("transactions/route")),
-    ]),
-  ]),
-
-  ...prefix("admin", [
-    layout(admin("layout/route"), [
-      route("airline", admin("airline/route")),
-      route("airtime", admin("airtime/route")),
-      route("analytics", admin("analytics/route")),
-      route("cable", admin("cable/route")),
-      route("crypto", admin("crypto/route")),
-      route("dashboard", admin("dashboard/route")),
-      route("data", admin("data/route")),
-      route("gift-card", admin("gift-card/route")),
-      route("wallet", admin("wallets/route"), [
-        route("add-wallet", admin("wallets/add-wallet/route")),
+  layout("./routes/account/layout/route.tsx", [
+    ...prefix("settings", [
+      layout(settings("layout/route"), [
+        route("personal-info", settings("personal-info/route")),
+        route("configuration", settings("configuration/route")),
+        route("security", settings("security/route")),
       ]),
-      route("services", admin("services/route")),
-      route("tv", admin("tv/route")),
-      route("users", admin("users/route")),
+    ]),
+
+    ...prefix("user", [
+      layout(user("layout/route"), [
+        route("airline", user("airline/route")),
+        route("airtime", user("airtime/route")),
+        route("cable", user("cable/route")),
+        route("crypto", user("crypto/route")),
+        route("dashboard", user("dashboard/route")),
+        route("data", user("data/route")),
+        route("gift-card", user("gift-card/route")),
+        route("wallet", user("wallet/route")),
+        route("transactions", user("transactions/route")),
+      ]),
+    ]),
+
+    ...prefix("admin", [
+      layout(admin("layout/route"), [
+        route("airline", admin("airline/route")),
+        route("airtime", admin("airtime/route")),
+        route("analytics", admin("analytics/route")),
+        route("cable", admin("cable/route")),
+        route("crypto", admin("crypto/route")),
+        route("dashboard", admin("dashboard/route")),
+        route("data", admin("data/route")),
+        route("gift-card", admin("gift-card/route")),
+        route("wallet", admin("wallets/route"), [
+          route("add-wallet", admin("wallets/add-wallet/route")),
+        ]),
+        route("services", admin("services/route")),
+        route("tv", admin("tv/route")),
+        route("users", admin("users/route")),
+      ]),
     ]),
   ]),
 

@@ -7,7 +7,7 @@ import {
 import { fetchClient } from "~/fetch/fetch-client";
 import type { Route } from "./+types/route";
 import { ProgressMonitor } from "~/fetch/progess";
-import { getToken, requireUser } from "~/session";
+import { getToken, requireUser } from "~/sessions/auth-session";
 
 export async function loader({ request }: Route.LoaderArgs) {
   await requireUser(request);
@@ -24,7 +24,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           // __t: UserDiscriminator.ICM,
         },
         sort: ["email", "-createdAt"],
-        search: { firstname: "ruth" },
+        search: { lastname: "paul" },
         select: [],
       },
       progressArgs: {

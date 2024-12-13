@@ -1,9 +1,14 @@
 import type { Route } from "./+types/route";
+import { getClientIPAddress } from "remix-utils/get-client-ip-address";
 import { data, redirect, useNavigation, useSearchParams } from "react-router";
 import { fetchClient } from "~/fetch/fetch-client";
-import { createSession, getRole, getToken } from "~/session";
+import {
+  createSession,
+  getRole,
+  getToken,
+  hasSession,
+} from "~/sessions/auth-session";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import { AuthHeading } from "~/routes/auth/components/auth-heading";
 import { BlueButton, SilverBorderButton } from "~/components/button";
 import { Facebook, Google } from "~/components/icons";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +17,10 @@ import type { User } from "@agionoja/icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
 import { Input } from "~/routes/auth/register-email/input";
 import { AuthForm } from "~/routes/auth/components/auth-form";
+import {
+  destroyTimeoutMessageSession,
+  getTimeoutMessageSession,
+} from "~/sessions/auth-timeout-session";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -28,12 +37,18 @@ export async function action({ request }: Route.ActionArgs) {
         body: JSON.stringify(values),
       });
 
-      const { data: profile, exception: profileException } = await fetchClient<
-        User,
-        "user"
-      >("/auth/profile", {
+      console.log(`Client IP: ${getClientIPAddress(request)}`);
+
+      const {
+        data: profile,
+        exception: profileException,
+        message: profileMessage,
+      } = await fetchClient<User, "user">("/auth/profile", {
         responseKey: "user",
         token: userToken?.accessToken,
+        headers: {
+          "X-Forwarded-For": request.headers.get("X-Forwarded-For") || "",
+        },
       });
 
       if (exception || profileException) {
@@ -57,24 +72,65 @@ export async function action({ request }: Route.ActionArgs) {
         role: profile.user.role,
         request,
         remember: true,
-        message: `Welcome back ${profile?.user.firstname}!`,
+        message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
         redirectTo,
         token: userToken?.accessToken,
+        init: {
+          headers: {
+            "Set-Cookie": await destroyTimeoutMessageSession(request),
+          },
+        },
       });
     }
   }
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const timeoutSessionMessage = (await getTimeoutMessageSession(request)).get(
+    "message",
+  );
+
+  if (timeoutSessionMessage) return { timeoutSessionMessage };
+
+  if (!(await hasSession(request))) return;
   const token = await getToken(request);
   const role = (await getRole(request)) as User["role"];
+
+  // console.log({ token, role });
+  const url = new URL(request.url);
+  const refererUrl = new URL(request.headers.get("referer") || request.url);
+  const searchParams = new URLSearchParams(url.search);
+
+  const redirectPath = searchParams.get("redirect");
+  // Check for referer redirect (avoiding infinite redirect)
+  if (refererUrl.pathname !== url.pathname) {
+    return redirect(refererUrl.pathname);
+  }
+
+  // Check for redirect query parameter
+  if (redirectPath) {
+    return redirect(redirectPath);
+  }
+
+  // Redirect based on token and role
   if (token && role) {
+    // console.log(token);
     return redirect(role === "USER" ? "/user/dashboard" : "/admin/dashboard");
   }
+
+  // Default redirect to home
+  return redirect("/");
 }
 
-export default function Login({ actionData }: Route.ComponentProps) {
+export default function Login({
+  actionData,
+  loaderData,
+}: Route.ComponentProps) {
   const [searchParams] = useSearchParams();
+  const timeoutMessage =
+    loaderData && "timeoutSessionMessage" in loaderData
+      ? loaderData.timeoutSessionMessage
+      : undefined;
   const redirect = searchParams.get("redirect") ?? "";
   const { state, formData } = useNavigation();
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -113,14 +169,17 @@ export default function Login({ actionData }: Route.ComponentProps) {
   return (
     <>
       <AuthContainer>
-        <AuthHeading
-          heading={"Continue with email"}
-          text={
-            "We'll check if you have an account, and help create one if you don't"
-          }
-        />
         <AuthForm method={"POST"} className={""}>
           <input type="text" hidden defaultValue={redirect} name="redirect" />
+          {timeoutMessage && (
+            <span
+              className={
+                "mb-4 w-full rounded-md bg-gray-100 px-4 py-3 text-center font-medium"
+              }
+            >
+              {timeoutMessage}
+            </span>
+          )}
           <Input
             ref={emailRef}
             autoComplete={"email"}

@@ -1,11 +1,11 @@
-import { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes } from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function Button({ children, className, ...rest }: ButtonProps) {
   return (
     <button
-      className={`rounded-x w-full max-w-[14rem] items-center rounded-md border px-4 py-2 lg:max-w-[22.5rem] ${className}`}
+      className={`rounded-x w-full items-center rounded-md border px-4 py-2 ${className}`}
       {...rest}
     >
       {children}

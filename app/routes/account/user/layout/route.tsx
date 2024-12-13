@@ -1,6 +1,5 @@
-// eslint-disable-next-line import/no-unresolved
-import { Route } from "./+types/route";
-import { requireUser } from "~/session";
+import type { Route } from "./+types/route";
+import { requireUser } from "~/sessions/auth-session";
 import { Outlet } from "react-router";
 
 export async function loader({ request }: Route.LoaderArgs) {

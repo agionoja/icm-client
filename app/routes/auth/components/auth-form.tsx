@@ -1,4 +1,4 @@
-import { Form, FormProps } from "react-router";
+import { Form, type FormProps } from "react-router";
 
 export function AuthForm({ children, className, ...rest }: FormProps) {
   return (
