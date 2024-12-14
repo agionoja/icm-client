@@ -53,7 +53,7 @@ export async function fetchClient<
 > {
   if (!responseKey) throw new Error("Response Key is required");
 
-  let api = `${envConfigCamelCase.apiLocal}${endpoint}`;
+  let api = `${envConfigCamelCase.apiUri}${endpoint}`;
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }

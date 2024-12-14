@@ -3,6 +3,7 @@ import { data } from "react-router";
 import type { LoginDto, User } from "@agionoja/icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
 import { createSession, RoleRedirects } from "~/session";
+import { setUserDataCookie } from "~/cookies/user-cookie";
 
 export async function login(
   request: Request,
@@ -44,12 +45,18 @@ export async function login(
     profile?.user ? RoleRedirects[profile.user.role] : "/",
   );
 
-  return createSession({
-    role: profile.user.role,
-    request,
-    remember: true,
-    message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
-    redirectTo: redirectUrl,
-    token: userToken?.accessToken,
-  });
+  const token = userToken?.accessToken;
+  const userCookie = await setUserDataCookie(profile.user, request, token);
+
+  return createSession(
+    {
+      role: profile.user.role,
+      request,
+      token,
+      remember: true,
+      message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
+      redirectTo: redirectUrl,
+    },
+    { headers: { "Set-Cookie": userCookie } },
+  );
 }

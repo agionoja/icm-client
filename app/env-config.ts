@@ -22,7 +22,7 @@ dotenv.config();
 const envSchema = z.object({
   PORT: z.coerce.number().min(1000).default(300),
   SESSION_SECRET: z.string(),
-  API_LOCAL: z.string(),
+  API_URI: z.string(),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),

@@ -1,9 +1,9 @@
 import type { Route } from "./+types/route";
-import { getUserCookie } from "~/cookies/user-cookie";
+import { getUserDataCookie } from "~/cookies/user-cookie";
 import { Outlet } from "react-router";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const user = await getUserCookie(request);
+  const user = await getUserDataCookie(request);
 
   return { user };
 }
