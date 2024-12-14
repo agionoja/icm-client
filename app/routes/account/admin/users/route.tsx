@@ -1,16 +1,15 @@
 import {
   checkForClass,
-  GoogleUser,
-  IcmUser,
+  type GoogleUser,
+  type IcmUser,
   UserDiscriminator,
 } from "@agionoja/icm-shared";
 import { fetchClient } from "~/fetch/fetch-client";
 import type { Route } from "./+types/route";
 import { ProgressMonitor } from "~/fetch/progess";
-import { getToken, requireUser } from "~/sessions/auth-session";
+import { getToken } from "~/session";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireUser(request);
   const token = await getToken(request);
   const [usersRes, userRes, profile] = await Promise.all([
     fetchClient<GoogleUser | IcmUser, "users", true>("/users", {
@@ -24,7 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           // __t: UserDiscriminator.ICM,
         },
         sort: ["email", "-createdAt"],
-        search: { lastname: "paul" },
+        search: { lastname: "PAU" },
         select: [],
       },
       progressArgs: {
@@ -61,13 +60,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     }),
   ]);
 
-  // await makeRepeatedRequests("/users", 200, request);
+  // console.dir({ userRes, profile, usersRes }, { depth: null });
 
-  if (userRes.exception || usersRes.exception || profile.exception)
+  // await makeRepeatedRequests("/users", 200, request);
+  if (userRes.exception || usersRes.exception || profile.exception) {
     return Response.json(usersRes.exception || userRes.exception, {
       status: usersRes.exception?.statusCode || userRes.exception?.statusCode,
     });
-
+  }
   if (checkForClass<GoogleUser>(userRes.data?.user, UserDiscriminator.GOOGLE)) {
     console.log(userRes.data.user.googleId);
   }

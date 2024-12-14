@@ -28,6 +28,7 @@ export type FetchOptions<T, Key extends string> = Omit<
   query?: QueryDto<T>;
   token?: string;
   hasMetadata?: boolean;
+  // This is the key to access the api response
   responseKey: Key;
   progressArgs?: Omit<ProgressArgs, "contentLength"> & { turnOff?: boolean };
 };

@@ -22,10 +22,10 @@ export function AuthContainer({
   childrenContainerProps: { className, ...rest } = {},
 }: Props) {
   return (
-    <div className="min:h-[40rem] flex w-full flex-col justify-between gap-8 rounded-4xl bg-white px-4 py-10 shadow-lg md:px-10 lg:min-h-[54rem] lg:w-[40rem]">
+    <div className="min:h-[40rem] flex w-full flex-col justify-between gap-8 rounded-4xl bg-white py-10 shadow-lg lg:min-h-[54rem] lg:max-w-[50%] 2xl:max-w-[35%]">
       <Header next={next} previous={previous} nextBtnProps={nextBtnProps} />
       <main
-        className={`auth-container-px flex flex-col gap-8 ${className}`}
+        className={`flex flex-col gap-8 px-4 lg:px-10 ${className}`}
         {...rest}
       >
         {children}
@@ -58,16 +58,13 @@ function Footer() {
         </ul>
       </nav>
       <div className="h-0.5 bg-gray-200" />
-      <p className="auth-container-px pt-3 text-center text-[7.5px] lg:text-sm">
+      <p className="auth-container-px pt-3 text-center text-[7.5px] md:text-sm">
         By continuing, you agree to ICM Tech&#39;s{" "}
         <Link to={"/terms"} className={"inline text-primary underline"}>
           Terms of Use.
         </Link>{" "}
         Read{" "}
-        <Link
-          to={"/privacy"}
-          className={"inline text-primary underline lg:text-sm"}
-        >
+        <Link to={"/privacy"} className={"inline text-primary underline"}>
           Privacy Policy
         </Link>
       </p>
@@ -90,7 +87,7 @@ function Header({
           </button>
         )}
         <h1
-          className={`${!next || !previous ? "basis-full" : ""} text-center text-xs font-bold lg:text-xl`}
+          className={`${!next || !previous ? "basis-full" : ""} text-center text-xs font-bold md:text-xl`}
         >
           Continue to ICM Tech
         </h1>

@@ -1,5 +1,5 @@
 import { fetchClient } from "~/fetch/fetch-client"; // Assuming fetchClient is properly set up
-import { getToken } from "~/sessions/auth-session"; // Assuming you have a way to retrieve tokens
+import { getToken } from "~/session"; // Assuming you have a way to retrieve tokens
 
 export async function makeRepeatedRequests<T>(
   endpoint: `/${string}`,
