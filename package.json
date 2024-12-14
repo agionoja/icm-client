@@ -9,6 +9,7 @@
     "typecheck": "react-router typegen && tsc --build --noEmit"
   },
   "dependencies": {
+    "@agionoja/icm-shared": "^1.0.1",
     "@react-router/node": "^7.0.1",
     "@react-router/serve": "^7.0.1",
     "dotenv": "^16.4.5",
@@ -30,7 +31,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@agionoja/icm-shared": "^1.0.8",
     "@react-router/dev": "^7.0.1",
     "@types/node": "^20",
     "@types/qs": "^6.9.17",

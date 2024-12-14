@@ -4,7 +4,11 @@ import { BlueButton } from "~/components/button";
 import { useState } from "react";
 import { Close, Hamburger } from "~/components/icons";
 
-export function Header() {
+type Props = {
+  isLoggedIn: boolean;
+};
+
+export function Header({ isLoggedIn }: Props) {
   return (
     <>
       <header
@@ -14,9 +18,11 @@ export function Header() {
       >
         <img width={146} height={40} src={logo} alt="ICM Teach logo" />
         <Nav />
-        <Link className={"hidden md:block"} to="/auth/register/welcome">
-          <BlueButton>Get Started</BlueButton>
-        </Link>
+        {!isLoggedIn && (
+          <Link className={"hidden md:block"} to="/auth/register/welcome">
+            <BlueButton>Get Started</BlueButton>
+          </Link>
+        )}
       </header>
     </>
   );

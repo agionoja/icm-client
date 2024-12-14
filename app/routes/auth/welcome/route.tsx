@@ -13,14 +13,14 @@ function Main() {
         <BlueButton className="w-full">Sign Up</BlueButton>
       </Link>
 
-      <div className="flex w-full items-center gap-2 px-20 py-2 lg:px-32 lg:py-4">
+      <div className="flex w-full items-center gap-2 px-20 py-2 md:px-32 md:py-4">
         <div className="h-0.5 flex-grow bg-gray-300"></div>
         <span className="text-gray-500">Or</span>
         <div className="h-0.5 flex-grow bg-gray-300"></div>
       </div>
 
       <div>
-        <p className={"text-[9px] lg:text-sm"}>
+        <p className={"text-[9px] md:text-sm"}>
           Already have an account?{" "}
           <Link to={"/auth/login"} className={"inline text-primary"}>
             Login
@@ -35,7 +35,7 @@ export default function Welcome() {
   return (
     <>
       <AuthContainer next={"/auth/register/options"}>
-        <div className="flex h-full w-full flex-col items-center gap-4 lg:gap-8">
+        <div className="flex h-full w-full flex-col items-center gap-4 md:gap-8">
           <AuthHeading
             heading={"Welcome to ICM Tech"}
             text={" Swift ad Cool life made Easy!"}

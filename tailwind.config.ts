@@ -38,7 +38,7 @@ export default {
       },
 
       fontSize: {
-        lg: ["1rem", "1.5rem"],
+        md: ["1rem", "1.5rem"],
       },
     },
   },

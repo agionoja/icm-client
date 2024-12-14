@@ -1,125 +1,47 @@
 import type { Route } from "./+types/route";
-import { getClientIPAddress } from "remix-utils/get-client-ip-address";
-import { data, redirect, useNavigation, useSearchParams } from "react-router";
-import { fetchClient } from "~/fetch/fetch-client";
 import {
-  createSession,
-  getRole,
-  getToken,
-  hasSession,
-} from "~/sessions/auth-session";
+  data,
+  type MetaFunction,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
 import { BlueButton, SilverBorderButton } from "~/components/button";
 import { Facebook, Google } from "~/components/icons";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import type { User } from "@agionoja/icm-shared";
-import { safeRedirect } from "~/utils/safe-redirect";
 import { Input } from "~/routes/auth/register-email/input";
 import { AuthForm } from "~/routes/auth/components/auth-form";
-import {
-  destroyTimeoutMessageSession,
-  getTimeoutMessageSession,
-} from "~/sessions/auth-timeout-session";
+import { timeoutSession } from "~/toast/timeout-toast";
+import { getFlashSession } from "~/utils/flash-message";
+import { throttleNetwork } from "~/utils/throttle-network";
+import { login } from "~/routes/auth/login/queries";
+
+export const meta: MetaFunction = () => {
+  return [{ title: "ICM Tech Login" }];
+};
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
+  await throttleNetwork(2);
   switch (_action) {
     case "login": {
-      const { data: userToken, exception } = await fetchClient<
-        string,
-        "accessToken"
-      >("/auth/login", {
-        responseKey: "accessToken",
-        method: "POST",
-        body: JSON.stringify(values),
-      });
-
-      console.log(`Client IP: ${getClientIPAddress(request)}`);
-
-      const {
-        data: profile,
-        exception: profileException,
-        message: profileMessage,
-      } = await fetchClient<User, "user">("/auth/profile", {
-        responseKey: "user",
-        token: userToken?.accessToken,
-        headers: {
-          "X-Forwarded-For": request.headers.get("X-Forwarded-For") || "",
-        },
-      });
-
-      if (exception || profileException) {
-        return data(
-          {
-            error: {
-              message: exception?.message || profileException?.message,
-              statusCode: exception?.statusCode || exception?.statusCode,
-            },
-          },
-          { status: exception?.statusCode || profileException?.statusCode },
-        );
-      }
-
-      const redirectTo = safeRedirect(
-        formData.get("redirect"),
-        profile?.user.role === "ADMIN" ? "/admin/dashboard" : "/user/dashboard",
-      );
-
-      return createSession({
-        role: profile.user.role,
-        request,
-        remember: true,
-        message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
-        redirectTo,
-        token: userToken?.accessToken,
-        init: {
-          headers: {
-            "Set-Cookie": await destroyTimeoutMessageSession(request),
-          },
-        },
+      return login(request, values.redirect, {
+        email: values.email as string,
+        password: values.password as string,
       });
     }
   }
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const timeoutSessionMessage = (await getTimeoutMessageSession(request)).get(
-    "message",
-  );
+  const { flash, headers } = await getFlashSession(request, {
+    sessionStorage: timeoutSession,
+  });
 
-  if (timeoutSessionMessage) return { timeoutSessionMessage };
-
-  if (!(await hasSession(request))) return;
-  const token = await getToken(request);
-  const role = (await getRole(request)) as User["role"];
-
-  // console.log({ token, role });
-  const url = new URL(request.url);
-  const refererUrl = new URL(request.headers.get("referer") || request.url);
-  const searchParams = new URLSearchParams(url.search);
-
-  const redirectPath = searchParams.get("redirect");
-  // Check for referer redirect (avoiding infinite redirect)
-  if (refererUrl.pathname !== url.pathname) {
-    return redirect(refererUrl.pathname);
-  }
-
-  // Check for redirect query parameter
-  if (redirectPath) {
-    return redirect(redirectPath);
-  }
-
-  // Redirect based on token and role
-  if (token && role) {
-    // console.log(token);
-    return redirect(role === "USER" ? "/user/dashboard" : "/admin/dashboard");
-  }
-
-  // Default redirect to home
-  return redirect("/");
+  return data({ flash }, { headers });
 }
 
 export default function Login({
@@ -127,10 +49,8 @@ export default function Login({
   loaderData,
 }: Route.ComponentProps) {
   const [searchParams] = useSearchParams();
-  const timeoutMessage =
-    loaderData && "timeoutSessionMessage" in loaderData
-      ? loaderData.timeoutSessionMessage
-      : undefined;
+  const flash =
+    loaderData && "flash" in loaderData ? loaderData.flash : undefined;
   const redirect = searchParams.get("redirect") ?? "";
   const { state, formData } = useNavigation();
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -171,13 +91,13 @@ export default function Login({
       <AuthContainer>
         <AuthForm method={"POST"} className={""}>
           <input type="text" hidden defaultValue={redirect} name="redirect" />
-          {timeoutMessage && (
+          {flash && (
             <span
               className={
-                "mb-4 w-full rounded-md bg-gray-100 px-4 py-3 text-center font-medium"
+                "mb-4 w-full rounded-lg bg-gray-100 px-4 py-3 text-center font-medium"
               }
             >
-              {timeoutMessage}
+              {flash}
             </span>
           )}
           <Input
@@ -208,6 +128,7 @@ export default function Login({
             name={"_action"}
             value={"login"}
             type={"submit"}
+            className={`${isLoggingIn ? "cursor-not-allowed" : ""}`}
           >
             {isLoggingIn ? "Logging in..." : "Login"}
           </BlueButton>
@@ -217,9 +138,7 @@ export default function Login({
             className={"flex shrink-0 grow items-center justify-center gap-4"}
           >
             <Google size={20} />
-            <span className={"text-[7.5px] font-bold md:text-sm"}>
-              Continue with Google
-            </span>
+            <span className={"font-medium"}>Continue with Google</span>
           </SilverBorderButton>
           <SilverBorderButton
             name={"_action"}
@@ -227,9 +146,7 @@ export default function Login({
             className={"flex shrink-0 grow items-center justify-center gap-4"}
           >
             <Facebook fill={"blue"} size={20} />
-            <span className={"text-[7.5px] font-bold md:text-sm"}>
-              Continue with Facebook
-            </span>
+            <span className={"font-medium"}>Continue with Facebook</span>
           </SilverBorderButton>
         </AuthForm>
       </AuthContainer>

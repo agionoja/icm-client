@@ -19,7 +19,7 @@
 
 @layer components {
   .auth-container-px {
-    @apply px-4 lg:px-10;
+    @apply px-4 md:px-10;
   }
 
   .auth-input {
@@ -31,6 +31,6 @@
   }
 
   .auth-padding {
-    @apply px-2 py-1.5 lg:py-2;
+    @apply px-2 py-1.5 md:py-2;
   }
 }

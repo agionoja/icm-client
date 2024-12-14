@@ -7,7 +7,7 @@ export const Input = forwardRef<
   return (
     <input
       ref={ref}
-      className={`auth-input border border-gray-200 px-2 py-2 focus:outline-primary ${className || ""}`}
+      className={`w-full rounded-lg border border-gray-200 px-2 py-2 focus:outline-primary ${className || ""}`}
       type="text"
       {...rest}
     />

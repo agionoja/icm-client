@@ -5,9 +5,7 @@ export function useSessionTimeout(
   onTimeout: () => void,
 ) {
   useEffect(() => {
-    if (sessionMaxAge > 0) {
-      const timeoutId = setTimeout(onTimeout, sessionMaxAge);
-      return () => clearTimeout(timeoutId);
-    }
+    const timeoutId = setTimeout(onTimeout, sessionMaxAge);
+    return () => clearTimeout(timeoutId);
   }, [sessionMaxAge, onTimeout]);
 }

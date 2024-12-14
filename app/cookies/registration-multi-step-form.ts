@@ -16,7 +16,7 @@ type RegistrationStep2Data = {
   passwordConfirm?: string;
 };
 
-interface RegistrationFormData
+interface RegistrationData
   extends RegistrationStep1Data,
     RegistrationStep2Data {}
 
@@ -32,11 +32,11 @@ export const registrationProgressCookie = createCookie(
 export async function getRegistrationProgressFromCookie(request: Request) {
   return ((await registrationProgressCookie.parse(
     getCookieFromHeader(request),
-  )) || {}) as RegistrationFormData;
+  )) || {}) as RegistrationData;
 }
 
 export async function setRegistrationProgressCookie(
-  data: RegistrationFormData | (() => RegistrationFormData),
+  data: RegistrationData | (() => RegistrationData),
   request: Request,
 ) {
   // Check if data is a function, and if so, call it to get the actual data

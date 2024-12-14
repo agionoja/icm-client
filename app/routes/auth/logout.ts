@@ -1,23 +1,23 @@
 import type { Route } from "./+types/logout";
-import { getRole, getToken, logout } from "~/sessions/auth-session";
+import { getRole, getToken, logout } from "~/session";
 import { redirect } from "react-router";
-import {
-  commitTimeoutMessageSession,
-  SESSION_TIMEOUT,
-} from "~/sessions/auth-timeout-session";
-
+import { flashMessage } from "~/utils/flash-message";
+import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
 
   switch (request.method) {
     case "POST": {
-      const sessionTimeout = formData.get(SESSION_TIMEOUT);
+      const sessionTimeout = formData.get(SESSION_TIMEOUT_KEY);
       const redirectTo = formData.get("redirectTo");
       if (sessionTimeout) {
-        const timeoutCookie = await commitTimeoutMessageSession(request);
+        const headers = await flashMessage({
+          message: "Your session has timed out. Please log in again.",
+          sessionStorage: timeoutSession,
+        });
 
         return logout(request, `/auth/login?${redirectTo ?? ""}`, {
-          headers: { "Set-Cookie": timeoutCookie },
+          headers,
         });
       }
 
