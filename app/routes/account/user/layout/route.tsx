@@ -1,12 +1,12 @@
 import type { Route } from "./+types/route";
 import { restrictTo } from "~/session";
 import { Outlet } from "react-router";
-import { getUserCookie } from "~/cookies/user-cookie";
-import assert from "node:assert";
+import { getUserDataCookie } from "~/cookies/user-cookie";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const user = await getUserCookie(request);
-  assert(user, "There is no user in the cookie");
+  const user = await getUserDataCookie(request);
+  if (!user) return { user };
+
   await restrictTo(user, "USER");
 
   return { user };

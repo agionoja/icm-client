@@ -9,8 +9,8 @@ export async function action({ request }: Route.ActionArgs) {
   switch (request.method) {
     case "POST": {
       const sessionTimeout = formData.get(SESSION_TIMEOUT_KEY);
-      const redirectTo = formData.get("redirectTo");
       if (sessionTimeout) {
+        const redirectTo = formData.get("redirectTo");
         const headers = await flashMessage({
           message: "Your session has timed out. Please log in again.",
           sessionStorage: timeoutSession,
