@@ -3,11 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare-install": "echo '@agionoja:registry=https://npm.pkg.github.com/' > .npmrc && echo '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}' >> .npmrc",
+    "install": "npm run prepare-install && npm install",
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc --build --noEmit"
   },
+
   "dependencies": {
     "@agionoja/icm-shared": "^1.0.1",
     "@react-router/node": "^7.0.1",
