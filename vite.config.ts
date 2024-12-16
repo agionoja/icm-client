@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   ssr: {
-    // external: ["class-transformer/storage"],
+    external: ["class-transformer/storage"],
   },
   plugins: [reactRouter(), tsconfigPaths()],
 });

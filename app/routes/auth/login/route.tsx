@@ -25,7 +25,7 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  await throttleNetwork(2);
+  await throttleNetwork(0);
   switch (_action) {
     case "login": {
       return login(request, values.redirect, {
