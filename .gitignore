@@ -2,7 +2,7 @@
 !.env.example
 .DS_Store
 .react-router
-.npmrc
+public/.npmrc
 build
 node_modules
 *.tsbuildinfo

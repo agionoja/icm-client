@@ -1,14 +1,14 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
-import type { GoogleUser, IcmUser, Role, User } from "@agionoja/icm-shared";
+import { type IFacebookUser, type IGoogleUser, type IIcmUser, type IUser, Role } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { fetchClient } from "~/fetch/fetch-client";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
 
 type SessionData = {
   token: string;
-  role: keyof typeof Role;
+  role: Role;
 };
 
 type CreateSession = {
@@ -21,8 +21,9 @@ type CreateSession = {
 };
 
 export const RoleRedirects = {
-  USER: "/user/dashboard",
-  ADMIN: "/admin/dashboard",
+  [Role.ADMIN]: "/admin/dashboard",
+  [Role.USER]: "/user/dashboard",
+  [Role.SUER_ADMIN]: "/super-admin/dashboard",
 };
 
 /**
@@ -149,7 +150,7 @@ export async function requireUser(
 
   const token = await getToken(request);
 
-  const { exception, data } = await fetchClient<IcmUser | GoogleUser, "user">(
+  const { exception, data } = await fetchClient<IIcmUser | IGoogleUser|IFacebookUser, "user">(
     "/auth/profile",
     {
       responseKey: "user",
@@ -180,7 +181,7 @@ export async function requireUser(
  * @param roles - An array of roles allowed to access the resource.
  * @throws Redirects to the appropriate dashboard if the user does not have the required role.
  */
-export async function restrictTo(user: User, ...roles: User["role"][]) {
+export async function restrictTo(user: IUser, ...roles: Role[]) {
   if (!roles.includes(user.role)) {
     throw await redirectWithError(
       RoleRedirects[user.role],

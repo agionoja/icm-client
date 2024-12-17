@@ -1,17 +1,18 @@
 import { fetchClient } from "~/fetch/fetch-client";
+import type { IUser } from "icm-shared";
 
 export async function checkUser(
-  email: string | FormDataEntryValue,
-  phone: string | FormDataEntryValue,
+  email: string ,
+  phone: string ,
 ) {
   const [findByEmail, findByPhone] = await Promise.all([
-    fetchClient<boolean, "isExists">("/auth/check-user", {
+    fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
       responseKey: "isExists",
-      query: { filter: { email } },
+      query: { filter: {email} },
     }),
-    fetchClient<boolean, "isExists">("/auth/check-user", {
+    fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
       responseKey: "isExists",
-      query: { filter: { phone } },
+      query: { filter: {phone} },
     }),
   ]);
 

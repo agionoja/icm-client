@@ -2,9 +2,9 @@ import type { FormEncType } from "react-router";
 import type {
   ApiResponseMany,
   ApiResponseOne,
-  QueryDto,
+  IQueryBuilder,
   IApiException,
-} from "@agionoja/icm-shared";
+} from "icm-shared";
 import { envConfigCamelCase } from "~/env-config";
 import qs from "qs";
 import { logger } from "~/fetch/logger";
@@ -17,15 +17,19 @@ type Headers = {
   Authorization?: `Bearer ${string}` | "";
 } & { [key: string]: string };
 
-// Enhanced options to include progress callback
-export type FetchOptions<T, Key extends string> = Omit<
+// Enhanced options to include progress callback and query type
+export type FetchOptions<
+  TReturnType,
+  Key extends string,
+  TQueryType = TReturnType
+> = Omit<
   RequestInit,
   "method" | "headers"
 > & {
   method?: Method;
   headers?: Headers;
   isFormData?: boolean;
-  query?: QueryDto<T>;
+  query?: IQueryBuilder<TQueryType>;
   token?: string;
   hasMetadata?: boolean;
   // This is the key to access the api response
@@ -34,8 +38,9 @@ export type FetchOptions<T, Key extends string> = Omit<
 };
 
 export async function fetchClient<
-  T,
+  TReturnType,
   Key extends string,
+  TQueryType = TReturnType,
   IsPaginated extends boolean = false,
 >(
   endpoint: `/${string}`,
@@ -47,9 +52,11 @@ export async function fetchClient<
     token,
     query,
     ...rest
-  }: FetchOptions<T, Key>,
+  }: FetchOptions<TReturnType, Key, TQueryType>,
 ): Promise<
-  IsPaginated extends true ? ApiResponseMany<T, Key> : ApiResponseOne<T, Key>
+  IsPaginated extends true
+    ? ApiResponseMany<TReturnType, Key>
+    : ApiResponseOne<TReturnType, Key>
 > {
   if (!responseKey) throw new Error("Response Key is required");
 
@@ -146,8 +153,8 @@ export async function fetchClient<
     };
 
     return transformedResponse as IsPaginated extends true
-      ? ApiResponseMany<T, Key>
-      : ApiResponseOne<T, Key>;
+      ? ApiResponseMany<TReturnType, Key>
+      : ApiResponseOne<TReturnType, Key>;
   } catch (err) {
     logger.logRequest(method, endpoint, queryString, startTime, null, err);
 

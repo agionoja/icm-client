@@ -2,7 +2,7 @@ import { Link, Outlet, redirect } from "react-router";
 import logo from "~/assets/logos/SVG/Primary Logo - Full Color.svg";
 import type { Route } from "./+types/route";
 import { getRole, getToken, hasSession, RoleRedirects } from "~/session";
-import type { User } from "@agionoja/icm-shared";
+import { Role } from "icm-shared";
 
 export default function AuthLayout() {
   return (
@@ -34,7 +34,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   // Retrieve token and role (skip if session already deemed invalid)
   const token = await getToken(request);
-  const role = (await getRole(request)) as User["role"];
+  const role = (await getRole(request)) as Role;
   if (!token || !role) {
     return null; // Edge case: corrupted session
   }

@@ -30,7 +30,7 @@ export async function action({ request }: Route.ActionArgs) {
   if (_action === "register") {
     await throttleNetwork(0);
     const { exists, error } = await checkUser(
-      values.email,
+      String(values.email),
       parsePhoneNumberWithError(values.phone as string).format("E.164"),
     );
 

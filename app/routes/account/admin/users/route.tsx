@@ -1,9 +1,9 @@
 import {
   checkForClass,
-  type GoogleUser,
-  type IcmUser,
+  type IGoogleUser,
+  type IIcmUser,
   UserDiscriminator,
-} from "@agionoja/icm-shared";
+} from "icm-shared";
 import { fetchClient } from "~/fetch/fetch-client";
 import type { Route } from "./+types/route";
 import { ProgressMonitor } from "~/fetch/progess";
@@ -12,19 +12,18 @@ import { getToken } from "~/session";
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const [usersRes, userRes, profile] = await Promise.all([
-    fetchClient<GoogleUser | IcmUser, "users", true>("/users", {
+    fetchClient<IGoogleUser | IIcmUser, "users", IGoogleUser|IIcmUser, true>("/users", {
       responseKey: "users",
       token: token,
       query: {
         paginate: { page: 1, limit: 2 },
         filter: {
-          isSuspended: false,
           isVerified: true,
           // __t: UserDiscriminator.ICM,
         },
         sort: ["email", "-createdAt"],
-        search: { lastname: "PAU" },
-        select: [],
+        search: { lastname: "PAU", },
+        select: ["id"],
       },
       progressArgs: {
         onProgress: (progress) => {
@@ -47,14 +46,14 @@ export async function loader({ request }: Route.LoaderArgs) {
         turnOff: true,
       },
     }),
-    fetchClient<GoogleUser | IcmUser, "user">(
+    fetchClient<IGoogleUser | IIcmUser, "user">(
       "/users/674491c78674b85bb5947cc1",
       {
         responseKey: "user",
         token: token,
       },
     ),
-    fetchClient<GoogleUser | IcmUser, "profile">("/auth/profile", {
+    fetchClient<IGoogleUser | IIcmUser, "profile">("/auth/profile", {
       responseKey: "profile",
       token: token,
     }),
@@ -68,7 +67,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       status: usersRes.exception?.statusCode || userRes.exception?.statusCode,
     });
   }
-  if (checkForClass<GoogleUser>(userRes.data?.user, UserDiscriminator.GOOGLE)) {
+  if (checkForClass<string, IGoogleUser>(userRes.data?.user, UserDiscriminator.GOOGLE)) {
     console.log(userRes.data.user.googleId);
   }
 

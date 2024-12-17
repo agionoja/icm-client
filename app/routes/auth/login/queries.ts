@@ -1,14 +1,18 @@
 import { fetchClient } from "~/fetch/fetch-client";
 import { data } from "react-router";
-import type { LoginDto, User } from "@agionoja/icm-shared";
+import type { IUser } from "icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
 import { createSession, RoleRedirects } from "~/session";
-import { setUserDataCookie } from "~/cookies/user-cookie";
+
+type LoginArgs = {
+  email: string | FormDataEntryValue;
+  password: string | FormDataEntryValue;
+};
 
 export async function login(
   request: Request,
   redirectTo: string | FormDataEntryValue,
-  loginDto: LoginDto,
+  loginDto: LoginArgs,
 ) {
   const { data: userToken, exception } = await fetchClient<
     string,
@@ -23,7 +27,7 @@ export async function login(
     data: profile,
     exception: profileException,
     message: profileMessage,
-  } = await fetchClient<User, "user">("/auth/profile", {
+  } = await fetchClient<IUser, "user">("/auth/profile", {
     responseKey: "user",
     token: userToken?.accessToken,
   });
@@ -46,17 +50,13 @@ export async function login(
   );
 
   const token = userToken?.accessToken;
-  const userCookie = await setUserDataCookie(profile.user, request, token);
 
-  return createSession(
-    {
-      role: profile.user.role,
-      request,
-      token,
-      remember: true,
-      message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
-      redirectTo: redirectUrl,
-    },
-    { headers: { "Set-Cookie": userCookie } },
-  );
+  return createSession({
+    role: profile.user.role,
+    request,
+    token,
+    remember: true,
+    message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
+    redirectTo: redirectUrl,
+  });
 }

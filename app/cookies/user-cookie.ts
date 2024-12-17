@@ -2,11 +2,11 @@ import { createCookie } from "react-router";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
 import { getNestjsSessionMaxAgeInSeconds } from "~/session";
 import type {
-  FacebookUser,
-  GoogleUser,
-  IcmUser,
-  User,
-} from "@agionoja/icm-shared";
+  IFacebookUser,
+  IGoogleUser,
+  IIcmUser,
+  IUser,
+} from "icm-shared";
 import { decrypt, encrypt } from "~/utils/crypto";
 
 /**
@@ -27,13 +27,13 @@ const userCookie = createCookie(USER_DATA_COOKIE_NAME, {
  * Stores encrypted user information in a cookie. The expiration time is determined by
  * the session expiration provided by the NestJS server.
  *
- * @param {User} user - The user object to be stored.
+ * @param {IUser} user - The user object to be stored.
  * @param {Request} request - The request object containing headers.
  * @param {string} [token] - Optional JWT token to calculate session expiration.
  * @returns {Promise<string>} Serialized cookie string to be used in headers.
  */
 export async function setUserDataCookie(
-  user: User,
+  user: IUser,
   request: Request,
   token?: string,
 ): Promise<string> {
@@ -48,16 +48,16 @@ export async function setUserDataCookie(
  * Retrieves and decrypts the user data from the cookie in the request headers.
  *
  * @param {Request} request - The request object containing headers.
- * @returns {Promise<IcmUser | GoogleUser | FacebookUser | null>} The decrypted user data or null if not available.
+ * @returns {Promise<IIcmUser | IGoogleUser | IFacebookUser | null>} The decrypted user data or null if not available.
  */
 export async function getUserDataCookie(
   request: Request,
-): Promise<IcmUser | GoogleUser | FacebookUser | null> {
+): Promise<IIcmUser | IGoogleUser | IFacebookUser | null> {
   const cookie = request.headers.get("Cookie");
   const encryptedUser = await userCookie.parse(cookie);
 
   if (!encryptedUser) return null;
-  return decrypt<IcmUser | GoogleUser | FacebookUser>(encryptedUser) ?? null;
+  return decrypt<IIcmUser | IGoogleUser | IFacebookUser>(encryptedUser) ?? null;
 }
 
 /**
