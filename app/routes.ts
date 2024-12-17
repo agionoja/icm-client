@@ -21,6 +21,9 @@ const admin = (path: string) =>
 const settings = (path: string) =>
   `./routes/account/settings/${path}${path.endsWith(".tsx") || path.endsWith(".ts") ? "" : ".tsx"}`;
 
+const resources = (path: string) =>
+  `./routes/resources/${path}${path.endsWith(".ts") ? "" : ".ts"}`;
+
 export default [
   layout(landing("layout/route"), [
     index(landing("home/route")),
@@ -87,5 +90,5 @@ export default [
     ]),
   ]),
 
-  ...prefix("resource", []),
+  ...prefix("resource", [route("spin-server", resources("spin-server"))]),
 ] satisfies RouteConfig;
