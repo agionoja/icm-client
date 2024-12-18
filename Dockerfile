@@ -3,6 +3,9 @@ COPY . /app
 WORKDIR /app
 RUN npm ci
 
+# Copy the .env file into the Docker image COPY .env .env
+COPY .env .env
+
 FROM node:20-alpine as production-dependencies-env
 COPY ./package.json package-lock.json /app/
 WORKDIR /app

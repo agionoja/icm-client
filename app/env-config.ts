@@ -1,15 +1,10 @@
 import { z } from "zod";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import dotenv from "dotenv/config.js";
 import { makeTypedEnvironment } from "~/lib";
 import * as process from "node:process";
 
 // console.log(process.env.API_URI);
-
-
-
-
-
-
 
 // const publicEnvSchema = z.object({
 //   VITE_DONT_USE_THIS: z.string(),
