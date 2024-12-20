@@ -1,10 +1,21 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
-import { type IFacebookUser, type IGoogleUser, type IIcmUser, type IUser, Role } from "icm-shared";
+import {
+  type IFacebookUser,
+  type IGoogleUser,
+  type IIcmUser,
+  type IUser,
+  Role,
+} from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { fetchClient } from "~/fetch/fetch-client";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
+import {
+  adminRouteConfig,
+  authRouteConfig,
+  userRouteConfig,
+} from "~/routes.config";
 
 type SessionData = {
   token: string;
@@ -21,8 +32,8 @@ type CreateSession = {
 };
 
 export const RoleRedirects = {
-  [Role.ADMIN]: "/admin/dashboard",
-  [Role.USER]: "/user/dashboard",
+  [Role.ADMIN]: adminRouteConfig.dashboard.generate(),
+  [Role.USER]: userRouteConfig.dashboard.generate(),
   [Role.SUER_ADMIN]: "/super-admin/dashboard",
 };
 
@@ -136,13 +147,11 @@ export async function requireUser(
   request: Request,
   redirectTo: string = new URL(request.url).pathname,
 ) {
-  const searchParams = new URLSearchParams([["redirect", redirectTo]]);
   const genericMsg = "Authorization required. Please log in and try again.";
-
-  const redirectUrl =
-    redirectTo && redirectTo !== "/"
-      ? `/auth/login?${searchParams}`
-      : "/auth/login";
+  const redirectUrl = authRouteConfig.login.generate(
+    {},
+    { redirect: `/${redirectTo}` },
+  );
 
   if (!(await hasSession(request))) {
     throw await redirectWithError(redirectUrl, genericMsg);
@@ -150,13 +159,13 @@ export async function requireUser(
 
   const token = await getToken(request);
 
-  const { exception, data } = await fetchClient<IIcmUser | IGoogleUser|IFacebookUser, "user">(
-    "/auth/profile",
-    {
-      responseKey: "user",
-      token,
-    },
-  );
+  const { exception, data } = await fetchClient<
+    IIcmUser | IGoogleUser | IFacebookUser,
+    "user"
+  >("/auth/profile", {
+    responseKey: "user",
+    token,
+  });
 
   if (exception) {
     if (exception.statusCode === 401) {
@@ -200,7 +209,7 @@ export async function restrictTo(user: IUser, ...roles: Role[]) {
  */
 export async function logout(
   request: Request,
-  redirectTo = "/auth/login",
+  redirectTo = authRouteConfig.login.generate(),
   init?: ResponseInit,
 ) {
   const headers = new Headers(init?.headers);

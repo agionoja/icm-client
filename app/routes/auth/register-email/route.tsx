@@ -1,26 +1,21 @@
 import type { Route } from "./+types/route";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import {
-  data,
-  redirect,
-  type SubmitFunction,
-  useFetcher,
-  useNavigation,
-} from "react-router";
-import { BlueButton } from "~/components/button";
+import { data, redirect, useFetcher, useNavigation } from "react-router";
 import { useEffect, useReducer, useRef } from "react";
 import {
   getRegistrationProgressFromCookie,
   setRegistrationProgressCookie,
 } from "~/cookies/registration-multi-step-form";
-import { AuthHeading } from "~/routes/auth/components/auth-heading";
-import { Input } from "~/routes/auth/register-email/input";
 import { PhoneInput } from "~/components/phone-input";
 import { checkUser } from "~/routes/auth/register-email/check-user";
 import { AuthForm } from "~/routes/auth/components/auth-form";
 import { toast } from "react-toastify";
 import { parsePhoneNumberWithError } from "libphonenumber-js";
 import { throttleNetwork } from "~/utils/throttle-network";
+import { Input } from "~/components/input";
+import { Button } from "~/components/button";
+import { authRouteConfig } from "~/routes.config";
+import { AuthHeading } from "~/routes/auth/components/auth-heading";
 
 export async function action({ request }: Route.ActionArgs) {
   const { _action, ...values } = Object.fromEntries(await request.formData());
@@ -38,7 +33,7 @@ export async function action({ request }: Route.ActionArgs) {
       return data({ error }, { headers, status: error?.statusCode });
     }
 
-    return redirect("/auth/register/password", { headers });
+    return redirect(authRouteConfig.registerPassword.getPath, { headers });
   }
 
   return data({ error: null }, { headers });
@@ -54,25 +49,40 @@ export default function EmailRegister({
   actionData,
 }: Route.ComponentProps) {
   const initialState = {
-    firstname: loaderData.formStep.firstname || "",
-    lastname: loaderData.formStep.lastname || "",
-    email: loaderData.formStep.email || "",
+    firstname: loaderData?.formStep?.firstname || "",
+    lastname: loaderData?.formStep?.lastname || "",
+    email: loaderData?.formStep?.email || "",
   };
+
   const { submit } = useFetcher();
   const navigation = useNavigation();
-  const [state, dispatch] = useReducer(reducer(submit), initialState);
+  const [state, dispatch] = useReducer(reducer, initialState);
+
   const emailRef = useRef<HTMLInputElement | null>(null);
   const phoneRef = useRef<HTMLInputElement | null>(null);
 
   const isActionError = actionData && "error" in actionData && actionData.error;
   const isPhoneError = !!(isActionError && actionData.error?.label === "phone");
   const isEmailError = !!(isActionError && actionData.error?.label === "email");
-
   const isBothError = !!(isActionError && actionData.error?.label === "both");
   const errorMsg = isActionError ? actionData.error?.message : "";
   const phoneMsg = isPhoneError || isBothError ? errorMsg : "";
-
   const emailMsg = isEmailError || isBothError ? errorMsg : "";
+
+  // UseEffect to submit form data when the state changes
+  useEffect(() => {
+    if (state.firstname || state.lastname || state.email) {
+      const formData = new FormData();
+      formData.append("firstname", state.firstname);
+      formData.append("lastname", state.lastname);
+      formData.append("email", state.email);
+
+      submit(formData, {
+        method: "POST",
+        action: authRouteConfig.registerEmail.getPath,
+      });
+    }
+  }, [state, submit]); // Trigger submission whenever the form state changes
 
   useEffect(() => {
     if (isActionError) {
@@ -91,6 +101,13 @@ export default function EmailRegister({
     }
   }, [errorMsg, isActionError, isBothError, isEmailError, isPhoneError]);
 
+  useEffect(() => {
+    if (phoneRef.current && phoneRef.current.checkValidity()) {
+      console.log("PHone is invalid");
+      phoneRef.current.select();
+    }
+  }, []);
+
   return (
     <>
       <AuthContainer
@@ -100,14 +117,15 @@ export default function EmailRegister({
         nextBtnProps={{ disabled: true }}
       >
         <AuthHeading
-          heading={"Continue with email"}
           text={
-            "We'll check if you have an account, and help create one if you don't"
+            "We’ll check if you have an account, and help create one if you don’t."
           }
+          heading={"Continue with email"}
         />
-        <AuthForm method={"POST"} className={""}>
+        <AuthForm className={""}>
           <Input
             required
+            className={"w-full lg:w-9/12"}
             placeholder={"First name"}
             type={"text"}
             minLength={2}
@@ -119,6 +137,7 @@ export default function EmailRegister({
           />
           <Input
             required
+            className={"w-full lg:w-9/12"}
             placeholder={"Last name"}
             type={"text"}
             minLength={2}
@@ -130,6 +149,7 @@ export default function EmailRegister({
           />
           <Input
             required
+            className={"w-full lg:w-9/12"}
             placeholder={"Email"}
             ref={emailRef}
             type={"email"}
@@ -142,6 +162,7 @@ export default function EmailRegister({
             name={"email"}
           />
           <PhoneInput
+            className={"w-full lg:w-9/12"}
             phoneDefault={loaderData.formStep?.phone}
             name={"phone"}
             inputRef={phoneRef}
@@ -152,49 +173,36 @@ export default function EmailRegister({
             placeholder={"Phone number"}
             fetcherUrl={"/auth/register/email"}
           />
-          <BlueButton
+          <Button
+            size={"authSize"}
             disabled={navigation.state === "submitting"}
             name={"_action"}
             value={"register"}
             type={"submit"}
           >
             {navigation.state === "submitting" ? "Checking..." : "Continue"}
-          </BlueButton>
+          </Button>
         </AuthForm>
       </AuthContainer>
     </>
   );
 }
 
-function reducer(submit: SubmitFunction) {
-  return function reducer(
-    state: { firstname: string; lastname: string; email: string },
-    action: { payload: string; type: string },
-  ) {
-    const formData = new FormData();
-    const submitFunction = (payload: FormData) =>
-      submit(payload, {
-        method: "POST",
-        action: "/auth/register/email",
-      });
-    switch (action.type) {
-      case "SET_FIRSTNAME": {
-        formData.append("firstname", action.payload);
-        submitFunction(formData);
-        return { ...state, firstname: action.payload };
-      }
-      case "SET_LASTNAME": {
-        formData.append("lastname", action.payload);
-        submitFunction(formData);
-        return { ...state, lastname: action.payload };
-      }
-      case "SET_EMAIL": {
-        formData.append("email", action.payload);
-        submitFunction(formData);
-        return { ...state, email: action.payload };
-      }
-      default:
-        throw new Error("Invalid action type");
-    }
-  };
+function reducer(
+  state: { firstname: string; lastname: string; email: string },
+  action: {
+    payload: string;
+    type: "SET_FIRSTNAME" | "SET_LASTNAME" | "SET_EMAIL";
+  },
+) {
+  switch (action.type) {
+    case "SET_FIRSTNAME":
+      return { ...state, firstname: action.payload };
+    case "SET_LASTNAME":
+      return { ...state, lastname: action.payload };
+    case "SET_EMAIL":
+      return { ...state, email: action.payload };
+    default:
+      throw new Error("Invalid action type");
+  }
 }

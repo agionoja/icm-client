@@ -1,16 +1,18 @@
 import { AuthContainer } from "../components/auth-container";
-import { BlueButton } from "~/components/button";
 import { Link } from "react-router";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
+import { authRouteConfig } from "~/routes.config";
+import { cn } from "~/lib/utils";
+import { buttonVariants } from "~/components/button";
 
 function Main() {
   return (
     <div className="flex w-full flex-grow flex-col items-center justify-center bg-white">
       <Link
-        className={"flex w-full justify-center"}
+        className={cn(buttonVariants({ size: "authSize" }))}
         to={"/auth/register/options"}
       >
-        <BlueButton className="w-full">Sign Up</BlueButton>
+        Sign Up{" "}
       </Link>
 
       <div className="flex w-full items-center gap-2 px-20 py-2 md:px-32 md:py-4">
@@ -34,7 +36,7 @@ function Main() {
 export default function Welcome() {
   return (
     <>
-      <AuthContainer next={"/auth/register/options"}>
+      <AuthContainer next={authRouteConfig.registerWelcome.getPath}>
         <div className="flex h-full w-full flex-col items-center gap-4 md:gap-8">
           <AuthHeading
             heading={"Welcome to ICM Tech"}

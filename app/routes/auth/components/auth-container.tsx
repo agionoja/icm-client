@@ -5,6 +5,7 @@ import {
 } from "react";
 import { Link, useNavigate } from "react-router";
 import { ArrowLeft, ArrowRight } from "~/components/icons";
+import { landingRouteConfig } from "~/routes.config";
 
 type Props = {
   previous?: string;
@@ -22,10 +23,10 @@ export function AuthContainer({
   childrenContainerProps: { className, ...rest } = {},
 }: Props) {
   return (
-    <div className="min:h-[40rem] flex w-full flex-col justify-between gap-8 rounded-4xl bg-white py-10 shadow-lg lg:min-h-[54rem] lg:max-w-[50%] 2xl:max-w-[35%]">
+    <div className="flex min-h-[40rem] w-full shrink-0 grow flex-col justify-between gap-8 rounded-4xl bg-white py-10 shadow-lg lg:min-h-[50rem] lg:max-w-[45%] 2xl:max-w-[35%]">
       <Header next={next} previous={previous} nextBtnProps={nextBtnProps} />
       <main
-        className={`flex flex-col gap-8 px-4 lg:px-10 ${className}`}
+        className={`flex flex-col gap-8 px-4 lg:gap-12 lg:px-10 ${className}`}
         {...rest}
       >
         {children}
@@ -35,42 +36,36 @@ export function AuthContainer({
   );
 }
 
-function Footer() {
-  return (
-    <footer className={"flex flex-col gap-3 pt-3"}>
-      <nav className="auth-container-px mx-auto">
-        <ul className="flex list-inside list-disc gap-4 text-[10px] md:text-lg">
-          <li className="">
-            <Link prefetch={"intent"} className="font-bold" to={"/"}>
-              Home
+const Footer = () => (
+  <footer className="flex flex-col gap-3 pt-3">
+    <nav className="auth-container-px mx-auto">
+      <ul className="flex list-inside list-disc gap-4 text-sm md:text-md">
+        {[
+          { to: landingRouteConfig.home.getPath, label: "Home" },
+          { to: landingRouteConfig.services.getPath, label: "Services" },
+          { to: landingRouteConfig.contact.getPath, label: "Contact" },
+        ].map(({ to, label }) => (
+          <li key={to}>
+            <Link prefetch="intent" className="font-bold" to={to}>
+              {label}
             </Link>
           </li>
-          <li>
-            <Link prefetch={"intent"} className="font-bold" to={"/services"}>
-              Services
-            </Link>
-          </li>
-          <li>
-            <Link prefetch={"intent"} className="font-bold" to={"/contact"}>
-              Contact
-            </Link>
-          </li>
-        </ul>
-      </nav>
-      <div className="h-0.5 bg-gray-200" />
-      <p className="auth-container-px pt-3 text-center text-[7.5px] md:text-sm">
-        By continuing, you agree to ICM Tech&#39;s{" "}
-        <Link to={"/terms"} className={"inline text-primary underline"}>
-          Terms of Use.
-        </Link>{" "}
-        Read{" "}
-        <Link to={"/privacy"} className={"inline text-primary underline"}>
-          Privacy Policy
-        </Link>
-      </p>
-    </footer>
-  );
-}
+        ))}
+      </ul>
+    </nav>
+    <div className="h-0.5 bg-gray-200" />
+    <p className="auth-container-px pt-3 text-center text-xs md:text-md">
+      By continuing, you agree to ICM Tech&#39;s{" "}
+      <Link to="/terms" className="inline text-primary underline">
+        Terms of Use.
+      </Link>{" "}
+      Read{" "}
+      <Link to="/privacy" className="inline text-primary underline">
+        Privacy Policy
+      </Link>
+    </p>
+  </footer>
+);
 
 function Header({
   next,
@@ -87,7 +82,7 @@ function Header({
           </button>
         )}
         <h1
-          className={`${!next || !previous ? "basis-full" : ""} text-center text-xs font-bold md:text-xl`}
+          className={`${!next || !previous ? "basis-full" : ""} text-center text-sm font-bold md:text-lg`}
         >
           Continue to ICM Tech
         </h1>

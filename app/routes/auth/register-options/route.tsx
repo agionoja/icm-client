@@ -1,8 +1,9 @@
 import { Link } from "react-router";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import { AuthHeading } from "~/routes/auth/components/auth-heading";
-import { SilverBorderButton } from "~/components/button";
 import { Email, Facebook, Google } from "~/components/icons";
+import { Button, buttonVariants } from "~/components/button";
+import { cn } from "~/lib/utils";
+import { AuthHeading } from "~/routes/auth/components/auth-heading";
 
 export default function Route() {
   return (
@@ -15,8 +16,10 @@ export default function Route() {
         }}
       >
         <AuthHeading
-          heading={"Sign up in seconds"}
-          text={"Use your email or another service to continue with ICM Tech"}
+          text={"Sign up in seconds"}
+          heading={
+            "Use your email or another service to continue with ICM Tech"
+          }
         />
         <Options />
       </AuthContainer>
@@ -27,34 +30,20 @@ export default function Route() {
 function Options() {
   return (
     <div className={"flex w-full flex-col items-center justify-center gap-4"}>
-      <SilverBorderButton
-        className={"flex shrink-0 grow items-center justify-center gap-4"}
-      >
+      <Button variant={"ghost"} size={"authSize"}>
         <Google size={20} />
-        <span className={"text-[7.5px] font-bold md:text-sm"}>
-          Continue with Google
-        </span>
-      </SilverBorderButton>
-      <SilverBorderButton
-        className={"flex shrink-0 grow items-center justify-center gap-4"}
-      >
+        <span className={""}>Continue with Google</span>
+      </Button>
+      <Button size={"authSize"} variant={"ghost"}>
         <Facebook fill={"blue"} size={20} />
-        <span className={"text-[7.5px] font-bold md:text-sm"}>
-          Continue with Facebook
-        </span>
-      </SilverBorderButton>
+        <span>Continue with Facebook</span>
+      </Button>
       <Link
         to={"/auth/register/email"}
-        className={"flex w-full items-center justify-center"}
+        className={cn(buttonVariants({ variant: "ghost", size: "authSize" }))}
       >
-        <SilverBorderButton
-          className={"flex shrink-0 grow items-center justify-center gap-4"}
-        >
-          <Email size={20} />
-          <span className={"text-[7.5px] font-bold md:text-sm"}>
-            Continue with Email
-          </span>
-        </SilverBorderButton>
+        <Email size={20} />
+        <span>Continue with Email</span>
       </Link>
     </div>
   );

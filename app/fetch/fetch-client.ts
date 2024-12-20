@@ -21,11 +21,8 @@ type Headers = {
 export type FetchOptions<
   TReturnType,
   Key extends string,
-  TQueryType = TReturnType
-> = Omit<
-  RequestInit,
-  "method" | "headers"
-> & {
+  TQueryType = TReturnType,
+> = Omit<RequestInit, "method" | "headers"> & {
   method?: Method;
   headers?: Headers;
   isFormData?: boolean;
@@ -148,7 +145,9 @@ export async function fetchClient<
     const transformedResponse = {
       ...jsonResponse,
       data: {
-        [responseKey]: jsonResponse.data[Object.keys(jsonResponse.data)[0]],
+        [responseKey]: jsonResponse.data
+          ? jsonResponse.data[Object.keys(jsonResponse.data)[0]]
+          : null,
       },
     };
 

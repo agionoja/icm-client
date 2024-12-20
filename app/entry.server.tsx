@@ -12,10 +12,10 @@ import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 
-const ABORT_DELAY = 10_000;
+const ABORT_DELAY = 20_000;
 
 //This is the timeout for awaited promises on client components
-export const streamTimeout = 9_500;
+export const streamTimeout = 19_500;
 
 export default function handleRequest(
   request: Request,

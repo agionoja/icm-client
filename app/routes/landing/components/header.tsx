@@ -1,6 +1,6 @@
-import logo from "~/assets/logos/SVG/Primary Logo - Full Color.svg";
+import logo from "~/assets/logos/svg/primary-logo-full-color.svg";
 import { Link, NavLink } from "react-router";
-import { BlueButton } from "~/components/button";
+import { BlueButton } from "~/components/_button";
 import { useState } from "react";
 import { Close, Hamburger } from "~/components/icons";
 

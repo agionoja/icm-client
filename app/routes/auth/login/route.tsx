@@ -6,16 +6,17 @@ import {
   useSearchParams,
 } from "react-router";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import { BlueButton, SilverBorderButton } from "~/components/button";
 import { Facebook, Google } from "~/components/icons";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { Input } from "~/routes/auth/register-email/input";
 import { AuthForm } from "~/routes/auth/components/auth-form";
 import { timeoutSession } from "~/toast/timeout-toast";
 import { getFlashSession } from "~/utils/flash-message";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { login } from "~/routes/auth/login/queries";
+import { Button } from "~/components/button";
+import { Input } from "~/components/input";
+import { Label } from "~/components/label";
 
 export const meta: MetaFunction = () => {
   return [{ title: "ICM Tech Login" }];
@@ -100,17 +101,20 @@ export default function Login({
               {flash}
             </span>
           )}
-          <Input
-            ref={emailRef}
-            autoComplete={"email"}
-            required
-            aria-invalid={isAuthError}
-            aria-labelledby={authErrorMsg}
-            placeholder={"Email"}
-            type={"email"}
-            name={"email"}
-          />
-          <label className={"flex w-full justify-center"}>
+          <Label className={"w-full"}>
+            <span className={"sr-only"}>Email</span>
+            <Input
+              ref={emailRef}
+              autoComplete={"email"}
+              required
+              aria-invalid={isAuthError}
+              aria-labelledby={authErrorMsg}
+              placeholder={"Email"}
+              type={"email"}
+              name={"email"}
+            />
+          </Label>
+          <Label className={"w-full"}>
             <span className={"sr-only"}>Password</span>
             <Input
               required
@@ -122,32 +126,34 @@ export default function Login({
               type={"password"}
               name={"password"}
             />
-          </label>
-          <BlueButton
+          </Label>
+          <Button
             disabled={isLoggingIn}
             name={"_action"}
             value={"login"}
             type={"submit"}
-            className={`${isLoggingIn ? "cursor-not-allowed" : ""}`}
+            className={`${isLoggingIn ? "cursor-not-allowed" : ""} w-full`}
           >
             {isLoggingIn ? "Logging in..." : "Login"}
-          </BlueButton>
-          <SilverBorderButton
+          </Button>
+          <Button
+            variant={"ghost"}
             name={"_action"}
             value={"google"}
-            className={"flex shrink-0 grow items-center justify-center gap-4"}
+            className={"w-full"}
           >
             <Google size={20} />
             <span className={"font-medium"}>Continue with Google</span>
-          </SilverBorderButton>
-          <SilverBorderButton
+          </Button>
+          <Button
+            variant={"ghost"}
             name={"_action"}
             value={"facebook"}
-            className={"flex shrink-0 grow items-center justify-center gap-4"}
+            className={"w-full"}
           >
             <Facebook fill={"blue"} size={20} />
             <span className={"font-medium"}>Continue with Facebook</span>
-          </SilverBorderButton>
+          </Button>
         </AuthForm>
       </AuthContainer>
     </>

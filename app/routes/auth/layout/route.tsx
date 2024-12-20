@@ -1,5 +1,5 @@
 import { Link, Outlet, redirect } from "react-router";
-import logo from "~/assets/logos/SVG/Primary Logo - Full Color.svg";
+import logo from "~/assets/logos/svg/primary-logo-full-color.svg";
 import type { Route } from "./+types/route";
 import { getRole, getToken, hasSession, RoleRedirects } from "~/session";
 import { Role } from "icm-shared";
@@ -8,7 +8,7 @@ export default function AuthLayout() {
   return (
     <div
       className={
-        "ld:py-20 flex h-screen min-h-[900px] items-center justify-center bg-white bg-auth-pattern-mobile bg-contain bg-top bg-no-repeat px-4 text-black md:bg-auth-pattern-desktop lg:px-28"
+        "ld:py-20 flex h-screen items-center justify-center bg-white bg-auth-pattern-mobile bg-contain bg-top bg-no-repeat px-4 text-black md:bg-auth-pattern-desktop lg:px-28"
       }
     >
       <div

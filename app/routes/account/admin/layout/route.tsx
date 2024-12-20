@@ -7,7 +7,7 @@ import { type IIcmUser, type IQueryBuilder, Role } from "icm-shared";
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await getUserDataCookie(request);
   if (!user) return { user };
-  await restrictTo(user, Role.ADMIN, Role.USER);
+  await restrictTo(user, Role.ADMIN, Role.SUER_ADMIN);
 
   const queryBuilder: IQueryBuilder<IIcmUser> = {
     filter: {
