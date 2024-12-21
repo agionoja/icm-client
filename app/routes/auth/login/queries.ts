@@ -1,8 +1,9 @@
-import { fetchClient } from "~/fetch/fetch-client";
+import { fetchClient } from "~/fetch/fetch-client.server";
 import { data } from "react-router";
-import type { IUser } from "icm-shared";
+import type { SerializedUser } from "icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
 import { createSession, RoleRedirects } from "~/session";
+import { destroyUserDataCookie } from "~/cookies/user-cookie";
 
 type LoginArgs = {
   email: string | FormDataEntryValue;
@@ -27,7 +28,7 @@ export async function login(
     data: profile,
     exception: profileException,
     message: profileMessage,
-  } = await fetchClient<IUser, "user">("/auth/profile", {
+  } = await fetchClient<SerializedUser, "user">("/auth/profile", {
     responseKey: "user",
     token: userToken?.accessToken,
   });
@@ -51,12 +52,19 @@ export async function login(
 
   const token = userToken?.accessToken;
 
-  return createSession({
-    role: profile.user.role,
-    request,
-    token,
-    remember: true,
-    message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
-    redirectTo: redirectUrl,
-  });
+  return createSession(
+    {
+      role: profile.user.role,
+      request,
+      token,
+      remember: true,
+      message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
+      redirectTo: redirectUrl,
+    },
+    {
+      headers: {
+        "Set-Cookie": await destroyUserDataCookie(),
+      },
+    },
+  );
 }

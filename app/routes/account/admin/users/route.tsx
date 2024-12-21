@@ -1,10 +1,10 @@
 import {
   checkForClass,
-  type IGoogleUser,
-  type IIcmUser,
+  type SerializedGoogleUser,
+  type SerializedUser,
   UserDiscriminator,
 } from "icm-shared";
-import { fetchClient } from "~/fetch/fetch-client";
+import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
 import type { Route } from "./+types/route";
 import { ProgressMonitor } from "~/fetch/progess";
 import { getToken } from "~/session";
@@ -12,7 +12,12 @@ import { getToken } from "~/session";
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const [usersRes, userRes, profile] = await Promise.all([
-    fetchClient<IGoogleUser | IIcmUser, "users", IGoogleUser|IIcmUser, true>("/users", {
+    fetchClient<
+      SerializedGoogleUser | SerializedUser,
+      "users",
+      SerializedGoogleUser | SerializedUser,
+      Paginated
+    >("/users", {
       responseKey: "users",
       token: token,
       query: {
@@ -22,7 +27,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           // __t: UserDiscriminator.ICM,
         },
         sort: ["email", "-createdAt"],
-        search: { lastname: "PAU", },
+        search: { lastname: "PAU" },
         select: ["id"],
       },
       progressArgs: {
@@ -46,17 +51,20 @@ export async function loader({ request }: Route.LoaderArgs) {
         turnOff: true,
       },
     }),
-    fetchClient<IGoogleUser | IIcmUser, "user">(
+    fetchClient<SerializedGoogleUser | SerializedUser, "user">(
       "/users/674491c78674b85bb5947cc1",
       {
         responseKey: "user",
         token: token,
       },
     ),
-    fetchClient<IGoogleUser | IIcmUser, "profile">("/auth/profile", {
-      responseKey: "profile",
-      token: token,
-    }),
+    fetchClient<SerializedGoogleUser | SerializedUser, "profile">(
+      "/auth/profile",
+      {
+        responseKey: "profile",
+        token: token,
+      },
+    ),
   ]);
 
   // console.dir({ userRes, profile, usersRes }, { depth: null });
@@ -67,7 +75,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       status: usersRes.exception?.statusCode || userRes.exception?.statusCode,
     });
   }
-  if (checkForClass<string, IGoogleUser>(userRes.data?.user, UserDiscriminator.GOOGLE)) {
+  if (
+    checkForClass<SerializedGoogleUser>(
+      userRes.data?.user,
+      UserDiscriminator.GOOGLE,
+    )
+  ) {
     console.log(userRes.data.user.googleId);
   }
 

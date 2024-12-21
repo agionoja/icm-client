@@ -1,5 +1,5 @@
 import type { CookieOptions } from "react-router";
-import { envConfig } from "~/env-config";
+import { envConfig } from "~/env-config.server";
 
 export const baseCookieOptions: CookieOptions = {
   httpOnly: true,

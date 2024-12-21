@@ -1,18 +1,15 @@
-import { fetchClient } from "~/fetch/fetch-client";
-import type { IUser } from "icm-shared";
+import { fetchClient } from "~/fetch/fetch-client.server";
+import type { SerializedUser } from "icm-shared";
 
-export async function checkUser(
-  email: string ,
-  phone: string ,
-) {
+export async function checkUser(email: string, phone: string) {
   const [findByEmail, findByPhone] = await Promise.all([
-    fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
+    fetchClient<boolean, "isExists", SerializedUser>("/auth/check-user", {
       responseKey: "isExists",
-      query: { filter: {email} },
+      query: { filter: { email } },
     }),
-    fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
+    fetchClient<boolean, "isExists", SerializedUser>("/auth/check-user", {
       responseKey: "isExists",
-      query: { filter: {phone} },
+      query: { filter: { phone } },
     }),
   ]);
 

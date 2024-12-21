@@ -1,36 +1,35 @@
 import type { Route } from "./+types/route";
-import { restrictTo } from "~/session";
+import { getToken, restrictTo } from "~/session";
 import { Outlet } from "react-router";
 import { getUserDataCookie } from "~/cookies/user-cookie";
-import { type IIcmUser, type IQueryBuilder, Role } from "icm-shared";
+import { Role, type SerializedUser } from "icm-shared";
+import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await getUserDataCookie(request);
+  const token = await getToken(request);
   if (!user) return { user };
   await restrictTo(user, Role.ADMIN, Role.SUER_ADMIN);
 
-  const queryBuilder: IQueryBuilder<IIcmUser> = {
-    filter: {
-      emailChangedAt: { gt: new Date() },
-      role: Role.USER,
-      _id: "",
-      isVerified: { exists: true },
-      updatedAt: { gt: new Date() },
-      createdAt: { lt: new Date() },
+  const response = await fetchClient<
+    SerializedUser,
+    "users",
+    SerializedUser,
+    Paginated
+  >("/users/icm", {
+    responseKey: "users",
+    token,
+    query: {
+      paginate: { limit: 1, page: 1 },
+      countFilter: { isActive: true, isVerified: true },
+      filter: {
+        isVerified: true,
+        isActive: true,
+      },
     },
-    search: {
-      role: Role.SUER_ADMIN,
-      lastname: "Divine",
-      firstname: "Paul",
-    },
-    paginate: {
-      page: 10,
-      limit: 5,
-    },
-    select: ["email", "+password", "_id"],
-    sort: ["firstname", "lastname"],
-  };
-  console.dir(queryBuilder, { depth: null });
+  });
+
+  console.log(response);
   return { user };
 }
 

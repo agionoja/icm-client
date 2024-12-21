@@ -1,4 +1,4 @@
-import type { Method } from "~/fetch/fetch-client";
+import type { Method } from "~/fetch/fetch-client.server";
 
 export const logger = {
   colors: {

@@ -1,5 +1,5 @@
 import type { Register } from "~/cookies/registration-multi-step-form";
-import { fetchClient } from "~/fetch/fetch-client";
+import { fetchClient } from "~/fetch/fetch-client.server";
 
 export async function register(registerDto: Register) {
   return await fetchClient("/auth/register", {
