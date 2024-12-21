@@ -239,7 +239,7 @@ export const RoutesConfig = {
   resources: {
     prefix: "resources",
     spinServer: defineRoute({
-      path: "spin-server",
+      path: "resources/spin-server",
       file: paths.resources("spin-server", "ts"),
     }),
   },
