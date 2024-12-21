@@ -4,8 +4,8 @@ import {
   type PhoneInputRefType,
 } from "react-international-phone";
 import { useEffect, useRef, useState } from "react";
-import { isValidPhoneNumber } from "libphonenumber-js";
 import { useFetcher } from "react-router";
+import validator from "validator";
 
 export function PhoneInput({
   className,
@@ -24,7 +24,7 @@ export function PhoneInput({
 
   const validatePhone = (phone: string) => {
     if (phoneInputRef.current) {
-      if (!isValidPhoneNumber(phone)) {
+      if (!validator.isMobilePhone(phone, ["en-NG"])) {
         phoneInputRef.current.setCustomValidity("Invalid phone number");
       } else {
         phoneInputRef.current.setCustomValidity("");
@@ -37,7 +37,7 @@ export function PhoneInput({
       try {
         const formData = new FormData();
         formData.append(fetcherName, phone);
-        fetcher.submit(formData, {
+        return fetcher.submit(formData, {
           method: "POST",
           action: fetcherUrl,
         });
@@ -54,7 +54,7 @@ export function PhoneInput({
   const handlePhoneChange = (phone: string) => {
     setPhone(phone);
     if (phone) {
-      submitPhoneToFetcher(phone);
+      return submitPhoneToFetcher(phone);
     }
   };
 

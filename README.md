@@ -54,16 +54,16 @@ To build and run using Docker:
 
 ```bash
 # For npm
-docker build -t my-app .
+sudo docker build -t icm-client .
 
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
+## For pnpm
+#sudo docker build -f Dockerfile.pnpm -t my-app .
+#
+## For bun
+#sudo docker build -f Dockerfile.bun -t my-app .
 
 # Run the container
-docker run -p 3000:3000 my-app
+sudo docker run -p 3030:3030 my-app
 ```
 
 The containerized application can be deployed to any platform that supports Docker, including:

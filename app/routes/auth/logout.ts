@@ -1,8 +1,9 @@
 import type { Route } from "./+types/logout";
-import { getRole, getToken, logout } from "~/session";
+import { getRole, getToken, logout, RoleRedirects } from "~/session";
 import { redirect } from "react-router";
 import { flashMessage } from "~/utils/flash-message";
 import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
+
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
 
@@ -15,8 +16,7 @@ export async function action({ request }: Route.ActionArgs) {
           message: "Your session has timed out. Please log in again.",
           sessionStorage: timeoutSession,
         });
-
-        return logout(request, `/auth/login?${redirectTo ?? ""}`, {
+        return logout(request, String(redirectTo), {
           headers,
         });
       }
@@ -39,6 +39,5 @@ export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   if (!role || !token) return redirect("/");
 
-  const redirectTo = role === "USER" ? "/user/dashboard" : "/admin/dashboard";
-  return redirect(redirectTo);
+  return redirect(RoleRedirects[role]);
 }

@@ -1,10 +1,16 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
-import { type IFacebookUser, type IGoogleUser, type IIcmUser, type IUser, Role } from "icm-shared";
+import { Role, type SerializedUser } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
-import { fetchClient } from "~/fetch/fetch-client";
+import { fetchClient } from "~/fetch/fetch-client.server";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
+import {
+  adminRouteConfig,
+  authRouteConfig,
+  userRouteConfig,
+} from "~/routes.config";
+import { undefined } from "zod";
 
 type SessionData = {
   token: string;
@@ -21,8 +27,8 @@ type CreateSession = {
 };
 
 export const RoleRedirects = {
-  [Role.ADMIN]: "/admin/dashboard",
-  [Role.USER]: "/user/dashboard",
+  [Role.ADMIN]: adminRouteConfig.dashboard.generate(),
+  [Role.USER]: userRouteConfig.dashboard.generate(),
   [Role.SUER_ADMIN]: "/super-admin/dashboard",
 };
 
@@ -113,8 +119,10 @@ export async function createSession(
   const maxAge = await getNestjsSessionMaxAgeInSeconds(token);
 
   const newHeaders = new Headers(init?.headers);
+
   newHeaders.append(
     "Set-Cookie",
+    //@ts-ignore
     await commitSession(session, { maxAge: remember ? maxAge : undefined }),
   );
 
@@ -136,13 +144,11 @@ export async function requireUser(
   request: Request,
   redirectTo: string = new URL(request.url).pathname,
 ) {
-  const searchParams = new URLSearchParams([["redirect", redirectTo]]);
   const genericMsg = "Authorization required. Please log in and try again.";
-
-  const redirectUrl =
-    redirectTo && redirectTo !== "/"
-      ? `/auth/login?${searchParams}`
-      : "/auth/login";
+  const redirectUrl = authRouteConfig.login.generate(
+    {},
+    { redirect: `/${redirectTo}` },
+  );
 
   if (!(await hasSession(request))) {
     throw await redirectWithError(redirectUrl, genericMsg);
@@ -150,28 +156,27 @@ export async function requireUser(
 
   const token = await getToken(request);
 
-  const { exception, data } = await fetchClient<IIcmUser | IGoogleUser|IFacebookUser, "user">(
-    "/auth/profile",
-    {
-      responseKey: "user",
-      token,
-    },
-  );
+  const response = await fetchClient<SerializedUser, "user">("/auth/profile", {
+    responseKey: "user",
+    token,
+  });
 
-  if (exception) {
-    if (exception.statusCode === 401) {
-      throw await redirectWithError(redirectUrl, exception.message, {
+  if (response.exception) {
+    if (response.exception.statusCode === 401) {
+      throw await redirectWithError(redirectUrl, response.exception.message, {
         headers: {
           "Set-Cookie": await destroySession(await getUserSession(request)),
         },
       });
     }
-    throw await redirectWithError(redirectUrl, exception.message);
+    throw await redirectWithError(redirectUrl, response.exception.message, {
+      headers: {
+        "Set-Cookie": await destroySession(await getUserSession(request)),
+      },
+    });
   }
 
-  if (!data?.user) throw await redirectWithError(redirectUrl, genericMsg);
-
-  return data?.user;
+  return response.data.user;
 }
 
 /**
@@ -181,7 +186,7 @@ export async function requireUser(
  * @param roles - An array of roles allowed to access the resource.
  * @throws Redirects to the appropriate dashboard if the user does not have the required role.
  */
-export async function restrictTo(user: IUser, ...roles: Role[]) {
+export async function restrictTo(user: SerializedUser, ...roles: Role[]) {
   if (!roles.includes(user.role)) {
     throw await redirectWithError(
       RoleRedirects[user.role],
@@ -200,7 +205,7 @@ export async function restrictTo(user: IUser, ...roles: Role[]) {
  */
 export async function logout(
   request: Request,
-  redirectTo = "/auth/login",
+  redirectTo = authRouteConfig.login.generate(),
   init?: ResponseInit,
 ) {
   const headers = new Headers(init?.headers);
