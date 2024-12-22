@@ -8,8 +8,10 @@ import { authRouteConfig } from "~/routes.config";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await requireUser(request);
+  const cookieUser = await getUserDataCookie(request);
+  const isModified = !(JSON.stringify(user) === JSON.stringify(cookieUser));
 
-  if (!(await getUserDataCookie(request))) {
+  if (!cookieUser || isModified) {
     const cookie = await setUserDataCookie(user, request);
     throw redirect(request.url, { headers: { "Set-Cookie": cookie } });
   }
