@@ -18,19 +18,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 100, page: 1 },
+        paginate: { limit: 5, page: 1 },
         countFilter: { isActive: { exists: true } },
         ignoreFilterFlags: ["isActive"],
-        filter: { emailChangedAt: { exists: true } },
-
-        // select: [
-        //   "firstname",
-        //   "lastname",
-        //   "+isActive",
-        //   // "+password",
-        //   "+isVerified",
-        //   "role",
-        // ],
+        search: { firstname: "ron" },
       },
     },
   );
@@ -38,14 +29,14 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (!response.exception) {
     const users = response.data.users;
     const meta = response.metadata;
-    console.log(meta, users.length, users[0]);
+    // console.log(meta, users.length, users[0]);
   }
 
-  console.log(response.exception);
+  // console.log(response.exception);
   return { user };
 }
 
-export default function DashboardLayout() {
+export default function Layout() {
   return (
     <>
       <Outlet />

@@ -26,7 +26,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Layout({ loaderData }: Route.ComponentProps) {
-  const { sessionTimeout, sessionTimeoutKey, pathname } = loaderData; // Destructure loader data
+  const { sessionTimeout, sessionTimeoutKey, pathname } = loaderData;
   const submit = useSubmit();
 
   useSessionTimeout(sessionTimeout, () => {
@@ -35,7 +35,7 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
         [sessionTimeoutKey]: sessionTimeoutKey,
         redirectTo: authRouteConfig.login.generate({}, { redirect: pathname }),
       },
-      { method: "POST", action: authRouteConfig.logout.generate() },
+      { method: "POST", action: authRouteConfig.logout.getPath },
     );
   });
 

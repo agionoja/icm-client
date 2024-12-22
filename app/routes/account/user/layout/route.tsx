@@ -12,7 +12,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return { user };
 }
-export default function DashboardLayout() {
+export default function Layout() {
   return (
     <>
       <Outlet />
