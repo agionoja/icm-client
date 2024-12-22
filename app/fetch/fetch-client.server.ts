@@ -5,7 +5,6 @@ import type {
   IQueryBuilder,
   IApiException,
 } from "icm-shared";
-// import { envConfigCamelCase } from "~/env-config.server";
 import qs from "qs";
 import { logger } from "~/fetch/logger";
 import { type ProgressArgs, ProgressMonitor } from "~/fetch/progess";
@@ -14,103 +13,117 @@ import { type ProgressArgs, ProgressMonitor } from "~/fetch/progess";
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /**
- * Interface to indicate paginated responses at type level.
- * Used as a generic parameter to fetchClient to determine return type.
- * @example
- * ```ts
- * fetchClient<User, "users", User, Paginated>('/users', options)
- * ```
+ * Marker interface for paginated responses.
+ * Ensures type safety for methods dealing with pagination.
  */
 export interface Paginated {
   readonly __isPaginated: true;
 }
 
 /**
- * Interface to indicate non-paginated responses at type level.
- * This is the default type parameter for fetchClient.
- * @example
- * ```ts
- * fetchClient<User, "user", User>('/users/1', options)
- * ```
+ * Marker interface for non-paginated responses.
+ * Ensures type safety for methods not dealing with pagination.
  */
 export interface NonPaginated {
   readonly __isPaginated: false;
 }
 
-/** Custom headers type extending standard headers with auth and content type */
+/**
+ * Headers object type for HTTP requests.
+ * Includes optional `Content-Type` and `Authorization` headers,
+ * and allows custom headers via a string key-value map.
+ */
 type Headers = {
   "Content-Type"?: FormEncType;
   Authorization?: `Bearer ${string}` | "";
 } & { [key: string]: string };
 
 /**
- * Options for the fetch client request
- * @template TReturnType - The type of data being returned
- * @template Key - The key in the response object where the data is located
- * @template TQueryType - The type of query parameters (defaults to TReturnType)
+ * Options for the fetch client.
+ *
+ * @template TReturnType - The expected return type of the response.
+ * @template Key - The key used to extract the main data object from the response.
+ * @template TQueryType - The type of data used for query generation.
  */
 export type FetchOptions<
   TReturnType,
   Key extends string,
   TQueryType = TReturnType,
 > = Omit<RequestInit, "method" | "headers"> & {
-  /** HTTP method for the request */
+  /** HTTP method (e.g., GET, POST) */
   method?: Method;
-  /** Custom headers to include in the request */
+  /** Headers for the request */
   headers?: Headers;
   /** Whether the request contains FormData */
   isFormData?: boolean;
-  /** Query parameters builder for the request */
+  /** Query builder for filtering, sorting, and pagination */
   query?: IQueryBuilder<TQueryType>;
-  /** Authentication token */
+  /** Authorization token for the request */
   token?: string;
-  /** Whether the response includes metadata */
+  /** Flag to include metadata in the response */
   hasMetadata?: boolean;
-  /** Key in the response object where the data is located */
+  /** Key to extract the primary data from the response */
   responseKey: Key;
-  /** Progress monitoring configuration */
+  /** Options for monitoring progress of the request */
   progressArgs?: Omit<ProgressArgs, "contentLength"> & { turnOff?: boolean };
 };
 
 /**
- * Generic fetch client for making HTTP requests with type-safe responses
+ * Universal date reviver that handles multiple date string formats.
+ * Converts:
+ * - ISO dates (e.g., "2024-12-07T07:04:56.654Z")
+ * - .NET dates (e.g., "/Date(1234567890)/")
+ * - ISO-like dates (e.g., "2024-12-07" or "2024-12-07T07:04:56")
  *
- * @template TReturnType - The type of data being returned
- * @template Key - The key in the response object where the data is located
- * @template TQueryType - The type of query parameters (defaults to TReturnType)
- * @template TPagination - Controls whether the response is paginated (defaults to NonPaginated)
+ * @param _key - The key of the JSON property being parsed.
+ * @param value - The value of the JSON property.
+ * @returns The parsed value, with strings converted to `Date` where applicable.
+ */
+export function dateReviver(_key: string, value: any): any {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const msDatePattern = /^\/Date\((\d+)\)\/$/;
+  const msMatch = msDatePattern.exec(value);
+  if (msMatch) {
+    return new Date(+msMatch[1]);
+  }
+
+  const isoPattern =
+    /^(\d{4}-\d{2}-\d{2})(T(\d{2}:?\d{2}:?\d{2})(.\d{1,3})?Z?)?$/;
+  const isoMatch = isoPattern.exec(value);
+  if (isoMatch) {
+    const parsedDate = new Date(value);
+    return isNaN(parsedDate.getTime()) ? value : parsedDate;
+  }
+
+  return value;
+}
+
+/**
+ * Helper function to parse JSON with the `dateReviver` function.
  *
- * @param endpoint - The API endpoint to call (must start with '/')
- * @param options - Configuration options for the request
+ * @param response - The `Response` object from a fetch request.
+ * @returns The parsed JSON object, with dates revived.
+ */
+async function parseJsonWithDates(response: Response): Promise<any> {
+  const text = await response.text();
+  return JSON.parse(text, dateReviver);
+}
+
+/**
+ * Fetch client that handles API requests with support for query builders,
+ * token-based authentication, progress monitoring, and response transformation.
  *
- * @returns Promise resolving to either ApiResponseMany or ApiResponseOne based on TPagination
+ * @template TReturnType - The expected type of the data in the response.
+ * @template Key - The key used to extract the primary data from the response.
+ * @template TQueryType - The type of data used for query generation.
+ * @template TPagination - Indicates whether the response is paginated or not.
  *
- * @throws {Error} When responseKey is not provided
- *
- * @example
- * ```typescript
- * // Fetch a single user
- * const response = await fetchClient<User, "user">('/users/1', {
- *   responseKey: 'user'
- * });
- *
- * // Fetch paginated users
- * const users = await fetchClient<User, "users", User, Paginated>('/users', {
- *   responseKey: 'users',
- *   query: { page: 1, limit: 10 }
- * });
- *
- * // Post form data
- * const result = await fetchClient<UploadResult, "result">('/upload', {
- *   method: 'POST',
- *   isFormData: true,
- *   responseKey: 'result',
- *   body: formData,
- *   progressArgs: {
- *     onProgress: (progress) => console.log(progress)
- *   }
- * });
- * ```
+ * @param endpoint - The API endpoint to fetch (e.g., `/users`).
+ * @param options - Configuration options for the fetch request.
+ * @returns The parsed API response, either as paginated or non-paginated data.
  */
 export async function fetchClient<
   TReturnType,
@@ -175,15 +188,17 @@ export async function fetchClient<
         responseSize,
       );
 
-      const error: IApiException = await response.json().catch(() => ({
-        message: "Unexpected error",
-        statusCode: response.status,
-        status: response.statusText,
-        error: "FetchError",
-        timestamp: new Date().toISOString(),
-        path: endpoint,
-        errors: null,
-      }));
+      const error: IApiException = await parseJsonWithDates(response).catch(
+        () => ({
+          message: "Unexpected error",
+          statusCode: response.status,
+          status: response.statusText,
+          error: "FetchError",
+          timestamp: new Date().toISOString(),
+          path: endpoint,
+          errors: null,
+        }),
+      );
       return { exception: error, data: null, message: null };
     }
 
@@ -208,8 +223,8 @@ export async function fetchClient<
     }
 
     const jsonResponse = await (responseBody
-      ? new Response(responseBody).json()
-      : response.json());
+      ? parseJsonWithDates(new Response(responseBody))
+      : parseJsonWithDates(response));
 
     const transformedResponse = {
       ...jsonResponse,
@@ -242,39 +257,4 @@ export async function fetchClient<
       message: null,
     };
   }
-}
-
-/**
- * Universal date reviver that handles multiple date string formats
- * - ISO dates: "2024-12-07T07:04:56.654Z"
- * - .NET dates: "/Date(1234567890)/"
- * - ISO-like dates: "2024-12-07" or "2024-12-07T07:04:56"
- */
-export function dateReviver(_key: string, value: any): any {
-  if (typeof value !== "string") {
-    return value;
-  }
-
-  // Handle .NET dates "/Date(1234567890)/"
-  const msDatePattern = /^\/Date\((\d+)\)\/$/;
-  const msMatch = msDatePattern.exec(value);
-  if (msMatch) {
-    return new Date(+msMatch[1]);
-  }
-
-  // Handle ISO 8601 and similar formats
-  // Matches dates like:
-  // 2024-12-07T07:04:56.654Z
-  // 2024-12-07T07:04:56Z
-  // 2024-12-07T07:04:56
-  // 2024-12-07
-  const isoPattern =
-    /^(\d{4}-\d{2}-\d{2})(T(\d{2}:?\d{2}:?\d{2})(.\d{1,3})?Z?)?$/;
-  const isoMatch = isoPattern.exec(value);
-  if (isoMatch) {
-    const parsedDate = new Date(value);
-    return isNaN(parsedDate.getTime()) ? value : parsedDate;
-  }
-
-  return value;
 }

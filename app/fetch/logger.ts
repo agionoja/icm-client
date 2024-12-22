@@ -23,11 +23,17 @@ export const logger = {
   },
 
   formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    if (!bytes) return "0 B";
+
+    if (bytes > 1000000) {
+      return `${(bytes / 1000000).toFixed(2)} MB`;
+    }
+
+    if (bytes > 1000) {
+      return `${(bytes / 1000).toFixed(2)} KB`;
+    }
+
+    return `${bytes} B`;
   },
 
   getTimingColor(duration: number): string {

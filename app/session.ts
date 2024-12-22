@@ -1,7 +1,13 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
-import { Role, type SerializedUser } from "icm-shared";
+import {
+  Role,
+  type IFacebookUser,
+  type IGoogleUser,
+  type IIcmUser,
+  type IUser,
+} from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { fetchClient } from "~/fetch/fetch-client.server";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
@@ -31,6 +37,11 @@ export const RoleRedirects = {
   [Role.USER]: userRouteConfig.dashboard.generate(),
   [Role.SUER_ADMIN]: "/super-admin/dashboard",
 };
+
+const UNAUTHORIZED_ERROR_MESSAGE =
+  "Authorization required. Please log in and try again.";
+const FORBIDDEN_ERROR_MESSAGE =
+  "You do not have permission to access this page";
 
 /**
  * Sets up session storage using cookies, ensuring secure management of session data.
@@ -116,15 +127,14 @@ export async function createSession(
   const session = await getUserSession(request);
   session.set("token", token);
   session.set("role", role);
-  const maxAge = await getNestjsSessionMaxAgeInSeconds(token);
+  const maxAge = remember
+    ? await getNestjsSessionMaxAgeInSeconds(token)
+    : undefined;
 
   const newHeaders = new Headers(init?.headers);
 
-  newHeaders.append(
-    "Set-Cookie",
-    //@ts-ignore
-    await commitSession(session, { maxAge: remember ? maxAge : undefined }),
-  );
+  // @ts-ignore
+  newHeaders.append("Set-Cookie", await commitSession(session, { maxAge }));
 
   return redirectWithSuccess(redirectTo, message, {
     headers: newHeaders,
@@ -144,31 +154,26 @@ export async function requireUser(
   request: Request,
   redirectTo: string = new URL(request.url).pathname,
 ) {
-  const genericMsg = "Authorization required. Please log in and try again.";
   const redirectUrl = authRouteConfig.login.generate(
     {},
     { redirect: `/${redirectTo}` },
   );
 
   if (!(await hasSession(request))) {
-    throw await redirectWithError(redirectUrl, genericMsg);
+    throw await redirectWithError(redirectUrl, UNAUTHORIZED_ERROR_MESSAGE);
   }
 
   const token = await getToken(request);
 
-  const response = await fetchClient<SerializedUser, "user">("/auth/profile", {
+  const response = await fetchClient<
+    IIcmUser | IGoogleUser | IFacebookUser,
+    "user"
+  >("/auth/profile", {
     responseKey: "user",
     token,
   });
 
   if (response.exception) {
-    if (response.exception.statusCode === 401) {
-      throw await redirectWithError(redirectUrl, response.exception.message, {
-        headers: {
-          "Set-Cookie": await destroySession(await getUserSession(request)),
-        },
-      });
-    }
     throw await redirectWithError(redirectUrl, response.exception.message, {
       headers: {
         "Set-Cookie": await destroySession(await getUserSession(request)),
@@ -184,13 +189,13 @@ export async function requireUser(
  *
  * @param user - The user object containing their role.
  * @param roles - An array of roles allowed to access the resource.
- * @throws Redirects to the appropriate dashboard if the user does not have the required role.
+ * @throws Redirects to the appropriate dashboard if the user doesn't have the required role.
  */
-export async function restrictTo(user: SerializedUser, ...roles: Role[]) {
+export async function restrictTo(user: IUser, ...roles: Role[]) {
   if (!roles.includes(user.role)) {
     throw await redirectWithError(
       RoleRedirects[user.role],
-      "You do not have permission to access this page",
+      FORBIDDEN_ERROR_MESSAGE,
     );
   }
 }
