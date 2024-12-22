@@ -1,7 +1,7 @@
 import {
   checkForClass,
-  type SerializedGoogleUser,
-  type SerializedUser,
+  type IGoogleUser,
+  type IUser,
   UserDiscriminator,
 } from "icm-shared";
 import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
@@ -12,59 +12,54 @@ import { getToken } from "~/session";
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const [usersRes, userRes, profile] = await Promise.all([
-    fetchClient<
-      SerializedGoogleUser | SerializedUser,
-      "users",
-      SerializedGoogleUser | SerializedUser,
-      Paginated
-    >("/users", {
-      responseKey: "users",
-      token: token,
-      query: {
-        paginate: { page: 1, limit: 2 },
-        filter: {
-          isVerified: true,
-          // __t: UserDiscriminator.ICM,
+    fetchClient<IGoogleUser | IUser, "users", IGoogleUser | IUser, Paginated>(
+      "/users",
+      {
+        responseKey: "users",
+        token: token,
+        query: {
+          paginate: { page: 1, limit: 2 },
+          filter: {
+            isVerified: true,
+            // __t: UserDiscriminator.ICM,
+          },
+          sort: ["email", "-createdAt"],
+          search: { lastname: "PAU" },
+          select: ["id"],
         },
-        sort: ["email", "-createdAt"],
-        search: { lastname: "PAU" },
-        select: ["id"],
-      },
-      progressArgs: {
-        onProgress: (progress) => {
-          console.log(`Status: ${progress.status}`);
-          console.log(
-            `Downloaded: ${ProgressMonitor.formatBytes(progress.loaded)} of ${ProgressMonitor.formatBytes(progress.total)} (${progress.percent.toFixed(1)}%)`,
-          );
-          if (progress.status === "active") {
+        progressArgs: {
+          onProgress: (progress) => {
+            console.log(`Status: ${progress.status}`);
             console.log(
-              `Speed: ${ProgressMonitor.formatBytes(progress.transferSpeed)}/s`,
-              `ETA: ${ProgressMonitor.formatTime(progress.timeRemaining)}`,
+              `Downloaded: ${ProgressMonitor.formatBytes(progress.loaded)} of ${ProgressMonitor.formatBytes(progress.total)} (${progress.percent.toFixed(1)}%)`,
             );
-          }
-          if (progress.status === "completed") {
-            console.log("Download completed!");
-          }
+            if (progress.status === "active") {
+              console.log(
+                `Speed: ${ProgressMonitor.formatBytes(progress.transferSpeed)}/s`,
+                `ETA: ${ProgressMonitor.formatTime(progress.timeRemaining)}`,
+              );
+            }
+            if (progress.status === "completed") {
+              console.log("Download completed!");
+            }
+          },
+          // throttleSpeed: 1024 * 1024 * 2, // !MB/S,
+          // updateInterval: 10,
+          turnOff: true,
         },
-        // throttleSpeed: 1024 * 1024 * 2, // !MB/S,
-        // updateInterval: 10,
-        turnOff: true,
       },
-    }),
-    fetchClient<SerializedGoogleUser | SerializedUser, "user">(
+    ),
+    fetchClient<IGoogleUser | IUser, "user">(
       "/users/674491c78674b85bb5947cc1",
       {
         responseKey: "user",
         token: token,
       },
     ),
-    fetchClient<SerializedGoogleUser | SerializedUser, "profile">(
-      "/auth/profile",
-      {
-        responseKey: "profile",
-        token: token,
-      },
-    ),
+    fetchClient<IGoogleUser | IUser, "profile">("/auth/profile", {
+      responseKey: "profile",
+      token: token,
+    }),
   ]);
 
   // console.dir({ userRes, profile, usersRes }, { depth: null });
@@ -76,10 +71,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     });
   }
   if (
-    checkForClass<SerializedGoogleUser>(
-      userRes.data?.user,
-      UserDiscriminator.GOOGLE,
-    )
+    checkForClass<IGoogleUser>(userRes.data?.user, UserDiscriminator.GOOGLE)
   ) {
     console.log(userRes.data.user.googleId);
   }

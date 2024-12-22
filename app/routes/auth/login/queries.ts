@@ -1,6 +1,6 @@
 import { fetchClient } from "~/fetch/fetch-client.server";
 import { data } from "react-router";
-import type { SerializedUser } from "icm-shared";
+import type { IUser } from "icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
 import { createSession, RoleRedirects } from "~/session";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
@@ -28,7 +28,7 @@ export async function login(
     data: profile,
     exception: profileException,
     message: profileMessage,
-  } = await fetchClient<SerializedUser, "user">("/auth/profile", {
+  } = await fetchClient<IUser, "user">("/auth/profile", {
     responseKey: "user",
     token: userToken?.accessToken,
   });
