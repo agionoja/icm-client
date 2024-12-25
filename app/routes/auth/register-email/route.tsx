@@ -12,8 +12,8 @@ import { AuthForm } from "~/routes/auth/components/auth-form";
 import { toast } from "react-toastify";
 import { parsePhoneNumberWithError } from "libphonenumber-js";
 import { throttleNetwork } from "~/utils/throttle-network";
-import { Input } from "~/components/input";
-import { Button } from "~/components/button";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 import { authRouteConfig } from "~/routes.config";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
 

@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
 import { Email, Facebook, Google } from "~/components/icons";
-import { Button, buttonVariants } from "~/components/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
 

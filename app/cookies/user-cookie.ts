@@ -1,6 +1,6 @@
 import { createCookie } from "react-router";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
-import { getNestjsSessionMaxAgeInSeconds } from "~/session";
+import { getJwtMaxAgeInSeconds } from "~/session";
 import type { IFacebookUser, IGoogleUser, IUser, IIcmUser } from "icm-shared";
 import { decrypt, encrypt } from "~/utils/crypto";
 
@@ -33,7 +33,7 @@ export async function setUserDataCookie(
   token?: string,
 ): Promise<string> {
   const encrypted = await encrypt(user);
-  const maxAge = await getNestjsSessionMaxAgeInSeconds(token || request);
+  const maxAge = await getJwtMaxAgeInSeconds(token || request);
   return userCookie.serialize(encrypted, {
     maxAge,
   });

@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
 import { authRouteConfig } from "~/routes.config";
 import { cn } from "~/lib/utils";
-import { buttonVariants } from "~/components/button";
+import { buttonVariants } from "~/components/ui/button";
 
 function Main() {
   return (
