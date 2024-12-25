@@ -8,7 +8,7 @@ export default function AuthLayout() {
   return (
     <div
       className={
-        "ld:py-20 flex h-screen items-center justify-center bg-white bg-auth-pattern-mobile bg-contain bg-top bg-no-repeat px-4 text-black md:bg-auth-pattern-desktop lg:px-28"
+        "flex h-svh min-h-[900px] items-center justify-center bg-white bg-auth-pattern-mobile bg-contain bg-top bg-no-repeat px-4 text-black md:bg-auth-pattern-desktop lg:px-28"
       }
     >
       <div

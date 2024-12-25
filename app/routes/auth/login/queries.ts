@@ -33,11 +33,14 @@ export async function login(
     token: userToken?.accessToken,
   });
 
-  if (exception || profileException) {
+  if (exception || profileException || !RoleRedirects[profile.user.role]) {
     return data(
       {
         error: {
-          message: exception?.message || profileException?.message,
+          message:
+            exception?.message ||
+            profileException?.message ||
+            "Something went very wrong.",
           statusCode: exception?.statusCode || exception?.statusCode,
         },
       },
@@ -47,7 +50,7 @@ export async function login(
 
   const redirectUrl = safeRedirect(
     redirectTo,
-    profile?.user ? RoleRedirects[profile.user.role] : "/",
+    profile?.user?.role ? (RoleRedirects[profile.user.role] ?? "/") : "/",
   );
 
   const token = userToken?.accessToken;

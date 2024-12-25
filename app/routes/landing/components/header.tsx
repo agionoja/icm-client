@@ -1,8 +1,8 @@
 import logo from "~/assets/logos/svg/primary-logo-full-color.svg";
 import { Link, NavLink } from "react-router";
-import { BlueButton } from "~/components/_button";
 import { useState } from "react";
 import { Close, Hamburger } from "~/components/icons";
+import { Button } from "~/components/ui/button";
 
 type Props = {
   isLoggedIn: boolean;
@@ -20,7 +20,7 @@ export function Header({ isLoggedIn }: Props) {
         <Nav />
         {!isLoggedIn && (
           <Link className={"hidden md:block"} to="/auth/register/welcome">
-            <BlueButton>Get Started</BlueButton>
+            <Button>Get Started</Button>
           </Link>
         )}
       </header>

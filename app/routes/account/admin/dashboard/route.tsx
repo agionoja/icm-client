@@ -11,7 +11,6 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
   const user = loaderData.user;
   return (
     <>
-      <h1>{user?.firstname} Dashboard</h1>
       <Outlet />
     </>
   );

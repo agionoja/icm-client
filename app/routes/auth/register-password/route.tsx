@@ -1,7 +1,7 @@
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import { Label } from "~/components/label";
-import { Input } from "~/components/input";
-import { Button } from "~/components/button";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 import { AuthForm } from "~/routes/auth/components/auth-form";
 import type { Route } from "./+types/route";
 import { data, redirect, useNavigation, useSubmit } from "react-router";

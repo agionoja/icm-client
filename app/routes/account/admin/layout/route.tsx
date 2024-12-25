@@ -1,16 +1,19 @@
 import type { Route } from "./+types/route";
 import { getToken, restrictTo } from "~/session";
-import { Outlet } from "react-router";
+import { type MetaFunction, Outlet } from "react-router";
 import { getUserDataCookie } from "~/cookies/user-cookie";
 import { type IIcmUser, type IUser, Role } from "icm-shared";
 import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
+
+export const meta: MetaFunction = () => {
+  return [{ title: "ICM Tech Admin Dashboard" }];
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   const user = await getUserDataCookie(request);
   const token = await getToken(request);
   if (!user) return { user };
   await restrictTo(user, Role.ADMIN, Role.SUER_ADMIN);
-
   // console.log(user);
   const response = await fetchClient<IUser, "users", IIcmUser, Paginated>(
     "/users",
@@ -18,19 +21,18 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 100, page: 1 },
-        countFilter: { isActive: { exists: true } },
-        ignoreFilterFlags: ["isActive"],
-        filter: { emailChangedAt: { exists: true } },
+        paginate: {
+          limit: 10,
+          page: 1,
+        },
+        countFilter: {
+          isActive: {
+            exists: true,
+          },
+        },
 
-        // select: [
-        //   "firstname",
-        //   "lastname",
-        //   "+isActive",
-        //   // "+password",
-        //   "+isVerified",
-        //   "role",
-        // ],
+        ignoreFilterFlags: ["isActive"],
+        // search: { firstname: "hoe" },
       },
     },
   );
@@ -41,11 +43,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     console.log(meta, users.length, users[0]);
   }
 
-  console.log(response.exception);
+  // console.log(response.exception);
   return { user };
 }
 
-export default function DashboardLayout() {
+export default function Layout() {
   return (
     <>
       <Outlet />

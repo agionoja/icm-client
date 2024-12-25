@@ -1,7 +1,11 @@
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "~/components/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "~/components/ui/input-otp";
 import { AuthForm } from "~/routes/auth/components/auth-form";
-import { Button } from "~/components/button";
+import { Button } from "~/components/ui/button";
 import { useNavigation } from "react-router";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
 

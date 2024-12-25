@@ -14,9 +14,10 @@ import { timeoutSession } from "~/toast/timeout-toast";
 import { getFlashSession } from "~/utils/flash-message";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { login } from "~/routes/auth/login/queries";
-import { Button } from "~/components/button";
-import { Input } from "~/components/input";
-import { Label } from "~/components/label";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { envConfig } from "~/env-config.server";
 
 export const meta: MetaFunction = () => {
   return [{ title: "ICM Tech Login" }];
@@ -26,7 +27,7 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  await throttleNetwork(0);
+  await throttleNetwork(envConfig.NODE_ENV === "development" ? 2 : 0);
   switch (_action) {
     case "login": {
       return login(request, values.redirect, {
@@ -41,7 +42,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { flash, headers } = await getFlashSession(request, {
     sessionStorage: timeoutSession,
   });
-
   return data({ flash }, { headers });
 }
 

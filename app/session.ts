@@ -127,14 +127,14 @@ export async function createSession(
   const session = await getUserSession(request);
   session.set("token", token);
   session.set("role", role);
-  const maxAge = remember
-    ? await getNestjsSessionMaxAgeInSeconds(token)
-    : undefined;
+  const maxAge = remember ? await getJwtMaxAgeInSeconds(token) : undefined;
 
   const newHeaders = new Headers(init?.headers);
 
-  // @ts-ignore
-  newHeaders.append("Set-Cookie", await commitSession(session, { maxAge }));
+  newHeaders.append(
+    "Set-Cookie",
+    await commitSession(session, { maxAge: maxAge as number }),
+  );
 
   return redirectWithSuccess(redirectTo, message, {
     headers: newHeaders,
@@ -225,6 +225,8 @@ export async function logout(
   });
 }
 
+type RequestOrToken = Request | string;
+
 /**
  * Extracts the payload from a JSON Web Token (JWT) provided as a string or within a request.
  *
@@ -236,7 +238,7 @@ export async function logout(
  * - The token is invalid or absent.
  * - Decoding the token fails.
  */
-export async function getJwtPayload(requestOrToken: Request | string) {
+export async function getJwtPayload(requestOrToken: RequestOrToken) {
   const token =
     typeof requestOrToken === "string"
       ? requestOrToken
@@ -261,10 +263,8 @@ export async function getJwtPayload(requestOrToken: Request | string) {
  * @returns The remaining session duration in milliseconds.
  * - Returns `0` if the token is invalid or has already expired.
  */
-export async function getNestjsSessionMaxAgeInMs(
-  requestOrToken: Request | string,
-) {
-  return (await getNestjsSessionMaxAgeInSeconds(requestOrToken)) * 1000;
+export async function getJwtMaxAgeInMs(requestOrToken: RequestOrToken) {
+  return (await getJwtMaxAgeInSeconds(requestOrToken)) * 1000;
 }
 
 /**
@@ -277,9 +277,7 @@ export async function getNestjsSessionMaxAgeInMs(
  * @returns The remaining session duration in milliseconds.
  * - Returns `0` if the token is invalid or has already expired.
  */
-export async function getNestjsSessionMaxAgeInSeconds(
-  requestOrToken: Request | string,
-) {
+export async function getJwtMaxAgeInSeconds(requestOrToken: RequestOrToken) {
   const jwtPayload = await getJwtPayload(requestOrToken);
   const expire = jwtPayload?.exp ? jwtPayload.exp : 0;
 
@@ -299,9 +297,7 @@ export async function getNestjsSessionMaxAgeInSeconds(
  *
  * Otherwise, returns are `false`.
  */
-export async function hasNestJsSessionExpired(
-  requestOrToken: Request | string,
-) {
+export async function hasJwtExpired(requestOrToken: RequestOrToken) {
   const jwtPayload = await getJwtPayload(requestOrToken);
   const jwtExp = jwtPayload?.exp;
 
