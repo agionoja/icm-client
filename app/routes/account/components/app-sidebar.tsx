@@ -10,9 +10,13 @@ import {
 } from "~/components/ui/sidebar";
 import { UserSidebar } from "~/routes/account/components/user-sidebar";
 import { AdminSidebar } from "~/routes/account/components/admin-sidebar";
-import logo from "~/assets/logos/svg/Logo Mark - White.svg";
-import { Form, Link } from "react-router";
-import { authRouteConfig, landingRouteConfig } from "~/routes.config";
+import logo from "~/assets/logos/svg/logo-mark-white.svg";
+import { Form, Link, useLocation } from "react-router";
+import {
+  authRouteConfig,
+  landingRouteConfig,
+  settingsRouteConfig,
+} from "~/routes.config";
 import { LogOutIcon, SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import avatar from "~/routes/account/assets/avatar.png";
@@ -28,14 +32,12 @@ export function AppSidebar({
     <Sidebar {...props}>
       <AppSidebarHeader />
       {user.role === Role.ADMIN ? <AdminSidebar /> : <UserSidebar />}
-      <SidebarFooter>
-        <AppSidebarFooter
-          firstname={user.firstname}
-          photo={user.photo}
-          lastname={user.lastname}
-          email={user.email}
-        />
-      </SidebarFooter>
+      <AppSidebarFooter
+        firstname={user.firstname}
+        photo={user.photo}
+        lastname={user.lastname}
+        email={user.email}
+      />
     </Sidebar>
   );
 }
@@ -45,14 +47,14 @@ function AppSidebarFooter({ ...navUserProps }: NavUserProps) {
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton>
-            <Form action={authRouteConfig.logout.getPath} method={"POST"}>
-              <button className={"flex items-center gap-2"} type={"submit"}>
-                <LogOutIcon size={18} />
+          <Form method="POST" action={authRouteConfig.logout.getPath}>
+            <SidebarMenuButton asChild>
+              <button type={"submit"} className={"w-full"}>
+                <LogOutIcon />
                 <span>Logout</span>
               </button>
-            </Form>
-          </SidebarMenuButton>
+            </SidebarMenuButton>
+          </Form>
         </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
@@ -62,8 +64,8 @@ function AppSidebarFooter({ ...navUserProps }: NavUserProps) {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        <NavUser {...navUserProps} />
       </SidebarMenu>
-      <NavUser {...navUserProps} />
     </SidebarFooter>
   );
 }
@@ -88,15 +90,18 @@ function AppSidebarHeader() {
 type NavUserProps = Pick<IUser, "email" | "firstname" | "photo" | "lastname">;
 
 function NavUser({ email, firstname, lastname, photo }: NavUserProps) {
+  const location = useLocation();
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          size={"lg"}
-          className={
-            "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          }
-        >
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={location.pathname.includes(settingsRouteConfig.route.getPath)}
+        size={"lg"}
+        className={
+          "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        }
+      >
+        <Link to={settingsRouteConfig.route.getPath}>
           <Avatar className={"h-8 w-8 rounded-lg"}>
             <AvatarImage src={photo?.url || avatar} alt={firstname} />
             <AvatarFallback className={"rounded-lg uppercase"}>
@@ -107,8 +112,8 @@ function NavUser({ email, firstname, lastname, photo }: NavUserProps) {
             <span className="truncate font-semibold">{firstname}</span>
             <span className="truncate text-xs">{email}</span>
           </div>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
