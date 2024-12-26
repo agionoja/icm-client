@@ -35,7 +35,8 @@ export default [
   // Account Routes - Settings, User, Admin
   layout(account.layout.getFile, [
     // Settings Routes
-    layout(settings.layout.getFile, [
+    route(settings.route.getPath, settings.route.getFile, [
+      index(settings.index.getFile),
       route(settings.personalInfo.getPath, settings.personalInfo.getFile),
       route(settings.configuration.getPath, settings.configuration.getFile),
       route(settings.security.getPath, settings.security.getFile),

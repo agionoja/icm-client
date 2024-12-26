@@ -108,9 +108,13 @@ export const RoutesConfig = {
 
     // Settings Routes
     settings: {
-      layout: defineRoute({
-        path: "",
-        file: paths.settings("layout/route"),
+      route: defineRoute({
+        path: "/settings",
+        file: paths.settings("route"),
+      }),
+      index: defineRoute({
+        path: "/settings",
+        file: paths.settings("index/route", "ts"),
       }),
       personalInfo: defineRoute({
         path: "/settings/personal-info",
