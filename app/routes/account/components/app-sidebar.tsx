@@ -11,13 +11,8 @@ import {
 import { UserSidebar } from "~/routes/account/components/user-sidebar";
 import { AdminSidebar } from "~/routes/account/components/admin-sidebar";
 import logo from "~/assets/logos/svg/Logo Mark - White.svg";
-import { Form, Link, useSubmit } from "react-router";
-import {
-  authRouteConfig,
-  landingRouteConfig,
-  RoutesConfig,
-  settingsRouteConfig,
-} from "~/routes.config";
+import { Form, Link } from "react-router";
+import { authRouteConfig, landingRouteConfig } from "~/routes.config";
 import { LogOutIcon, SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import avatar from "~/routes/account/assets/avatar.png";
@@ -46,26 +41,17 @@ export function AppSidebar({
 }
 
 function AppSidebarFooter({ ...navUserProps }: NavUserProps) {
-  const submit = useSubmit();
-  const handleLogout = () => {
-    return submit(null, {
-      method: "POST",
-      action: authRouteConfig.logout.getPath,
-    });
-  };
   return (
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            // name={"_action"}
-            // value={authRouteConfig.logout.getPath}
-          >
-            <button onClick={handleLogout} type={"submit"}>
-              <LogOutIcon />
-              <span>Logout</span>
-            </button>
+          <SidebarMenuButton>
+            <Form action={authRouteConfig.logout.getPath} method={"POST"}>
+              <button className={"flex items-center gap-2"} type={"submit"}>
+                <LogOutIcon size={18} />
+                <span>Logout</span>
+              </button>
+            </Form>
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
