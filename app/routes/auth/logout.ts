@@ -5,23 +5,25 @@ import { flashMessage } from "~/utils/flash-message";
 import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
 
 export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
+  const { _action, ...values } = Object.fromEntries(await request.formData());
 
   switch (request.method) {
     case "POST": {
-      const sessionTimeout = formData.get(SESSION_TIMEOUT_KEY);
-      if (sessionTimeout) {
-        const redirectTo = formData.get("redirectTo");
-        const headers = await flashMessage({
-          message: "Your session has timed out. Please log in again.",
-          sessionStorage: timeoutSession,
-        });
-        return logout(request, String(redirectTo), {
-          headers,
-        });
+      switch (_action) {
+        case SESSION_TIMEOUT_KEY: {
+          const redirectTo = values.redirectTo;
+          const headers = await flashMessage({
+            message: "Your session has timed out. Please log in again.",
+            sessionStorage: timeoutSession,
+          });
+          return logout(request, String(redirectTo), {
+            headers,
+          });
+        }
+        default: {
+          return logout(request);
+        }
       }
-
-      return logout(request);
     }
     default: {
       return Response.json(
@@ -33,6 +35,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
   }
 }
+
 // This is a catch for when a user hits this route manually, which shouldn't happen often
 export async function loader({ request }: Route.LoaderArgs) {
   const role = await getRole(request);

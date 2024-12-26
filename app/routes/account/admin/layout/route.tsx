@@ -2,7 +2,7 @@ import type { Route } from "./+types/route";
 import { getToken, restrictTo } from "~/session";
 import { type MetaFunction, Outlet } from "react-router";
 import { getUserDataCookie } from "~/cookies/user-cookie";
-import { type IIcmUser, type IUser, Role } from "icm-shared";
+import { type IIcmUser, type IUser, Role, UserDiscriminator } from "icm-shared";
 import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
 
 export const meta: MetaFunction = () => {
@@ -22,13 +22,18 @@ export async function loader({ request }: Route.LoaderArgs) {
       token,
       query: {
         paginate: {
-          limit: 10,
+          limit: 100,
           page: 1,
         },
         countFilter: {
           isActive: {
             exists: true,
           },
+        },
+
+        filter: {
+          __t: UserDiscriminator.ICM,
+          role: Role.USER,
         },
 
         ignoreFilterFlags: ["isActive"],
@@ -47,7 +52,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { user };
 }
 
-export default function Layout() {
+export default function AdminLayout() {
   return (
     <>
       <Outlet />

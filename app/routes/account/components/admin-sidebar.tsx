@@ -19,7 +19,7 @@ import {
 const data = [
   {
     label: null,
-    group: [
+    items: [
       {
         title: "Dashboard",
         icon: HomeIcon,
@@ -50,7 +50,7 @@ const data = [
 
   {
     label: "Management",
-    group: [
+    items: [
       {
         title: "Airtime",
         icon: UserIcon,
@@ -92,7 +92,7 @@ export function AdminSidebar() {
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
-            {data[0].group.map((item, index) => (
+            {data[0].items.map((item, index) => (
               <SidebarMenuItem key={index}>
                 <SidebarMenuButton
                   asChild
@@ -120,7 +120,7 @@ export function AdminSidebar() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {data[1].group.map((item, index) => (
+                {data[1].items.map((item, index) => (
                   <SidebarMenuItem key={index}>
                     <SidebarMenuButton
                       isActive={location.pathname === item.pathname}
