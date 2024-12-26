@@ -98,7 +98,7 @@ export function AdminSidebar() {
                   asChild
                   isActive={location.pathname === item.pathname}
                 >
-                  <Link to={item.pathname}>
+                  <Link prefetch={"intent"} to={item.pathname}>
                     <item.icon />
                     <span>{item.title}</span>
                   </Link>
@@ -126,7 +126,7 @@ export function AdminSidebar() {
                       isActive={location.pathname === item.pathname}
                       asChild
                     >
-                      <NavLink to={item.pathname}>
+                      <NavLink prefetch={"intent"} to={item.pathname}>
                         <item.icon />
                         <span>{item.title}</span>
                       </NavLink>

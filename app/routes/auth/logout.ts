@@ -11,7 +11,7 @@ export async function action({ request }: Route.ActionArgs) {
     case "POST": {
       switch (_action) {
         case SESSION_TIMEOUT_KEY: {
-          const redirectTo = values.redirectTo;
+          const redirectTo = values?.redirectTo;
           const headers = await flashMessage({
             message: "Your session has timed out. Please log in again.",
             sessionStorage: timeoutSession,
