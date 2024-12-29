@@ -19,11 +19,11 @@ import {
 } from "~/routes.config";
 import { LogOutIcon, SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import avatar from "~/routes/account/assets/avatar.png";
+import avatar from "~/routes/account/assets/avatar.svg";
 import { AvatarIcon } from "~/components/icons";
 
 export function AppSidebar({
-  user,
+  user: { role, ...restUser },
   ...props
 }: {
   user: Pick<IUser, "role"> & NavUserProps;
@@ -31,13 +31,8 @@ export function AppSidebar({
   return (
     <Sidebar {...props}>
       <AppSidebarHeader />
-      {user.role === Role.ADMIN ? <AdminSidebar /> : <UserSidebar />}
-      <AppSidebarFooter
-        firstname={user.firstname}
-        photo={user.photo}
-        lastname={user.lastname}
-        email={user.email}
-      />
+      {role === Role.ADMIN ? <AdminSidebar /> : <UserSidebar />}
+      <AppSidebarFooter {...restUser} />
     </Sidebar>
   );
 }
@@ -58,7 +53,7 @@ function AppSidebarFooter({ ...navUserProps }: NavUserProps) {
         </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <Link to={"#"}>
+            <Link to={"#"} prefetch={"intent"}>
               <SettingsIcon />
               <span>Support</span>
             </Link>
@@ -76,7 +71,7 @@ function AppSidebarHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <Link to={landingRouteConfig.home.getPath}>
+            <Link prefetch={"intent"} to={landingRouteConfig.home.getPath}>
               <img src={logo} height={30} width={20} alt="ICM Logo" />
               <span>ICM Tech.</span>
             </Link>
@@ -101,7 +96,7 @@ function NavUser({ email, firstname, lastname, photo }: NavUserProps) {
           "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         }
       >
-        <Link to={settingsRouteConfig.route.getPath}>
+        <Link prefetch={"intent"} to={settingsRouteConfig.route.getPath}>
           <Avatar className={"h-8 w-8 rounded-lg"}>
             <AvatarImage src={photo?.url || avatar} alt={firstname} />
             <AvatarFallback className={"rounded-lg uppercase"}>

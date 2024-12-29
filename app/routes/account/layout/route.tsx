@@ -60,7 +60,7 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
       <SidebarProvider
         style={
           {
-            "--sidebar-width": "20rem",
+            "--sidebar-width": "18rem",
           } as React.CSSProperties
         }
       >
