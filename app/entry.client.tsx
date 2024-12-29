@@ -7,12 +7,17 @@
 import { HydratedRouter } from "react-router/dom";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { configureGlobalCache } from "~/lib/cache";
+
+configureGlobalCache(() => localStorage);
 
 startTransition(() => {
   hydrateRoot(
     document,
-    <StrictMode>
+    <>
+      {/*<StrictMode>*/}
       <HydratedRouter />
-    </StrictMode>,
+      {/*</StrictMode>*/}
+    </>,
   );
 });

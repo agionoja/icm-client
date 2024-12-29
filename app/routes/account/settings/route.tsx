@@ -1,3 +1,3 @@
-import type { Route } from "../../../../.react-router/types/app/routes/account";
+import type { Route } from "./+types/route";
 
 export async function loader({ request }: Route.LoaderArgs) {}
