@@ -46,7 +46,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 6, page: 1 },
+        paginate: { limit: 100, page: 1 },
         ignoreFilterFlags: ["isActive"],
         countFilter: { isActive: { exists: true } },
         select: ["+isActive", "email", "firstname", "lastname", "role"],

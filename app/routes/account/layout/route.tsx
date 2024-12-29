@@ -11,12 +11,13 @@ import {
 import { useSessionTimeout } from "~/hooks/use-session-timeout";
 import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
-import { authRouteConfig } from "~/routes.config";
+import { adminRouteConfig, authRouteConfig } from "~/routes.config";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
+import { cacheClientLoader, useCachedLoaderData } from "~/lib/cache";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -76,8 +77,19 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+export async function clientLoader(args: Route.ClientLoaderArgs) {
+  return cacheClientLoader(args, {
+    type: "normal",
+    key: adminRouteConfig.layout.getFile,
+  });
+}
+
+clientLoader.hydrate = true as const;
+
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   const { state } = useNavigation();
+  const cachedLoaderData = useCachedLoaderData(loaderData);
+  console.log({ cachedLoaderData, loaderData });
   const { sessionTimeout, sessionTimeoutKey, redirectTo, user, defaultOpen } =
     loaderData;
 
