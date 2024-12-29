@@ -8,6 +8,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 import "./app.css";
 import { type ReactNode, useEffect } from "react";
@@ -15,6 +16,7 @@ import { Bounce, toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-international-phone/style.css";
 import { getToast } from "remix-toast";
+import { cn } from "~/lib/utils";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -30,6 +32,14 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
+  const location = useLocation();
+
+  // Extract route checking logic into a separate function
+  const isAccountRoute = (pathname: string): boolean => {
+    const authenticatedPaths = ["admin", "user", "settings"];
+    return authenticatedPaths.some((path) => pathname.includes(path));
+  };
+
   return (
     <html lang="en">
       <head>
@@ -38,11 +48,15 @@ export function Layout({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body
+        className={cn(
+          isAccountRoute(location.pathname) ? "bg-account-bg" : "bg-landing",
+        )}
+      >
         <ToastContainer
           autoClose={5000}
           draggable={true}
-          theme={"light"}
+          theme="light"
           transition={Bounce}
         />
         {children}

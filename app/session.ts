@@ -1,13 +1,7 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
-import {
-  Role,
-  type IFacebookUser,
-  type IGoogleUser,
-  type IIcmUser,
-  type IUser,
-} from "icm-shared";
+import { Role, type UserUnion } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { fetchClient } from "~/fetch/fetch-client.server";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
@@ -35,11 +29,11 @@ type CreateSession = {
 export const RoleRedirects = {
   [Role.ADMIN]: adminRouteConfig.dashboard.generate(),
   [Role.USER]: userRouteConfig.dashboard.generate(),
-  [Role.SUER_ADMIN]: "/super-admin/dashboard",
+  [Role.SUPER_ADMIN]: "/super-admin/dashboard",
 };
 
 const UNAUTHORIZED_ERROR_MESSAGE =
-  "Authorization required. Please log in and try again.";
+  "Authentication required. Please log in and try again.";
 const FORBIDDEN_ERROR_MESSAGE =
   "You do not have permission to access this page";
 
@@ -60,7 +54,7 @@ export const { destroySession, getSession, commitSession } =
  * Retrieves the current session object from the request cookies.
  *
  * @param request - The HTTP request containing the session cookie.
- * @returns A session object containing session data (or null if no valid session exists).
+ * @returns A session object containing session data (or a new session data).
  */
 export async function getUserSession(request: Request) {
   const cookie = request.headers.get("Cookie");
@@ -98,7 +92,7 @@ export async function hasSession(request: Request) {
   const token = await getToken(request);
   const role = await getRole(request);
 
-  return !(!token || !role);
+  return !!token && !!role;
 }
 
 /**
@@ -165,10 +159,7 @@ export async function requireUser(
 
   const token = await getToken(request);
 
-  const response = await fetchClient<
-    IIcmUser | IGoogleUser | IFacebookUser,
-    "user"
-  >("/auth/profile", {
+  const response = await fetchClient<UserUnion, "user">("/auth/profile", {
     responseKey: "user",
     token,
   });
@@ -187,16 +178,18 @@ export async function requireUser(
 /**
  * Restricts access to specific roles.
  *
- * @param user - The user object containing their role.
+ * @param request
  * @param roles - An array of roles allowed to access the resource.
  * @throws Redirects to the appropriate dashboard if the user doesn't have the required role.
  */
-export async function restrictTo(user: IUser, ...roles: Role[]) {
-  if (!roles.includes(user.role)) {
-    throw await redirectWithError(
-      RoleRedirects[user.role],
-      FORBIDDEN_ERROR_MESSAGE,
-    );
+export async function restrictTo(request: Request, ...roles: Role[]) {
+  const role = await getRole(request);
+
+  if (!role || !RoleRedirects[role])
+    throw new Response(null, { status: 400, statusText: "Invalid user role" });
+
+  if (!roles.includes(role)) {
+    throw await redirectWithError(RoleRedirects[role], FORBIDDEN_ERROR_MESSAGE);
   }
 }
 

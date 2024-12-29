@@ -1,6 +1,13 @@
 import type { Route } from "./+types/route";
 import { Outlet, redirect, useNavigation, useSubmit } from "react-router";
-import { getJwtMaxAgeInMs, requireUser } from "~/session";
+import {
+  commitSession,
+  getJwtMaxAgeInMs,
+  getRole,
+  getToken,
+  getUserSession,
+  requireUser,
+} from "~/session";
 import { useSessionTimeout } from "~/hooks/use-session-timeout";
 import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
@@ -11,20 +18,48 @@ import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 
 export async function loader({ request }: Route.LoaderArgs) {
+  // Retrieve both current backend user state and stored cookie state
+  // to detect any discrepancies
   const user = await requireUser(request);
   const cookieUser = await getUserDataCookie(request);
-  const isModified = !(JSON.stringify(user) === JSON.stringify(cookieUser));
 
+  // Compare user states to identify if any attributes have changed,
+  // with special attention to role changes that affect permissions
+  const isModified = !(JSON.stringify(user) === JSON.stringify(cookieUser));
+  const isRoleModified = !(user.role === (await getRole(request)));
+
+  // Role changes require immediate session updates to maintain
+  // proper access control and security
+  if (isRoleModified) {
+    console.info("User Role Changed");
+    const token = await getToken(request);
+    const userSession = await getUserSession(request);
+
+    userSession.set("role", user.role);
+    userSession.set("token", String(token));
+
+    // Force a refresh to ensure all client-side data reflects
+    // the new role permissions
+    throw redirect(request.url, {
+      headers: {
+        "Set-Cookie": await commitSession(userSession),
+      },
+    });
+  }
+
+  // Keep cookie data in sync with the backend state to prevent
+  // stale user information
   if (!cookieUser || isModified) {
     const cookie = await setUserDataCookie(user, request);
     throw redirect(request.url, { headers: { "Set-Cookie": cookie } });
   }
 
-  const sessionTimeout = await getJwtMaxAgeInMs(request);
-
   return {
-    sessionTimeout,
-    pathname: new URL(request.url).pathname,
+    sessionTimeout: await getJwtMaxAgeInMs(request),
+    redirectTo: authRouteConfig.login.generate(
+      {},
+      { redirect: new URL(request.url).pathname },
+    ),
     sessionTimeoutKey: SESSION_TIMEOUT_KEY,
     user: {
       firstname: user.firstname,
@@ -38,16 +73,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   const { state } = useNavigation();
-  const { sessionTimeout, sessionTimeoutKey, pathname, user } = loaderData;
+  const { sessionTimeout, sessionTimeoutKey, redirectTo, user } = loaderData;
 
   const submit = useSubmit();
   useSessionTimeout(sessionTimeout, () => {
     const formData = new FormData();
     formData.append("_action", sessionTimeoutKey);
-    formData.append(
-      "redirectTo",
-      authRouteConfig.login.generate({}, { redirect: pathname }),
-    );
+    formData.append("redirectTo", redirectTo);
 
     return submit(formData, {
       method: "POST",
@@ -67,8 +99,8 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
         <AppSidebar user={user} collapsible={"icon"} />
         <main
           className={cn(
-            "w-full bg-account-bg",
-            state === "loading" ? "animate-pulse opacity-30" : "",
+            "w-full",
+            state === "loading" ? "animate-pulse opacity-80" : "",
           )}
         >
           <SidebarTrigger variant={"link"} />

@@ -1,10 +1,5 @@
 import type { Route } from "./+types/route";
-import {
-  data,
-  type MetaFunction,
-  useNavigation,
-  useSearchParams,
-} from "react-router";
+import { data, useNavigation, useSearchParams } from "react-router";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
 import { Facebook, Google } from "~/components/icons";
 import { useEffect, useRef, useState } from "react";
@@ -12,22 +7,19 @@ import { toast } from "react-toastify";
 import { AuthForm } from "~/routes/auth/components/auth-form";
 import { timeoutSession } from "~/toast/timeout-toast";
 import { getFlashSession } from "~/utils/flash-message";
-import { throttleNetwork } from "~/utils/throttle-network";
 import { login } from "~/routes/auth/login/queries";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { envConfig } from "~/env-config.server";
 
-export const meta: MetaFunction = () => {
-  return [{ title: "ICM Tech Login" }];
+export const meta: Route.MetaFunction = () => {
+  return [{ title: "ICM Tech - Login" }];
 };
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  await throttleNetwork(envConfig.NODE_ENV === "development" ? 2 : 0);
   switch (_action) {
     case "login": {
       return login(request, values.redirect, {

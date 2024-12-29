@@ -1,85 +1,84 @@
-import {
-  checkForClass,
-  type IGoogleUser,
-  type IUser,
-  UserDiscriminator,
-} from "icm-shared";
-import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
 import type { Route } from "./+types/route";
-import { ProgressMonitor } from "~/fetch/progess";
-import { getToken } from "~/session";
+import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
+import { getToken, restrictTo } from "~/session";
+import { Role, type UserUnion } from "icm-shared";
+import { DataTable } from "~/routes/account/admin/users/components/data-table";
+import { columns } from "~/routes/account/admin/users/columns";
+import { data } from "react-router";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: "Admin - User Management" },
+    {
+      name: "description",
+      content:
+        "View and manage user accounts, including updates, role assignments, and account statuses.",
+    },
+  ];
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
+  await restrictTo(request, Role.ADMIN);
   const token = await getToken(request);
-  const [usersRes, userRes, profile] = await Promise.all([
-    fetchClient<IGoogleUser | IUser, "users", IGoogleUser | IUser, Paginated>(
-      "/users",
-      {
-        responseKey: "users",
-        token: token,
-        query: {
-          paginate: { page: 1, limit: 2 },
-          filter: {
-            isVerified: true,
-            // __t: UserDiscriminator.ICM,
-          },
-          sort: ["email", "-createdAt"],
-          search: { lastname: "PAU" },
-          select: ["id"],
-        },
-        progressArgs: {
-          onProgress: (progress) => {
-            console.log(`Status: ${progress.status}`);
-            console.log(
-              `Downloaded: ${ProgressMonitor.formatBytes(progress.loaded)} of ${ProgressMonitor.formatBytes(progress.total)} (${progress.percent.toFixed(1)}%)`,
-            );
-            if (progress.status === "active") {
-              console.log(
-                `Speed: ${ProgressMonitor.formatBytes(progress.transferSpeed)}/s`,
-                `ETA: ${ProgressMonitor.formatTime(progress.timeRemaining)}`,
-              );
-            }
-            if (progress.status === "completed") {
-              console.log("Download completed!");
-            }
-          },
-          // throttleSpeed: 1024 * 1024 * 2, // !MB/S,
-          // updateInterval: 10,
-          turnOff: true,
-        },
+  const response = await fetchClient<UserUnion, "users", UserUnion, Paginated>(
+    "/users",
+    {
+      responseKey: "users",
+      token,
+      query: {
+        paginate: { limit: 100, page: 1 },
+        ignoreFilterFlags: ["isActive"],
+        countFilter: { isActive: { exists: true } },
+        select: ["+isActive", "email", "firstname", "lastname", "role"],
+        sort: ["role", "createdAt", "updatedAt", "firstname", "lastname"],
+        // filter: {
+        //   role: Role.USER,
+        // },
       },
-    ),
-    fetchClient<IGoogleUser | IUser, "user">(
-      "/users/674491c78674b85bb5947cc1",
+    },
+  );
+
+  if (response.exception) {
+    console.log(response.exception);
+    return data(
       {
-        responseKey: "user",
-        token: token,
+        error: {
+          message: response.exception.message,
+          status: response.exception.status,
+        },
+        data: null,
       },
-    ),
-    fetchClient<IGoogleUser | IUser, "profile">("/auth/profile", {
-      responseKey: "profile",
-      token: token,
-    }),
-  ]);
-
-  // console.dir({ userRes, profile, usersRes }, { depth: null });
-
-  // await makeRepeatedRequests("/users", 200, request);
-  if (userRes.exception || usersRes.exception || profile.exception) {
-    return Response.json(usersRes.exception || userRes.exception, {
-      status: usersRes.exception?.statusCode || userRes.exception?.statusCode,
-    });
+      { status: response.exception.statusCode },
+    );
   }
-  if (
-    checkForClass<IGoogleUser>(userRes.data?.user, UserDiscriminator.GOOGLE)
-  ) {
-    console.log(userRes.data.user.googleId);
-  }
+  console.log(response.metadata);
 
-  return Response.json([
-    usersRes.data,
-    usersRes.metadata,
-    userRes.data,
-    profile.data,
-  ]);
+  return {
+    data: {
+      users: response.data.users,
+      metadata: response.metadata,
+    },
+    error: null,
+  };
+}
+
+export default function RouteComponent({ loaderData }: Route.ComponentProps) {
+  const data = loaderData.data?.users || [];
+  const error = loaderData.error;
+
+  useEffect(() => {
+    if (error) {
+      toast(error.message, { type: "error" });
+    }
+  }, [error]);
+
+  return (
+    <>
+      <div className={"container mx-auto py-10"}>
+        <DataTable columns={columns} data={data} />
+      </div>
+    </>
+  );
 }
