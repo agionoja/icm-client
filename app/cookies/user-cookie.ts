@@ -1,7 +1,7 @@
 import { createCookie } from "react-router";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
 import { getJwtMaxAgeInSeconds } from "~/session";
-import type { IFacebookUser, IGoogleUser, IUser, IIcmUser } from "icm-shared";
+import type { IUser, UserUnion } from "icm-shared";
 import { decrypt, encrypt } from "~/utils/crypto";
 
 /**
@@ -43,18 +43,17 @@ export async function setUserDataCookie(
  * Retrieves and decrypts the user data from the cookie in the request headers.
  *
  * @param {Request} request - The request object containing headers.
- * @returns {Promise<IUser | IGoogleUser | IFacebookUser | null>} The decrypted user data or null if not available.
+ * @returns {Promise<UserUnion null>} The decrypted user data or null if not available.
  */
 export async function getUserDataCookie(
   request: Request,
-): Promise<IUser | IGoogleUser | IFacebookUser | null> {
+): Promise<UserUnion | null> {
   const cookie = request.headers.get("Cookie");
   const encryptedUser = await userCookie.parse(cookie);
 
   if (!encryptedUser) return null;
-  return decrypt<IIcmUser | IGoogleUser | IFacebookUser>(encryptedUser) ?? null;
+  return decrypt<UserUnion>(encryptedUser) ?? null;
 }
-
 /**
  * Destroys the user cookie by setting it with an expiration date in the past.
  *

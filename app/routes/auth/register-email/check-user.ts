@@ -5,11 +5,11 @@ export async function checkUser(email: string, phone: string) {
   const [findByEmail, findByPhone] = await Promise.all([
     fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
       responseKey: "isExists",
-      query: { filter: { email } },
+      query: { filter: { email }, ignoreFilterFlags: ["isActive"] },
     }),
     fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
       responseKey: "isExists",
-      query: { filter: { phone } },
+      query: { filter: { phone }, ignoreFilterFlags: ["isActive"] },
     }),
   ]);
 
