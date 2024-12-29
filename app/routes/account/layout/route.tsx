@@ -16,6 +16,7 @@ import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
+import { getCookieByName } from "~/cookies/get-cookie-by-name";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -54,7 +55,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw redirect(request.url, { headers: { "Set-Cookie": cookie } });
   }
 
+  const sidebarCookie = request.headers.get("Cookie");
+  const defaultOpen = getCookieByName(sidebarCookie, "sidebar:state", true);
+
   return {
+    defaultOpen: defaultOpen ?? false,
     sessionTimeout: await getJwtMaxAgeInMs(request),
     redirectTo: authRouteConfig.login.generate(
       {},
@@ -73,7 +78,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   const { state } = useNavigation();
-  const { sessionTimeout, sessionTimeoutKey, redirectTo, user } = loaderData;
+  const { sessionTimeout, sessionTimeoutKey, redirectTo, user, defaultOpen } =
+    loaderData;
 
   const submit = useSubmit();
   useSessionTimeout(sessionTimeout, () => {
@@ -90,6 +96,7 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <SidebarProvider
+        defaultOpen={defaultOpen}
         style={
           {
             "--sidebar-width": "18rem",
