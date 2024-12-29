@@ -1,5 +1,5 @@
 import type { Route } from "./+types/route";
-import { getUserDataCookie } from "~/cookies/user-cookie";
+// import { getUserDataCookie } from "~/cookies/user-cookie";
 import { Outlet } from "react-router";
 
 export const meta: Route.MetaFunction = () => {
@@ -13,11 +13,11 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const user = await getUserDataCookie(request);
-
-  return { user };
-}
+// export async function loader({ request }: Route.LoaderArgs) {
+//   const user = await getUserDataCookie(request);
+//
+//   return { user };
+// }
 export default function Dashboard() {
   return (
     <>
