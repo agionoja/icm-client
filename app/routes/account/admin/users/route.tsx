@@ -46,7 +46,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 100, page: 1 },
+        paginate: { limit: 22, page: 1 },
         ignoreFilterFlags: ["isActive"],
         countFilter: { isActive: { exists: true } },
         select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -86,7 +86,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return cacheClientLoader(args, { type: "swr" });
+  return cacheClientLoader(args, { type: "normal" });
 }
 
 clientLoader.hydrate = true as const;
@@ -109,10 +109,9 @@ export function SkeletonCard() {
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
   useRevalidateOnInterval({ enabled: true, interval: 600_000 });
-  const data = loaderData.data?.users || [];
-  console.log({ userPromise: loaderData.data?.userPromise });
   const cachedLoaderData = useCachedLoaderData(loaderData);
-  const userPromise = cachedLoaderData.data?.userPromise;
+  const data = cachedLoaderData.data?.users || [];
+  const userPromise = loaderData.data?.userPromise;
   const error = cachedLoaderData.error;
 
   useEffect(() => {
