@@ -18,7 +18,12 @@ export const meta: Route.MetaFunction = () => {
 //
 //   return { user };
 // }
-export default function Dashboard() {
+
+// export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+//   return;
+// }
+
+export default function AdminDashboard() {
   return (
     <>
       <Outlet />

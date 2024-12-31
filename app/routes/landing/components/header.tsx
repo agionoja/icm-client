@@ -2,13 +2,16 @@ import logo from "~/assets/logos/svg/primary-logo-full-color.svg";
 import { Link, NavLink } from "react-router";
 import { useState } from "react";
 import { Close, Hamburger } from "~/components/icons";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
+import { authRouteConfig } from "~/routes.config";
+import { cn } from "~/lib/utils";
 
 type Props = {
   isLoggedIn: boolean;
+  roleRedirectUrl?: string;
 };
 
-export function Header({ isLoggedIn }: Props) {
+export function Header({ isLoggedIn, roleRedirectUrl }: Props) {
   return (
     <>
       <header
@@ -18,9 +21,16 @@ export function Header({ isLoggedIn }: Props) {
       >
         <img width={146} height={40} src={logo} alt="ICM Teach logo" />
         <Nav />
-        {!isLoggedIn && (
-          <Link className={"hidden md:block"} to="/auth/register/welcome">
-            <Button>Get Started</Button>
+        {isLoggedIn && roleRedirectUrl ? (
+          <Link to={roleRedirectUrl} className={cn(buttonVariants())}>
+            Dashboard
+          </Link>
+        ) : (
+          <Link
+            className={cn(buttonVariants({ variant: "default" }))}
+            to={authRouteConfig.registerWelcome.getPath}
+          >
+            Get Started
           </Link>
         )}
       </header>

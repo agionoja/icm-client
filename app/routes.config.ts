@@ -17,7 +17,7 @@ const paths = {
   resources: createPathResolver("./routes/resources"),
 };
 
-export const RoutesConfig = {
+export const routesConfig = {
   // Landing Routes
   landing: {
     prefix: "",
@@ -249,9 +249,9 @@ export const RoutesConfig = {
   },
 };
 
-export const userRouteConfig = RoutesConfig.account.user;
-export const adminRouteConfig = RoutesConfig.account.admin;
-export const settingsRouteConfig = RoutesConfig.account.settings;
-export const authRouteConfig = RoutesConfig.auth;
-export const landingRouteConfig = RoutesConfig.landing;
-export const resourcesRouteConfig = RoutesConfig.resources;
+export const userRouteConfig = routesConfig.account.user;
+export const adminRouteConfig = routesConfig.account.admin;
+export const settingsRouteConfig = routesConfig.account.settings;
+export const authRouteConfig = routesConfig.auth;
+export const landingRouteConfig = routesConfig.landing;
+export const resourcesRouteConfig = routesConfig.resources;

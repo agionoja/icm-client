@@ -6,7 +6,7 @@ import { camelKeys, replaceKeys } from "string-ts";
  * @param schema a generic schema function that takes a record of environment variables and returns a typed object.
  */
 function makeTypedEnvironment<T>(schema: (v: unknown) => T) {
-  // Instantiate a cache to store parsed environment variables.
+  // Instantiate a clientCache to store parsed environment variables.
   let cache: CamelKeys<ReplaceKeys<T, "VITE_", "">>;
 
   return (args: Record<string, unknown>) => {
