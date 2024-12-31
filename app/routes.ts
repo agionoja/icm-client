@@ -1,4 +1,4 @@
-import { RoutesConfig as Routes } from "./routes.config";
+import { routesConfig as Routes } from "./routes.config";
 import {
   index,
   layout,

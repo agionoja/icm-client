@@ -3,6 +3,8 @@ import { getRole, getToken, logout, RoleRedirects } from "~/session";
 import { redirect } from "react-router";
 import { flashMessage } from "~/utils/flash-message";
 import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
+import { decacheClientLoader } from "~/lib/cache";
+import { routesConfig } from "~/routes.config";
 
 export async function action({ request }: Route.ActionArgs) {
   const { _action, ...values } = Object.fromEntries(await request.formData());
@@ -34,6 +36,12 @@ export async function action({ request }: Route.ActionArgs) {
       );
     }
   }
+}
+
+export async function clientAction(args: Route.ClientActionArgs) {
+  return decacheClientLoader(args, {
+    key: routesConfig.account.layout.getFile,
+  });
 }
 
 // This is a catch for when a user hits this route manually, which shouldn't happen often

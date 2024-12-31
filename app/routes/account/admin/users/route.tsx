@@ -4,14 +4,21 @@ import { getToken, restrictTo } from "~/session";
 import { Role, type UserUnion } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/components/data-table";
 import { columns } from "~/routes/account/admin/users/columns";
-import { Await, data } from "react-router";
+import { Await, data, useLocation } from "react-router";
 import { toast } from "react-toastify";
 import { Suspense, useEffect } from "react";
 import { throttleNetwork } from "~/utils/throttle-network";
-import { cacheClientLoader, useCachedLoaderData } from "~/lib/cache";
+import {
+  cacheClientLoader,
+  useCachedLoaderData,
+  useCacheInvalidator,
+} from "~/lib/cache";
 import { envConfig } from "~/env-config.server";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useRevalidateOnInterval } from "~/hooks/revalidate";
+import {
+  useRevalidateOnFocus,
+  useRevalidateOnInterval,
+} from "~/hooks/revalidate";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -25,8 +32,8 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await throttleNetwork(envConfig.NODE_ENV === "development" ? 0 : 0);
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
+  await throttleNetwork(envConfig.NODE_ENV === "development" ? 1 : 0);
   const token = await getToken(request);
 
   const userPromise = fetchClient<UserUnion, "user">(
@@ -46,7 +53,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 22, page: 1 },
+        paginate: { limit: 10, page: 1 },
         ignoreFilterFlags: ["isActive"],
         countFilter: { isActive: { exists: true } },
         select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -86,7 +93,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return cacheClientLoader(args, { type: "normal" });
+  return cacheClientLoader(args, { type: "normal", maxAge: 10 });
 }
 
 clientLoader.hydrate = true as const;
@@ -108,10 +115,19 @@ export function SkeletonCard() {
 }
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
-  useRevalidateOnInterval({ enabled: true, interval: 600_000 });
+  const { invalidateCache } = useCacheInvalidator();
+  const location = useLocation();
+  console.log(loaderData);
+  useRevalidateOnInterval({
+    enabled: true,
+    interval: 600_000,
+    onRevalidate: () => invalidateCache(location.pathname),
+  });
+
+  // useRevalidateOnFocus();
   const cachedLoaderData = useCachedLoaderData(loaderData);
-  const data = cachedLoaderData.data?.users || [];
-  const userPromise = loaderData.data?.userPromise;
+  const data = loaderData.data?.users || [];
+  const userPromise = cachedLoaderData.data?.userPromise;
   const error = cachedLoaderData.error;
 
   useEffect(() => {

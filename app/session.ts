@@ -130,7 +130,7 @@ export async function createSession(
     await commitSession(session, { maxAge: maxAge as number }),
   );
 
-  return redirectWithSuccess(redirectTo, message, {
+  return await redirectWithSuccess(redirectTo, message, {
     headers: newHeaders,
   });
 }

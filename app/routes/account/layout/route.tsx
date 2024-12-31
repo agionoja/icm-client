@@ -1,5 +1,11 @@
 import type { Route } from "./+types/route";
-import { Outlet, redirect, useNavigation, useSubmit } from "react-router";
+import {
+  Outlet,
+  redirect,
+  useLocation,
+  useNavigation,
+  useSubmit,
+} from "react-router";
 import {
   commitSession,
   getJwtMaxAgeInMs,
@@ -11,13 +17,13 @@ import {
 import { useSessionTimeout } from "~/hooks/use-session-timeout";
 import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
-import { adminRouteConfig, authRouteConfig } from "~/routes.config";
+import { authRouteConfig, routesConfig } from "~/routes.config";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
-import { cacheClientLoader, useCachedLoaderData } from "~/lib/cache";
+import { cacheClientLoader, invalidateCache } from "~/lib/cache";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -60,7 +66,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const defaultOpen = getCookieByName(sidebarCookie, "sidebar:state", true);
 
   return {
-    defaultOpen: defaultOpen ?? false,
+    defaultOpen: defaultOpen ?? true,
     sessionTimeout: await getJwtMaxAgeInMs(request),
     redirectTo: authRouteConfig.login.generate(
       {},
@@ -78,18 +84,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return cacheClientLoader(args, {
+  return await cacheClientLoader(args, {
     type: "normal",
-    key: adminRouteConfig.layout.getFile,
+    key: routesConfig.account.layout.getFile,
+    maxAge: 60,
   });
 }
 
-clientLoader.hydrate = true as const;
+// clientLoader.hydrate = true as const;
 
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   const { state } = useNavigation();
-  const cachedLoaderData = useCachedLoaderData(loaderData);
-  console.log({ cachedLoaderData, loaderData });
   const { sessionTimeout, sessionTimeoutKey, redirectTo, user, defaultOpen } =
     loaderData;
 
