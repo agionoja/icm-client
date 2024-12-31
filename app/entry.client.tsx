@@ -9,7 +9,7 @@ import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { configureGlobalCache } from "~/lib/cache";
 
-configureGlobalCache(() => localStorage);
+configureGlobalCache(() => localStorage, { useHybrid: true });
 
 startTransition(() => {
   hydrateRoot(

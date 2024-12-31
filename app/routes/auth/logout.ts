@@ -40,7 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export async function clientAction(args: Route.ClientActionArgs) {
   return decacheClientLoader(args, {
-    key: routesConfig.account.layout.getFile,
+    key: [routesConfig.account.layout.getFile, "__root"],
   });
 }
 

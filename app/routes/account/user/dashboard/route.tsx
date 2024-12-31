@@ -3,6 +3,7 @@ import type { Route } from "./+types/route";
 import { getUserDataCookie } from "~/cookies/user-cookie";
 import { restrictTo } from "~/session";
 import { Role } from "icm-shared";
+import { cacheClientLoader } from "~/lib/cache";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -21,6 +22,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return { user };
 }
+
+export async function clientLoader(args: Route.ClientLoaderArgs) {
+  return cacheClientLoader(args);
+}
+
+clientLoader.hydrate = true as const;
+
 export default function Dashboard({ loaderData }: Route.ComponentProps) {
   const user = loaderData.user;
   return (

@@ -33,7 +33,9 @@ export const meta: Route.MetaFunction = () => {
 
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
-  await throttleNetwork(envConfig.NODE_ENV === "development" ? 1 : 0);
+  await throttleNetwork(
+    envConfig(process.env).NODE_ENV === "development" ? 1 : 0,
+  );
   const token = await getToken(request);
 
   const userPromise = fetchClient<UserUnion, "user">(
@@ -53,7 +55,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 10, page: 1 },
+        paginate: { limit: 20, page: 1 },
         ignoreFilterFlags: ["isActive"],
         countFilter: { isActive: { exists: true } },
         select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -93,7 +95,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return cacheClientLoader(args, { type: "normal", maxAge: 10 });
+  return cacheClientLoader(args, { type: "normal", maxAge: 60 });
 }
 
 clientLoader.hydrate = true as const;
@@ -117,7 +119,6 @@ export function SkeletonCard() {
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
   const { invalidateCache } = useCacheInvalidator();
   const location = useLocation();
-  console.log(loaderData);
   useRevalidateOnInterval({
     enabled: true,
     interval: 600_000,
