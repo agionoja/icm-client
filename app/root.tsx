@@ -17,6 +17,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-international-phone/style.css";
 import { getToast } from "remix-toast";
 import { cn } from "~/lib/utils";
+import { cacheClientLoader, useCachedLoaderData } from "~/lib/cache";
+import { SkeletonCard } from "~/routes/account/admin/users/route";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -69,6 +71,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { toast, headers } = await getToast(request);
+  console.log({ toast });
   return data(
     { toast },
     {

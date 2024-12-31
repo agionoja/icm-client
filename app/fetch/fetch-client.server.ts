@@ -8,6 +8,8 @@ import type {
 import qs from "qs";
 import { logger } from "~/fetch/logger";
 import { type ProgressArgs, ProgressMonitor } from "~/fetch/progess";
+import { envConfig } from "~/env-config.server";
+import { dateReviver } from "~/utils/date-reviver";
 
 /** HTTP methods supported by the fetch client */
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -79,27 +81,6 @@ export type FetchOptions<
  * @param value - The value of the JSON property.
  * @returns The parsed value, with strings converted to `Date` where applicable.
  */
-export function dateReviver(_key: string, value: any): any {
-  if (typeof value !== "string") {
-    return value;
-  }
-
-  const msDatePattern = /^\/Date\((\d+)\)\/$/;
-  const msMatch = msDatePattern.exec(value);
-  if (msMatch) {
-    return new Date(+msMatch[1]);
-  }
-
-  const isoPattern =
-    /^(\d{4}-\d{2}-\d{2})(T(\d{2}:?\d{2}:?\d{2})(.\d{1,3})?Z?)?$/;
-  const isoMatch = isoPattern.exec(value);
-  if (isoMatch) {
-    const parsedDate = new Date(value);
-    return isNaN(parsedDate.getTime()) ? value : parsedDate;
-  }
-
-  return value;
-}
 
 /**
  * Helper function to parse JSON with the `dateReviver` function.
@@ -148,7 +129,7 @@ export async function fetchClient<
 > {
   if (!responseKey) throw new Error("Response Key is required");
 
-  let api = `${process.env.API_URI}${endpoint}`;
+  let api = `${envConfig(process.env).API_URI}${endpoint}`;
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }

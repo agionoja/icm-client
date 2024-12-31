@@ -3,7 +3,7 @@ import { promisify } from "node:util";
 import { envConfig } from "~/env-config.server";
 
 const ENCRYPTION_ALGORITHM = "aes-256-cbc";
-const SECRET_KEY = envConfig.SESSION_SECRET;
+const SECRET_KEY = envConfig(process.env).SESSION_SECRET;
 const IV_LENGTH = 16;
 
 function getKey() {

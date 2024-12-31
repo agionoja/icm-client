@@ -16,5 +16,5 @@ const envSchema = z.object({
 export const envConfigCamelCase = makeTypedEnvironment(envSchema.parse)(
   process.env,
 );
-export const envConfig = envSchema.parse(process.env);
+export const envConfig = envSchema.parse;
 // export const publicEnv = makeTypedEnvironment(publicEnvSchema.safeParse);

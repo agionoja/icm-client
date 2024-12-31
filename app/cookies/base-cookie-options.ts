@@ -3,10 +3,10 @@ import { envConfig } from "~/env-config.server";
 
 export const baseCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: envConfig.NODE_ENV === "production",
+  secure: envConfig(process.env).NODE_ENV === "production",
   path: "/",
   sameSite: "lax",
-  secrets: [envConfig.SESSION_SECRET],
+  secrets: [envConfig(process.env).SESSION_SECRET],
 };
 
 export function getCookieFromHeader(request: Request) {

@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { type Location, useLocation, useNavigate } from "react-router";
 import React, { useEffect, useState } from "react";
+import { dateReviver } from "~/utils/date-reviver";
 
 /**
+ *
  * Default maximum age for cache entries in seconds (5 minutes)
  */
 const DEFAULT_MAX_AGE = 60 * 5;
@@ -13,6 +15,7 @@ const DEFAULT_MEMORY_CACHE = new Map();
  * Represents a single entry in the cache
  * @template T The type of data being cached
  */
+
 interface CacheEntry<T> {
   /** The cached data */
   data: T;
@@ -132,45 +135,87 @@ export let cacheAdapter: CacheAdapter<CacheEntry<any>> = {
   removeItem: async (key) => DEFAULT_MEMORY_CACHE.delete(key),
 };
 
+type AugmentStorageAdapterOption<T> = {
+  useHybrid?: boolean;
+  cacheAdapter?: CacheAdapter<CacheEntry<T>>;
+};
+
 /**
  * Creates a storage adapter from a standard Web Storage object
  * @template T The type of data being cached
  * @param storage Web Storage object (localStorage/sessionStorage)
+ * @param options Options to configure the adapter
  * @returns Cache adapter for the storage
  */
 function augmentStorageAdapter<T>(
   storage: Storage,
+  options: AugmentStorageAdapterOption<T> = { useHybrid: false },
 ): CacheAdapter<CacheEntry<T>> {
+  if (!options.useHybrid) {
+    // Default behavior: Persistent storage only
+    return {
+      getItem: async (key) => {
+        const storedItem = storage.getItem(key);
+        if (!storedItem) return null;
+        try {
+          return JSON.parse(storedItem, dateReviver);
+        } catch (e) {
+          console.warn(`Error parsing cache for key: ${key}`, e);
+          return null;
+        }
+      },
+      setItem: async (key, value) =>
+        storage.setItem(key, JSON.stringify(value)),
+      removeItem: async (key) => storage.removeItem(key),
+    };
+  }
+
+  // Hybrid caching: Use provided memory adapter and persistent storage
   return {
     getItem: async (key) => {
+      const memoryEntry = await DEFAULT_MEMORY_CACHE.get(key);
+      if (memoryEntry) return memoryEntry;
+
       const storedItem = storage.getItem(key);
       if (!storedItem) return null;
+
       try {
-        return JSON.parse(storedItem);
+        const parsed = JSON.parse(storedItem, dateReviver);
+        DEFAULT_MEMORY_CACHE.set(key, parsed); // Populate memory cache
+        return parsed;
       } catch (e) {
         console.warn(`Error parsing cache for key: ${key}`, e);
         return null;
       }
     },
-    setItem: async (key, value) => storage.setItem(key, JSON.stringify(value)),
-
-    removeItem: async (key) => storage.removeItem(key),
+    setItem: async (key, value) => {
+      DEFAULT_MEMORY_CACHE.set(key, value);
+      storage.setItem(key, JSON.stringify(value));
+    },
+    removeItem: async (key) => {
+      DEFAULT_MEMORY_CACHE.delete(key);
+      storage.removeItem(key);
+    },
   };
 }
 
 /**
  * Creates a new cache adapter instance
  * @param adapter Factory function that returns a cache adapter
+ * @param useHybrid
  * @returns Object containing the configured adapter
  */
 export const createCacheAdapter = (
   adapter: () => CacheAdapter<CacheEntry<any>>,
+  {
+    useHybrid = false,
+  }: Pick<AugmentStorageAdapterOption<any>, "useHybrid"> = {},
 ) => {
   if (typeof document === "undefined") return { adapter: undefined };
   const adapterInstance = adapter();
   if (adapterInstance instanceof Storage) {
     return {
-      adapter: augmentStorageAdapter(adapterInstance),
+      adapter: augmentStorageAdapter(adapterInstance, { useHybrid }),
     };
   }
   return {
@@ -181,19 +226,66 @@ export const createCacheAdapter = (
 /**
  * Configures the global cache instance
  * @param newCacheInstance Factory function that returns a cache adapter or Storage object
+ * @param useHybrid Whether to enable hybrid caching (default: false)
  */
 export const configureGlobalCache = (
   newCacheInstance: () => CacheAdapter<CacheEntry<any>> | Storage,
+  {
+    useHybrid = false,
+  }: Pick<AugmentStorageAdapterOption<any>, "useHybrid"> = {},
 ) => {
   if (typeof document === "undefined") return;
+
   const newCache = newCacheInstance();
+
   if (newCache instanceof Storage) {
-    cacheAdapter = augmentStorageAdapter(newCache);
+    cacheAdapter = augmentStorageAdapter(newCache, { useHybrid });
     return;
   }
+
   if (newCache) {
     cacheAdapter = newCache;
   }
+};
+
+/**
+ * Configuration for cache invalidation
+ * @template T The type of data being cached
+ */
+type DecacheConfig<T> = Pick<CacheConfig<CacheEntry<T>>, "adapter"> & {
+  key?: string | string[];
+};
+
+/**
+ * Removes cached data after performing a server action
+ * @template TData The type of data being cached
+ * @param args Action arguments containing request and server action
+ * @param config Cache configuration with optional key(s) to invalidate
+ * @returns Result of the server action
+ *
+ * @example
+ * // Invalidate single cache
+ * decacheClientLoader(args, { key: '/api/user' })
+ *
+ * @example
+ * // Invalidate multiple caches
+ * decacheClientLoader(args, {
+ *   key: ['/api/user', '/api/settings', '/api/profile']
+ * })
+ */
+export const decacheClientLoader = async <TData,>(
+  { request, serverAction }: RouteClientActionArgs<TData>,
+  {
+    key = constructKey(request),
+    adapter = cacheAdapter,
+  }: DecacheConfig<TData> = {},
+): Promise<TData> => {
+  // Execute the server action first to ensure data is updated
+  const data = await serverAction();
+
+  // Invalidate all specified cache keys
+  await invalidateCache(key, adapter);
+  return data;
 };
 
 function isRedirect(response: Response): boolean {
@@ -208,24 +300,14 @@ function isResponse(value: unknown): value is Response {
   return value instanceof Response;
 }
 
-/**
- * Removes cached data after performing a server action
- * @template TData The type of data being cached
- * @param args Action arguments containing request and server action
- * @param config Cache configuration
- * @returns Result of the server action
- */
-export const decacheClientLoader = async <TData,>(
-  { request, serverAction }: RouteClientActionArgs<TData>,
-  {
-    key = constructKey(request),
-    adapter = cacheAdapter,
-  }: Partial<CacheConfig<CacheEntry<TData>>> = {},
-): Promise<TData> => {
-  const data = await serverAction();
-  await adapter.removeItem(key);
-  return data;
-};
+async function handleResponse<T>(data: T | Response) {
+  if (isResponse(data)) {
+    if (isRedirect(data) || isRouteError(data)) {
+      throw data;
+    }
+  }
+  return data as T;
+}
 
 /**
  * Main caching function for client-side loaders
@@ -241,78 +323,70 @@ export async function cacheClientLoader<TData extends object>(
   const {
     type = "swr",
     key = constructKey(request),
-    adapter = cacheAdapter as CacheAdapter<CacheEntry<TData>>,
+    adapter = cacheAdapter,
     maxAge = DEFAULT_MAX_AGE,
   } = config;
 
-  const existingData = await adapter.getItem(key);
-  const isValidCache = existingData && validateCacheEntry<TData>(existingData);
+  const cacheEntry = await adapter.getItem(key);
 
-  async function handleResponse(data: TData | Response) {
-    if (isResponse(data)) {
-      if (isRedirect(data) || isRouteError(data)) {
-        throw data;
-      }
-    }
-    return data as TData;
-  }
+  const isValidCacheEntry = validateCacheEntry<TData>(cacheEntry);
 
-  if (isValidCache) {
-    const { timestamp, maxAge: storedMaxAge, data: restData } = existingData;
-    const isCacheExpired = isMaxAgeExpired(timestamp, storedMaxAge, type);
-
-    if (type === "normal" && !isCacheExpired) {
-      return {
-        ...restData,
-        key,
-        deferredServerData: undefined,
-        serverData: restData,
-        maxAge: storedMaxAge,
-      };
-    }
-
-    if (isCacheExpired) {
-      const data = await serverLoader();
-      const validData = await handleResponse(data);
-
-      await adapter.setItem(key, {
-        data: validData,
-        maxAge,
-        timestamp: Date.now(),
-      });
-
-      return {
-        ...validData,
-        serverData: validData,
-        deferredServerData: type === "swr" ? serverLoader() : undefined,
-        key,
-        maxAge,
-      };
-    }
+  if (!isValidCacheEntry) {
+    const data = await serverLoader();
+    const validData = await handleResponse(data);
+    await adapter.setItem(key, {
+      data: validData,
+      maxAge,
+      timestamp: Date.now(),
+    });
 
     return {
-      ...restData,
-      serverData: restData,
-      deferredServerData: type === "swr" ? serverLoader() : undefined,
+      ...validData,
+      serverData: validData,
+      deferredServerData: undefined,
       key,
+      maxAge,
+    };
+  }
+
+  const { timestamp, maxAge: storedMaxAge, data: cacheData } = cacheEntry;
+  const isCacheExpired = isMaxAgeExpired(timestamp, storedMaxAge, type);
+
+  if (type === "normal" && !isCacheExpired) {
+    return {
+      ...cacheData,
+      key,
+      deferredServerData: undefined,
+      serverData: cacheData,
       maxAge: storedMaxAge,
     };
   }
 
-  const data = await serverLoader();
-  const validData = await handleResponse(data);
-  await adapter.setItem(key, {
-    data: validData,
-    maxAge,
-    timestamp: Date.now(),
-  });
+  if (isCacheExpired) {
+    const data = await serverLoader();
+    const validData = await handleResponse(data);
+
+    await adapter.setItem(key, {
+      data: validData,
+      maxAge,
+      timestamp: Date.now(),
+    });
+
+    return {
+      ...validData,
+      serverData: validData,
+      deferredServerData: type === "swr" ? serverLoader() : undefined,
+      key,
+      maxAge,
+    };
+  }
 
   return {
-    ...validData,
-    serverData: validData,
-    deferredServerData: undefined,
+    ...cacheData,
+    serverData: cacheData,
+    deferredServerData: type === "swr" ? serverLoader() : undefined,
     key,
-    maxAge,
+    maxAge: storedMaxAge,
   };
 }
 
@@ -444,14 +518,16 @@ export function useRouteKey(): string {
 }
 
 /**
- * Invalidates cache entries
+ * Invalidates cache entries in parallel
  * @param key Single key or array of keys to invalidate
+ * @param adapter
  */
-export const invalidateCache = async (key: string | string[]) => {
+export const invalidateCache = async (
+  key: string | string[],
+  adapter = cacheAdapter,
+) => {
   const keys = Array.isArray(key) ? key : [key];
-  for (const k of keys) {
-    await cacheAdapter.removeItem(k);
-  }
+  await Promise.all(keys.map((k) => adapter.removeItem(k)));
 };
 
 /**
