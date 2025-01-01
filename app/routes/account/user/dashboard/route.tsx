@@ -3,7 +3,7 @@ import type { Route } from "./+types/route";
 import { getUserDataCookie } from "~/cookies/user-cookie";
 import { restrictTo } from "~/session";
 import { Role } from "icm-shared";
-import { cacheClientLoader } from "~/lib/cache";
+import { cacheClientLoader } from "~/lib/cache/cache";
 
 export const meta: Route.MetaFunction = () => {
   return [

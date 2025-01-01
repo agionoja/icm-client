@@ -167,22 +167,22 @@ export const cacheClientLoader = async <TData,>(
 };
 
 export function useCachedLoaderData<TData>(
-  loaderData: TData,
+  loaderData: CachedData<TData>,
   { adapter = clientCache }: { adapter?: CacheAdapter } = {
     adapter: clientCache,
   },
 ) {
-  const cachedData = loaderData as CachedData<TData>;
   const navigate = useNavigate();
-  const [freshData, setFreshData] = useState<TData>(cachedData.serverData);
+  const [freshData, setFreshData] = useState<TData>(loaderData.serverData);
 
+  // Unpack deferred data from the server
   useEffect(() => {
     let isMounted = true;
-    if (cachedData.deferredServerData) {
-      cachedData.deferredServerData
-        .then((newData: TData) => {
+    if (loaderData.deferredServerData) {
+      loaderData.deferredServerData
+        .then((newData) => {
           if (isMounted) {
-            adapter.setItem(cachedData.key, newData);
+            adapter.setItem(loaderData.key, newData);
             setFreshData(newData);
           }
         })
@@ -198,21 +198,21 @@ export function useCachedLoaderData<TData>(
     return () => {
       isMounted = false;
     };
-  }, [cachedData, adapter, navigate]);
+  }, [loaderData, adapter, navigate]);
 
   useEffect(() => {
     if (
-      cachedData.serverData &&
-      JSON.stringify(cachedData.serverData) !== JSON.stringify(freshData)
+      loaderData.serverData &&
+      JSON.stringify(loaderData.serverData) !== JSON.stringify(freshData)
     ) {
-      setFreshData(cachedData.serverData);
+      setFreshData(loaderData.serverData);
     }
-  }, [cachedData.serverData, freshData]);
+  }, [loaderData.serverData, freshData]);
 
   return {
     ...freshData,
-    cacheKey: cachedData.key,
-    invalidate: () => invalidateCache(cachedData.key),
+    cacheKey: loaderData.key,
+    invalidate: () => invalidateCache(loaderData.key),
   } as TData & {
     cacheKey: string;
     invalidate: () => Promise<void>;

@@ -1,24 +1,23 @@
 import type { Route } from "./+types/route";
 import { fetchClient, type Paginated } from "~/fetch/fetch-client.server";
 import { getToken, restrictTo } from "~/session";
-import { Role, type UserUnion } from "icm-shared";
+import { type IUser, Role, type UserUnion } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/components/data-table";
 import { columns } from "~/routes/account/admin/users/columns";
 import { Await, data, useLocation } from "react-router";
 import { toast } from "react-toastify";
 import { Suspense, useEffect } from "react";
-import { throttleNetwork } from "~/utils/throttle-network";
 import {
   cacheClientLoader,
   useCachedLoaderData,
   useCacheInvalidator,
-} from "~/lib/cache";
-import { envConfig } from "~/env-config.server";
+  useRevalidatedCache,
+  useRouteKey,
+} from "~/lib/cache/cache";
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  useRevalidateOnFocus,
-  useRevalidateOnInterval,
-} from "~/hooks/revalidate";
+import { useRevalidateOnInterval } from "~/hooks/revalidate";
+import { throttleNetwork } from "~/utils/throttle-network";
+import { envConfig } from "~/env-config.server";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -34,20 +33,37 @@ export const meta: Route.MetaFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
   await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 1 : 0,
+    envConfig(process.env).NODE_ENV === "development" ? 2 : 0,
   );
   const token = await getToken(request);
 
-  const userPromise = fetchClient<UserUnion, "user">(
-    "/users/6767d2de99ab57b2ce115c96",
-    {
-      responseKey: "user",
-      token,
-      query: {
-        ignoreFilterFlags: ["isActive"],
-      },
+  const userPromise = fetchClient<
+    Pick<
+      IUser,
+      | "role"
+      | "firstname"
+      | "lastname"
+      | "createdAt"
+      | "updatedAt"
+      | "isActive"
+      | "email"
+    >,
+    "user"
+  >("/users/6767d2de99ab57b2ce115c96", {
+    responseKey: "user",
+    token,
+    query: {
+      ignoreFilterFlags: ["isActive"],
+      select: [
+        "firstname",
+        "lastname",
+        "email",
+        "role",
+        "createdAt",
+        "updatedAt",
+      ],
     },
-  );
+  });
 
   const response = await fetchClient<UserUnion, "users", UserUnion, Paginated>(
     "/users",
@@ -55,7 +71,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       responseKey: "users",
       token,
       query: {
-        paginate: { limit: 20, page: 1 },
+        paginate: { limit: 100, page: 1 },
         ignoreFilterFlags: ["isActive"],
         countFilter: { isActive: { exists: true } },
         select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -95,14 +111,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return cacheClientLoader(args, { type: "normal", maxAge: 60 });
+  return cacheClientLoader(args, { type: "swr" });
 }
 
 clientLoader.hydrate = true as const;
 
-export function HydrateFallback() {
-  return <SkeletonCard />;
-}
+// export function HydrateFallback() {
+//   return <SkeletonCard />;
+// }
 
 export function SkeletonCard() {
   return (
@@ -117,19 +133,25 @@ export function SkeletonCard() {
 }
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
-  const { invalidateCache } = useCacheInvalidator();
-  const location = useLocation();
-  useRevalidateOnInterval({
-    enabled: true,
-    interval: 600_000,
-    onRevalidate: () => invalidateCache(location.pathname),
-  });
-
   // useRevalidateOnFocus();
+
+  const routeKey = useRouteKey();
   const cachedLoaderData = useCachedLoaderData(loaderData);
-  const data = loaderData.data?.users || [];
+  const data = cachedLoaderData.data?.users || [];
   const userPromise = cachedLoaderData.data?.userPromise;
   const error = cachedLoaderData.error;
+  console.log({ cachedLoaderData });
+  const location = useLocation();
+
+  const { invalidateCache } = useCacheInvalidator();
+
+  const revalidatedCache = useRevalidatedCache();
+
+  useRevalidateOnInterval({
+    enabled: true,
+    interval: 5_000,
+    onRevalidate: () => revalidatedCache(routeKey),
+  });
 
   useEffect(() => {
     if (error) {

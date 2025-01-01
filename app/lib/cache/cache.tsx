@@ -1,6 +1,17 @@
+import type { Location } from "react-router";
+import { useLocation, useNavigate } from "react-router";
+import React, { useCallback, useEffect, useState } from "react";
+import type {
+  AugmentStorageAdapterOption,
+  CacheAdapter,
+  CacheConfig,
+  CachedData,
+  CacheEntry,
+  DecacheConfig,
+  RouteClientActionArgs,
+  RouteClientLoaderArgs,
+} from "~/lib/cache/types";
 import { z } from "zod";
-import { type Location, useLocation, useNavigate } from "react-router";
-import React, { useEffect, useState } from "react";
 import { dateReviver } from "~/utils/date-reviver";
 
 /**
@@ -9,135 +20,30 @@ import { dateReviver } from "~/utils/date-reviver";
  */
 const DEFAULT_MAX_AGE = 60 * 5;
 
-const DEFAULT_MEMORY_CACHE = new Map();
-
 /**
- * Represents a single entry in the cache
- * @template T The type of data being cached
- */
-
-interface CacheEntry<T> {
-  /** The cached data */
-  data: T;
-  /** Timestamp when the entry was created */
-  timestamp: number;
-  /** Maximum age of the cache entry in seconds */
-  maxAge: number;
-}
-
-/**
- * Creates a Zod schema for validating cache entries
- * @template T The type of data being cached
- * @returns Zod schema for cache entry validation
- */
-const createCacheEntrySchema = <T extends object>() =>
-  z.object({
-    data: z.record(z.any()).refine((obj) => Object.keys(obj).length > 0, {
-      message: "Data object cannot be empty",
-    }) as unknown as z.ZodType<T>,
-    timestamp: z.number().positive(),
-    maxAge: z.number().positive(),
-  });
-/**
- * Validates if a value is a valid cache entry
- * @template T The type of data being cached
- * @param value Value to validate
- * @returns Type predicate indicating if the value is a valid cache entry
- */
-function validateCacheEntry<T extends object>(
-  value: unknown,
-): value is CacheEntry<T> {
-  const schema = createCacheEntrySchema<T>();
-  return schema.safeParse(value).success;
-}
-
-/**
- * Interface for implementing custom cache storage adapters
- * @template T The type of data being stored
- */
-export interface CacheAdapter<T> {
-  /**
-   * Retrieves an item from the cache
-   * @param key Cache key
-   * @returns Cached value or undefined/null if not found
-   */
-  getItem: (key: string) => T | undefined | Promise<T | null>;
-
-  /**
-   * Stores an item in the cache
-   * @param key Cache key
-   * @param value Value to store
-   */
-  setItem: (key: string, value: T) => Promise<any> | any;
-
-  /**
-   * Removes an item from the cache
-   * @param key Cache key
-   */
-  removeItem: (key: string) => Promise<any> | any;
-}
-
-/**
- * Arguments for client-side loader function
- * @template TServerData The type of data returned by the server
- */
-export interface RouteClientLoaderArgs<TServerData> {
-  /** Current request object */
-  request: Request;
-  /** Function that loads data from the server */
-  serverLoader: () => Promise<TServerData>;
-}
-
-/**
- * Arguments for client-side action function
- * @template TServerData The type of data returned by the server
- */
-export interface RouteClientActionArgs<TServerData> {
-  /** Current request object */
-  request: Request;
-  /** Function that performs the server action */
-  serverAction: () => Promise<TServerData>;
-}
-
-/**
- * Configuration options for cache behavior
- * @template T The type of data being cached
- */
-export interface CacheConfig<T> {
-  /** Cache strategy - 'swr' (Stale-While-Revalidate) or 'normal' */
-  type?: "swr" | "normal";
-  /** Time in seconds before cache entry expires */
-  maxAge?: number;
-  /** Custom cache key */
-  key?: string;
-  /** Custom cache storage adapter */
-  adapter?: CacheAdapter<T>;
-}
-
-/**
- * Extended data type including cache metadata
+ * Removes cached data after performing a server action
  * @template TData The type of data being cached
+ * @param args Action arguments containing request and server action
+ * @param config Cache configuration with optional key(s) to invalidate
+ * @returns Result of the server action
+ *
+ * @example
+ * // Invalidate single cache
+ * decacheClientLoader(args, { key: '/amin/users' })
+ *
+ * @example
+ * // Invalidate multiple caches
+ * decacheClientLoader(args, {
+ *   key: ['/admin/dashboard', '/api/settings', '/api/profile']
+ * })
  */
-export interface CachedData<TData> {
-  /** Original server data */
-  serverData: TData;
-  /** Promise for background data revalidation */
-  deferredServerData?: Promise<TData>;
-  /** Cache key */
-  key: string;
-  /** Maximum age of the cache entry */
-  maxAge: number;
-}
+
+const DEFAULT_MEMORY_CACHE = new Map();
 
 export let cacheAdapter: CacheAdapter<CacheEntry<any>> = {
   getItem: async (key) => DEFAULT_MEMORY_CACHE.get(key),
   setItem: async (key, value) => DEFAULT_MEMORY_CACHE.set(key, value),
   removeItem: async (key) => DEFAULT_MEMORY_CACHE.delete(key),
-};
-
-type AugmentStorageAdapterOption<T> = {
-  useHybrid?: boolean;
-  cacheAdapter?: CacheAdapter<CacheEntry<T>>;
 };
 
 /**
@@ -147,7 +53,7 @@ type AugmentStorageAdapterOption<T> = {
  * @param options Options to configure the adapter
  * @returns Cache adapter for the storage
  */
-function augmentStorageAdapter<T>(
+export function augmentStorageAdapter<T>(
   storage: Storage,
   options: AugmentStorageAdapterOption<T> = { useHybrid: false },
 ): CacheAdapter<CacheEntry<T>> {
@@ -169,8 +75,8 @@ function augmentStorageAdapter<T>(
       removeItem: async (key) => storage.removeItem(key),
     };
   }
-
   // Hybrid caching: Use provided memory adapter and persistent storage
+
   return {
     getItem: async (key) => {
       const memoryEntry = await DEFAULT_MEMORY_CACHE.get(key);
@@ -235,44 +141,17 @@ export const configureGlobalCache = (
   }: Pick<AugmentStorageAdapterOption<any>, "useHybrid"> = {},
 ) => {
   if (typeof document === "undefined") return;
-
   const newCache = newCacheInstance();
 
   if (newCache instanceof Storage) {
     cacheAdapter = augmentStorageAdapter(newCache, { useHybrid });
     return;
   }
-
   if (newCache) {
     cacheAdapter = newCache;
   }
 };
 
-/**
- * Configuration for cache invalidation
- * @template T The type of data being cached
- */
-type DecacheConfig<T> = Pick<CacheConfig<CacheEntry<T>>, "adapter"> & {
-  key?: string | string[];
-};
-
-/**
- * Removes cached data after performing a server action
- * @template TData The type of data being cached
- * @param args Action arguments containing request and server action
- * @param config Cache configuration with optional key(s) to invalidate
- * @returns Result of the server action
- *
- * @example
- * // Invalidate single cache
- * decacheClientLoader(args, { key: '/api/user' })
- *
- * @example
- * // Invalidate multiple caches
- * decacheClientLoader(args, {
- *   key: ['/api/user', '/api/settings', '/api/profile']
- * })
- */
 export const decacheClientLoader = async <TData,>(
   { request, serverAction }: RouteClientActionArgs<TData>,
   {
@@ -282,8 +161,8 @@ export const decacheClientLoader = async <TData,>(
 ): Promise<TData> => {
   // Execute the server action first to ensure data is updated
   const data = await serverAction();
-
   // Invalidate all specified cache keys
+
   await invalidateCache(key, adapter);
   return data;
 };
@@ -324,66 +203,73 @@ export async function cacheClientLoader<TData extends object>(
     type = "swr",
     key = constructKey(request),
     adapter = cacheAdapter,
-    maxAge = DEFAULT_MAX_AGE,
+    maxAge = type === "swr" ? null : DEFAULT_MAX_AGE,
   } = config;
-
   const cacheEntry = await adapter.getItem(key);
 
   const isValidCacheEntry = validateCacheEntry<TData>(cacheEntry);
 
-  if (!isValidCacheEntry) {
+  console.log({ isValidCacheEntry });
+
+  if (!isValidCacheEntry || cacheEntry.revalidated) {
     const data = await serverLoader();
     const validData = await handleResponse(data);
     await adapter.setItem(key, {
       data: validData,
       maxAge,
       timestamp: Date.now(),
+      revalidated: false,
     });
-
     return {
       ...validData,
+      revalidated: false,
       serverData: validData,
       deferredServerData: undefined,
       key,
       maxAge,
     };
   }
+  const {
+    timestamp,
+    maxAge: storedMaxAge,
+    data: cacheData,
+    revalidated,
+  } = cacheEntry;
 
-  const { timestamp, maxAge: storedMaxAge, data: cacheData } = cacheEntry;
-  const isCacheExpired = isMaxAgeExpired(timestamp, storedMaxAge, type);
-
-  if (type === "normal" && !isCacheExpired) {
+  const cacheExpired = isCacheExpired(timestamp, storedMaxAge, type);
+  if (type === "normal" && !cacheExpired) {
     return {
       ...cacheData,
       key,
+      revalidated,
       deferredServerData: undefined,
       serverData: cacheData,
       maxAge: storedMaxAge,
     };
   }
-
-  if (isCacheExpired) {
+  if (cacheExpired) {
     const data = await serverLoader();
     const validData = await handleResponse(data);
-
     await adapter.setItem(key, {
       data: validData,
       maxAge,
       timestamp: Date.now(),
+      revalidated: false,
     });
 
     return {
       ...validData,
+      revalidated,
       serverData: validData,
       deferredServerData: type === "swr" ? serverLoader() : undefined,
       key,
       maxAge,
     };
   }
-
   return {
     ...cacheData,
     serverData: cacheData,
+    revalidated,
     deferredServerData: type === "swr" ? serverLoader() : undefined,
     key,
     maxAge: storedMaxAge,
@@ -413,26 +299,46 @@ export function ClientCacheProvider() {}
  * @returns Updated data with cache management functions
  */
 export function useCachedLoaderData<TData extends object>(
-  loaderData: TData & CachedData<TData>,
+  loaderData: TData | (TData & CachedData<TData>), // Supports both raw data and CachedData
   {
     adapter = cacheAdapter,
   }: { adapter?: CacheAdapter<CacheEntry<TData>> } = {},
 ) {
   const navigate = useNavigate();
-  const [freshData, setFreshData] = useState<TData>(loaderData.serverData);
+
+  // Type guard to check if loaderData is CachedData
+  const isCachedData = useCallback(
+    (
+      data: TData | (TData & CachedData<TData>),
+    ): data is TData & CachedData<TData> => {
+      return "serverData" in data && "key" in data && "maxAge" in data;
+    },
+    [],
+  );
+
+  // If loaderData is CachedData, extract serverData; otherwise use loaderData directly
+  const initialData = isCachedData(loaderData)
+    ? loaderData.serverData
+    : loaderData;
+  const [freshData, setFreshData] = useState<TData>(initialData);
 
   useEffect(() => {
-    if (!loaderData.deferredServerData) return;
+    if (!isCachedData(loaderData) || !loaderData.deferredServerData) return;
 
     let isMounted = true;
     loaderData.deferredServerData
       .then((newData) => {
         if (!isMounted) return;
-        adapter.setItem(loaderData.key, {
-          data: newData,
-          timestamp: Date.now(),
-          maxAge: loaderData.maxAge,
-        });
+
+        // Update cache if `key` is available
+        if (loaderData.key) {
+          adapter.setItem(loaderData.key, {
+            data: newData,
+            timestamp: Date.now(),
+            maxAge: loaderData.maxAge,
+            revalidated: false,
+          });
+        }
         setFreshData(newData);
       })
       .catch((e) => {
@@ -447,33 +353,123 @@ export function useCachedLoaderData<TData extends object>(
     return () => {
       isMounted = false;
     };
-  }, [
-    loaderData.deferredServerData,
-    loaderData.key,
-    adapter,
-    navigate,
-    loaderData.maxAge,
-  ]);
+  }, [loaderData, adapter, navigate, isCachedData]);
 
-  useEffect(() => {
-    setFreshData(loaderData.serverData);
-  }, [loaderData.serverData]);
-  //
   // useEffect(() => {
-  //   if (!isDataChanged(loaderData.serverData, freshData)) return;
-  //   setFreshData(loaderData.serverData);
-  // }, [loaderData.serverData, freshData]);
+  //   if (isCachedData(loaderData) && loaderData.serverData !== freshData) {
+  //     setFreshData(loaderData.serverData);
+  //   }
+  // }, [loaderData, freshData, isCachedData]);
+
+  // Update the cache if the data changes
+  useEffect(() => {
+    if (
+      isCachedData(loaderData) &&
+      loaderData.serverData &&
+      JSON.stringify(loaderData.serverData) !== JSON.stringify(freshData)
+    ) {
+      setFreshData(loaderData.serverData);
+    }
+  }, [freshData, isCachedData, loaderData]);
 
   return {
     ...freshData,
-    cacheKey: loaderData.key,
-    maxAge: loaderData.maxAge,
-    invalidate: () => invalidateCache(loaderData.key),
+    cacheKey: isCachedData(loaderData) ? loaderData.key : undefined,
+    maxAge: isCachedData(loaderData) ? loaderData.maxAge : null,
+    invalidate: isCachedData(loaderData)
+      ? () => invalidateCache(loaderData.key)
+      : async () => {}, // No-op if no cache key
   } as const;
 }
 
+/**
+ * Hook to manually invalidate cache keys.
+ * @returns A function to invalidate cache keys.
+ */
+export function useRevalidatedCache<T = unknown>(
+  adapter: CacheAdapter<CacheEntry<T>> = cacheAdapter,
+) {
+  return async function invalidate(key: string | string[]) {
+    const keys = Array.isArray(key) ? key : [key];
+
+    // Mark cache entries as invalidated
+    await Promise.all(
+      keys.map(async (k) => {
+        const cacheEntry = await adapter.getItem(k);
+        if (cacheEntry) {
+          cacheEntry.revalidated = true; // Add invalidated flag
+          await adapter.setItem(k, cacheEntry); // Update cache with invalidation
+        }
+      }),
+    );
+  };
+}
+
+/**
+ * Hook that provides the current route's cache key using React Router location
+ * @returns Current route's cache key
+ *
+ * @example
+ * function MyComponent() {
+ *   const cacheKey = useRouteKey();
+ *   const invalidateCurrentRoute = () => invalidateCache(cacheKey);
+ *   return <button onClick={invalidateCurrentRoute}>Refresh</button>;
+ * }
+ */
+export function useRouteKey(): string {
+  const location = useLocation();
+  return constructKey(location);
+}
+
+/**
+ * Hook providing cache invalidation functionality
+ * @returns Object containing invalidateCache function
+ */
+export const useCacheInvalidator = () => ({
+  invalidateCache,
+});
+
+export function isCacheExpired(
+  timestamp: number,
+  maxAge: number | null,
+  type: CacheConfig<any>["type"],
+): boolean {
+  if (!maxAge && type === "swr") return false;
+  if (!maxAge) return true;
+  const maxAgeInMs = maxAge * 1000;
+
+  const currentTime = Date.now();
+  return currentTime - timestamp > maxAgeInMs;
+}
+
+/**
+ * Creates a Zod schema for validating cache entries
+ * @template T The type of data being cached
+ * @returns Zod schema for cache entry validation
+ */
+export const createCacheEntrySchema = <T extends object>() =>
+  z.object({
+    data: z.record(z.any()).refine((obj) => Object.keys(obj).length > 0, {
+      message: "Data object cannot be empty",
+    }) as unknown as z.ZodType<T>,
+    timestamp: z.number().positive(),
+    maxAge: z.number().positive().nullable(),
+    revalidated: z.boolean(),
+  });
+/**
+ * Validates if a value is a valid cache entry
+ * @template T The type of data being cached
+ * @param value Value to validate
+ * @returns Type predicate indicating if the value is a valid cache entry
+ */
+export function validateCacheEntry<T extends object>(
+  value: unknown,
+): value is CacheEntry<T> {
+  const schema = createCacheEntrySchema<T>();
+  return schema.safeParse(value).success;
+}
 // Helper function to check data changes
-function isDataChanged<T>(newData: T, oldData: T): boolean {
+export function isDataChanged<T>(newData: T, oldData: T): boolean {
   return JSON.stringify(newData) !== JSON.stringify(oldData);
 }
 
@@ -496,25 +492,9 @@ export function constructKey(source: Request | Location): string {
     const url = new URL(source.url);
     return url.pathname + url.search + url.hash;
   }
-
   // Handle Location object
-  return source.pathname + source.search + source.hash;
-}
 
-/**
- * Hook that provides the current route's cache key using React Router location
- * @returns Current route's cache key
- *
- * @example
- * function MyComponent() {
- *   const cacheKey = useRouteKey();
- *   const invalidateCurrentRoute = () => invalidateCache(cacheKey);
- *   return <button onClick={invalidateCurrentRoute}>Refresh</button>;
- * }
- */
-export function useRouteKey(): string {
-  const location = useLocation();
-  return constructKey(location);
+  return source.pathname + source.search + source.hash;
 }
 
 /**
@@ -529,24 +509,3 @@ export const invalidateCache = async (
   const keys = Array.isArray(key) ? key : [key];
   await Promise.all(keys.map((k) => adapter.removeItem(k)));
 };
-
-/**
- * Hook providing cache invalidation functionality
- * @returns Object containing invalidateCache function
- */
-export const useCacheInvalidator = () => ({
-  invalidateCache,
-});
-
-function isMaxAgeExpired(
-  timestamp: number,
-  maxAge: number,
-  type?: "swr" | "normal",
-): boolean {
-  // If it's SWR type, never expire
-  if (type === "swr") return false;
-
-  const maxAgeInMs = maxAge * 1000;
-  const currentTime = Date.now();
-  return currentTime - timestamp > maxAgeInMs;
-}
