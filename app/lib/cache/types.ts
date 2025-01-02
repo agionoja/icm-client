@@ -65,6 +65,8 @@ export interface CacheAdapter<T> {
    * @param key Cache key
    */
   removeItem: (key: string) => Promise<any> | any;
+
+  clear: () => Promise<void>;
 }
 
 /**

@@ -24,10 +24,24 @@ export function useRevalidateOnFocus({
 
     if (!enabled) return;
 
+    // Add debounce to handle multiple rapid events
+    let revalidateTimeout: NodeJS.Timeout;
+
     const handleFocus = () => {
       if (isMounted.current) {
-        revalidate().catch((err) => console.error(err));
-        onRevalidate?.();
+        // Clear any pending revalidation
+        clearTimeout(revalidateTimeout);
+
+        // Debounce the revalidation
+        revalidateTimeout = setTimeout(() => {
+          revalidate().catch((err) => {
+            // Only log if still mounted and it's not a navigation abort
+            if (isMounted.current && err.name !== "DOMException") {
+              console.error(err);
+            }
+          });
+          onRevalidate?.();
+        }, 500);
       }
     };
 
@@ -36,6 +50,7 @@ export function useRevalidateOnFocus({
 
     return () => {
       isMounted.current = false;
+      clearTimeout(revalidateTimeout);
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
       onCleanup?.();

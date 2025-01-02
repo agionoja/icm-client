@@ -1,8 +1,8 @@
 import type { ColumnDef } from "@tanstack/table-core";
-import type { IUser } from "icm-shared";
 import { cn } from "~/lib/utils";
+import type { User } from "~/routes/account/admin/users/route";
 
-export const columns: ColumnDef<IUser>[] = [
+export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "email",
     header: "Email",

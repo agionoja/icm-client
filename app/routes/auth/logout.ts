@@ -3,8 +3,7 @@ import { getRole, getToken, logout, RoleRedirects } from "~/session";
 import { redirect } from "react-router";
 import { flashMessage } from "~/utils/flash-message";
 import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
-import { decacheClientLoader } from "~/lib/cache/cache";
-import { routesConfig } from "~/routes.config";
+import { clearStorageAdapters, memoryAdapter } from "~/lib/cache/cache";
 
 export async function action({ request }: Route.ActionArgs) {
   const { _action, ...values } = Object.fromEntries(await request.formData());
@@ -39,8 +38,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export async function clientAction(args: Route.ClientActionArgs) {
-  return decacheClientLoader(args, {
-    key: [routesConfig.account.layout.getFile, "__root"],
+  return clearStorageAdapters(args, {
+    adapters: [localStorage, memoryAdapter],
   });
 }
 
