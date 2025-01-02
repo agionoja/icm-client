@@ -1,9 +1,10 @@
 import { useRevalidator } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface BaseOptions {
   enabled?: boolean;
   onRevalidate?: () => void;
+  onCleanup?: () => void;
 }
 
 interface IntervalOptions extends BaseOptions {
@@ -13,76 +14,90 @@ interface IntervalOptions extends BaseOptions {
 export function useRevalidateOnFocus({
   enabled = false,
   onRevalidate,
+  onCleanup,
 }: BaseOptions = {}) {
-  const { revalidate, state } = useRevalidator();
+  const { revalidate } = useRevalidator();
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
+
     if (!enabled) return;
 
     const handleFocus = () => {
-      revalidate();
-      onRevalidate?.();
+      if (isMounted.current) {
+        revalidate().catch((err) => console.error(err));
+        onRevalidate?.();
+      }
     };
 
     window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [enabled, revalidate, onRevalidate]);
+    document.addEventListener("visibilitychange", handleFocus);
 
-  useEffect(() => {
-    if (!enabled) return;
-
-    const handleVisibilityChange = () => {
-      revalidate();
-      onRevalidate?.();
+    return () => {
+      isMounted.current = false;
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+      onCleanup?.();
     };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [enabled, revalidate, onRevalidate]);
-
-  return enabled ? { state } : { state: null };
+  }, [enabled, revalidate, onRevalidate, onCleanup]);
 }
 
 export function useRevalidateOnInterval({
   enabled = false,
   interval = 1000,
   onRevalidate,
+  onCleanup,
 }: IntervalOptions = {}) {
-  const { revalidate, state } = useRevalidator();
+  const { revalidate } = useRevalidator();
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
+
     if (!enabled) return;
 
     const intervalId = setInterval(() => {
-      revalidate();
-      onRevalidate?.();
+      if (isMounted.current) {
+        revalidate().catch((err) => console.error(err));
+        onRevalidate?.();
+      }
     }, interval);
 
-    return () => clearInterval(intervalId);
-  }, [enabled, interval, revalidate, onRevalidate]);
-
-  return enabled ? { state } : { state: null };
+    return () => {
+      isMounted.current = false;
+      clearInterval(intervalId);
+      onCleanup?.();
+    };
+  }, [enabled, interval, revalidate, onRevalidate, onCleanup]);
 }
 
 export function useRevalidateOnReconnect({
   enabled = false,
   onRevalidate,
+  onCleanup,
 }: BaseOptions = {}) {
-  const { revalidate, state } = useRevalidator();
+  const { revalidate } = useRevalidator();
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
+
     if (!enabled) return;
 
     const handleReconnect = () => {
-      revalidate();
-      onRevalidate?.();
+      if (isMounted.current) {
+        revalidate().catch((err) => console.error(err));
+        onRevalidate?.();
+      }
     };
 
     window.addEventListener("online", handleReconnect);
 
-    return () => window.removeEventListener("online", handleReconnect);
-  }, [enabled, revalidate, onRevalidate]);
-
-  return enabled ? { state } : { state: null };
+    return () => {
+      isMounted.current = false;
+      window.removeEventListener("online", handleReconnect);
+      onCleanup?.();
+    };
+  }, [enabled, revalidate, onRevalidate, onCleanup]);
 }

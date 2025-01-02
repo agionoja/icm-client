@@ -30,6 +30,10 @@ export interface NonPaginated {
   readonly __isPaginated: false;
 }
 
+export type ResponseKey<K extends string> = {
+  responseKey: K;
+};
+
 /**
  * Headers object type for HTTP requests.
  * Includes optional `Content-Type` and `Authorization` headers,
@@ -49,7 +53,7 @@ type Headers = {
  */
 export type FetchOptions<
   TReturnType,
-  Key extends string,
+  TKey extends ResponseKey<string>,
   TQueryType = TReturnType,
 > = Omit<RequestInit, "method" | "headers"> & {
   /** HTTP method (e.g., GET, POST) */
@@ -65,7 +69,7 @@ export type FetchOptions<
   /** Flag to include metadata in the response */
   hasMetadata?: boolean;
   /** Key to extract the primary data from the response */
-  responseKey: Key;
+  responseKey: TKey["responseKey"];
   /** Options for monitoring progress of the request */
   progressArgs?: Omit<ProgressArgs, "contentLength"> & { turnOff?: boolean };
 };
@@ -108,7 +112,7 @@ async function parseJsonWithDates(response: Response): Promise<any> {
  */
 export async function fetchClient<
   TReturnType,
-  Key extends string,
+  TKey extends ResponseKey<string>,
   TQueryType = TReturnType,
   TPagination extends Paginated | NonPaginated = NonPaginated,
 >(
@@ -121,11 +125,11 @@ export async function fetchClient<
     token,
     query,
     ...rest
-  }: FetchOptions<TReturnType, Key, TQueryType>,
+  }: FetchOptions<TReturnType, TKey, TQueryType>,
 ): Promise<
   TPagination extends Paginated
-    ? ApiResponseMany<TReturnType, Key>
-    : ApiResponseOne<TReturnType, Key>
+    ? ApiResponseMany<TReturnType, TKey["responseKey"]>
+    : ApiResponseOne<TReturnType, TKey["responseKey"]>
 > {
   if (!responseKey) throw new Error("Response Key is required");
 
@@ -217,8 +221,8 @@ export async function fetchClient<
     };
 
     return transformedResponse as TPagination extends Paginated
-      ? ApiResponseMany<TReturnType, Key>
-      : ApiResponseOne<TReturnType, Key>;
+      ? ApiResponseMany<TReturnType, TKey["responseKey"]>
+      : ApiResponseOne<TReturnType, TKey["responseKey"]>;
   } catch (err) {
     logger.logRequest(method, endpoint, queryString, startTime, null, err);
 

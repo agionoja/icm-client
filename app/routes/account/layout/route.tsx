@@ -1,11 +1,5 @@
 import type { Route } from "./+types/route";
-import {
-  Outlet,
-  redirect,
-  useLocation,
-  useNavigation,
-  useSubmit,
-} from "react-router";
+import { Outlet, redirect, useNavigation, useSubmit } from "react-router";
 import {
   commitSession,
   getJwtMaxAgeInMs,
@@ -23,7 +17,7 @@ import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
-import { cacheClientLoader, invalidateCache } from "~/lib/cache";
+import { cacheClientLoader, invalidateCache } from "~/lib/cache/cache";
 import { SkeletonCard } from "~/routes/account/admin/users/route";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -84,14 +78,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
-export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return await cacheClientLoader(args, {
-    type: "normal",
-    key: routesConfig.account.layout.getFile,
-    maxAge: 10,
-  });
-}
-
+// export async function clientLoader(args: Route.ClientLoaderArgs) {
+//   return await cacheClientLoader(args, {
+//     type: "normal",
+//     key: routesConfig.account.layout.getFile,
+//     maxAge: 60,
+//   });
+// }
 //
 // clientLoader.hydrate = true as const;
 //
@@ -102,7 +95,7 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   const { state } = useNavigation();
   const { sessionTimeout, sessionTimeoutKey, redirectTo, user, defaultOpen } =
-    "serverData" in loaderData ? loaderData.serverData : loaderData;
+    loaderData;
 
   const submit = useSubmit();
   useSessionTimeout(sessionTimeout, () => {

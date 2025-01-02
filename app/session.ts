@@ -3,7 +3,7 @@ import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
 import { Role, type UserUnion } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
-import { fetchClient } from "~/fetch/fetch-client.server";
+import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
 import {
   adminRouteConfig,
@@ -159,10 +159,13 @@ export async function requireUser(
 
   const token = await getToken(request);
 
-  const response = await fetchClient<UserUnion, "user">("/auth/profile", {
-    responseKey: "user",
-    token,
-  });
+  const response = await fetchClient<UserUnion, ResponseKey<"user">>(
+    "/auth/profile",
+    {
+      responseKey: "user",
+      token,
+    },
+  );
 
   if (response.exception) {
     throw await redirectWithError(redirectUrl, response.exception.message, {

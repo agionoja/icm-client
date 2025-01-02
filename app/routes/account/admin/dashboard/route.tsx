@@ -1,6 +1,7 @@
 import type { Route } from "./+types/route";
-// import { getUserDataCookie } from "~/cookies/user-cookie";
 import { Outlet } from "react-router";
+import { cacheClientLoader } from "~/lib/cache/cache";
+import { getUserDataCookie } from "~/cookies/user-cookie";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -13,15 +14,17 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-// export async function loader({ request }: Route.LoaderArgs) {
-//   const user = await getUserDataCookie(request);
-//
-//   return { user };
-// }
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await getUserDataCookie(request);
 
-// export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-//   return;
-// }
+  return { user };
+}
+
+export async function clientLoader(args: Route.ClientLoaderArgs) {
+  return cacheClientLoader(args, { type: "normal" });
+}
+
+clientLoader.hydrate = true as const;
 
 export default function AdminDashboard() {
   return (

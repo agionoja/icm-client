@@ -1,4 +1,4 @@
-import { fetchClient } from "~/fetch/fetch-client.server";
+import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server";
 import { data } from "react-router";
 import type { IUser } from "icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
@@ -17,7 +17,7 @@ export async function login(
 ) {
   const { data: userToken, exception } = await fetchClient<
     string,
-    "accessToken"
+    ResponseKey<"accessToken">
   >("/auth/login", {
     responseKey: "accessToken",
     method: "POST",
@@ -28,7 +28,7 @@ export async function login(
     data: profile,
     exception: profileException,
     message: profileMessage,
-  } = await fetchClient<IUser, "user">("/auth/profile", {
+  } = await fetchClient<IUser, ResponseKey<"user">>("/auth/profile", {
     responseKey: "user",
     token: userToken?.accessToken,
   });
@@ -55,7 +55,7 @@ export async function login(
 
   const token = userToken?.accessToken;
 
-  return  createSession(
+  return createSession(
     {
       role: profile.user.role,
       request,

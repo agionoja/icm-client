@@ -3,7 +3,7 @@ import { getRole, getToken, logout, RoleRedirects } from "~/session";
 import { redirect } from "react-router";
 import { flashMessage } from "~/utils/flash-message";
 import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
-import { decacheClientLoader } from "~/lib/cache";
+import { decacheClientLoader } from "~/lib/cache/cache";
 import { routesConfig } from "~/routes.config";
 
 export async function action({ request }: Route.ActionArgs) {

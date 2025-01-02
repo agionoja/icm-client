@@ -1,13 +1,13 @@
-import { fetchClient } from "~/fetch/fetch-client.server";
+import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server";
 import type { IUser } from "icm-shared";
 
 export async function checkUser(email: string, phone: string) {
   const [findByEmail, findByPhone] = await Promise.all([
-    fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
+    fetchClient<boolean, ResponseKey<"isExists">, IUser>("/auth/check-user", {
       responseKey: "isExists",
       query: { filter: { email }, ignoreFilterFlags: ["isActive"] },
     }),
-    fetchClient<boolean, "isExists", IUser>("/auth/check-user", {
+    fetchClient<boolean, ResponseKey<"isExists">, IUser>("/auth/check-user", {
       responseKey: "isExists",
       query: { filter: { phone }, ignoreFilterFlags: ["isActive"] },
     }),
