@@ -5,7 +5,7 @@ import {
   type ResponseKey,
 } from "~/fetch/fetch-client.server";
 import { getToken, restrictTo } from "~/session";
-import { type IUser, Role, type UserUnion } from "icm-shared";
+import { type IUser, Role } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/components/data-table";
 import { columns } from "~/routes/account/admin/users/columns";
 import { Await, data } from "react-router";
@@ -16,15 +16,8 @@ import {
   ClientCacheProvider,
   memoryAdapter,
   useCachedLoaderData,
-  useRouteKey,
-  useSwrData,
 } from "~/lib/cache/cache";
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  useRevalidateOnFocus,
-  useRevalidateOnInterval,
-  useRevalidateOnReconnect,
-} from "~/hooks/revalidate";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { envConfig } from "~/env-config.server";
 
@@ -39,10 +32,15 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
+export type User = Pick<
+  IUser,
+  "isActive" | "role" | "lastname" | "firstname" | "email"
+>;
+
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
   await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 8 : 4,
+    envConfig(process.env).NODE_ENV === "development" ? 10 : 0,
   );
   const token = await getToken(request);
 
@@ -58,15 +56,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 
   const response = await fetchClient<
-    UserUnion,
+    User,
     ResponseKey<"users">,
-    UserUnion,
+    IUser,
     Paginated
   >("/users", {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 2, page: 50 },
+      paginate: { limit: 100, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -162,11 +160,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {
-                  return (
-                    <h3>
-                      Streamed user: {data?.data?.user.firstname?.toString()}
-                    </h3>
-                  );
+                  return <h3>Streamed user: {data?.data?.user.firstname}</h3>;
                 }}
               </Await>
             </Suspense>

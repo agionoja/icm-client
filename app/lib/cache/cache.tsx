@@ -45,11 +45,13 @@ const MEMORY_STORE = new Map();
 export const memoryAdapter: CacheAdapter<any> = {
   getItem: async (key) => MEMORY_STORE.get(key) ?? null,
   setItem: async (key, value) => {
-    MEMORY_STORE.set(key, Object.freeze({ ...value }));
+    MEMORY_STORE.set(key, { ...value });
   },
   removeItem: async (key) => {
     MEMORY_STORE.delete(key);
   },
+
+  clear: async () => MEMORY_STORE.clear(),
 };
 
 export function memoryAdapterFactory<T>(): CacheAdapter<CacheEntry<T>> {
@@ -78,6 +80,7 @@ export let cacheAdapter: CacheAdapter<CacheEntry<any>> = {
   getItem: async (key) => MEMORY_STORE.get(key),
   setItem: async (key, value) => MEMORY_STORE.set(key, value),
   removeItem: async (key) => MEMORY_STORE.delete(key),
+  clear: async () => MEMORY_STORE.clear(),
 };
 
 /**
@@ -102,6 +105,7 @@ export function augmentStorageAdapter<T>(
     },
     setItem: async (key, value) => storage.setItem(key, JSON.stringify(value)),
     removeItem: async (key) => storage.removeItem(key),
+    clear: async () => storage.clear(),
   };
 }
 
@@ -155,6 +159,26 @@ export const decacheClientLoader = async <TData,>(
   await invalidateCache(key, adapter);
   return data;
 };
+
+export async function clearStorageAdapters<TData>(
+  { serverAction }: RouteClientActionArgs<TData>,
+  {
+    adapters = [cacheAdapter],
+  }: { adapters: Array<CacheAdapter<CacheEntry<TData>> | Storage> },
+) {
+  // Execute the server action
+  const data = await serverAction();
+
+  // Iterate through the array of adapters and clear each one
+  for (const adapter of adapters) {
+    if (typeof adapter.clear === "function") {
+      await adapter.clear();
+    }
+  }
+
+  // Return the server action result
+  return data;
+}
 
 function isRedirect(response: Response): boolean {
   return response.status >= 300 && response.status < 400;
