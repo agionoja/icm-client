@@ -66,7 +66,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 100, page: 50 },
+      paginate: { limit: 2, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -138,8 +138,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
     adapter: memoryAdapter,
   });
 
-  let error = cachedLoaderData.error;
-  const userPromise = cachedLoaderData.data?.userPromise;
+  let error = loaderData.error;
 
   useEffect(() => {
     if (error) {
@@ -161,7 +160,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
           <div className="container mx-auto py-10">
             <DataTable columns={columns} data={tableData} />
             <Suspense fallback={<div>Loading non-critical value...</div>}>
-              <Await resolve={userPromise}>
+              <Await resolve={data?.userPromise}>
                 {(data) => {
                   return (
                     <h3>
