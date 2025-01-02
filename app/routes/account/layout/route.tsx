@@ -1,11 +1,5 @@
 import type { Route } from "./+types/route";
-import {
-  Outlet,
-  redirect,
-  useLocation,
-  useNavigation,
-  useSubmit,
-} from "react-router";
+import { Outlet, redirect, useNavigation, useSubmit } from "react-router";
 import {
   commitSession,
   getJwtMaxAgeInMs,

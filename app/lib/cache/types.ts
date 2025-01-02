@@ -10,8 +10,35 @@ export interface CacheEntry<T> {
   timestamp: number;
   /** Maximum age of the cache entry in seconds */
   maxAge: number | null;
+}
 
-  revalidated: boolean;
+/**
+ * Extended data type including cache metadata
+ * @template TData The type of data being cached
+ */
+export interface CachedData<TData>
+  extends Pick<Required<CacheConfig<TData>>, "maxAge" | "key"> {
+  /** Original server data */
+  serverData: TData;
+  /** Promise for background data revalidation */
+  deferredServerData?: Promise<TData>;
+}
+
+/**
+ * Configuration options for cache behavior
+ * @template T The type of data being cached
+ */
+export interface CacheConfig<T> {
+  /** Cache strategy - 'swr' (Stale-While-Revalidate) or 'normal' */
+  type?: "swr" | "normal";
+  /** Time in seconds before cache entry expires */
+  maxAge?: number | null;
+  /** Custom cache key */
+  key?: string;
+  /** Custom cache storage adapter */
+  adapter?: CacheAdapter<T>;
+
+  revalidate?: boolean;
 }
 
 /**
@@ -61,43 +88,6 @@ export interface RouteClientActionArgs<TServerData> {
   /** Function that performs the server action */
   serverAction: () => Promise<TServerData>;
 }
-
-/**
- * Configuration options for cache behavior
- * @template T The type of data being cached
- */
-export interface CacheConfig<T> {
-  /** Cache strategy - 'swr' (Stale-While-Revalidate) or 'normal' */
-  type?: "swr" | "normal";
-  /** Time in seconds before cache entry expires */
-  maxAge?: number | null;
-  /** Custom cache key */
-  key?: string;
-  /** Custom cache storage adapter */
-  adapter?: CacheAdapter<T>;
-}
-
-/**
- * Extended data type including cache metadata
- * @template TData The type of data being cached
- */
-export interface CachedData<TData> {
-  /** Original server data */
-  serverData: TData;
-  /** Promise for background data revalidation */
-  deferredServerData?: Promise<TData>;
-  /** Cache key */
-  key: string;
-  /** Maximum age of the cache entry */
-  maxAge: number | null;
-
-  revalidated: boolean;
-}
-
-export type AugmentStorageAdapterOption<T> = {
-  useHybrid?: boolean;
-  cacheAdapter?: CacheAdapter<CacheEntry<T>>;
-};
 
 /**
  * Configuration for cache invalidation

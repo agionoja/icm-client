@@ -1,8 +1,7 @@
-import type { Location } from "react-router";
+import { Await, type Location } from "react-router";
 import { useLocation, useNavigate } from "react-router";
 import React, { useCallback, useEffect, useState } from "react";
 import type {
-  AugmentStorageAdapterOption,
   CacheAdapter,
   CacheConfig,
   CachedData,
@@ -13,12 +12,49 @@ import type {
 } from "~/lib/cache/types";
 import { z } from "zod";
 import { dateReviver } from "~/utils/date-reviver";
+import {
+  useRevalidateOnFocus,
+  useRevalidateOnInterval,
+  useRevalidateOnReconnect,
+} from "~/hooks/revalidate";
 
 /**
  *
  * Default maximum age for cache entries in seconds (5 minutes)
  */
-const DEFAULT_MAX_AGE = 60 * 5;
+const DEFAULT_MAX_AGE = 60; // 1 minute;
+
+const MEMORY_STORE = new Map();
+
+/**
+ * Immutable memory cache adapter for handling Promise-containing data
+ * Useful when caching data that cannot be serialized (e.g., Promises, Functions)
+ *
+ * @example
+ * ```ts
+ * import { memoryAdapter } from './cache-adapters';
+ *
+ * const loader = async ({ request }) => {
+ *   return cacheClientLoader({ request, serverLoader }, {
+ *     adapter: memoryAdapter,
+ *     type: 'swr'
+ *   });
+ * };
+ * ```
+ */
+export const memoryAdapter: CacheAdapter<any> = {
+  getItem: async (key) => MEMORY_STORE.get(key) ?? null,
+  setItem: async (key, value) => {
+    MEMORY_STORE.set(key, Object.freeze({ ...value }));
+  },
+  removeItem: async (key) => {
+    MEMORY_STORE.delete(key);
+  },
+};
+
+export function memoryAdapterFactory<T>(): CacheAdapter<CacheEntry<T>> {
+  return memoryAdapter;
+}
 
 /**
  * Removes cached data after performing a server action
@@ -38,113 +74,69 @@ const DEFAULT_MAX_AGE = 60 * 5;
  * })
  */
 
-const DEFAULT_MEMORY_CACHE = new Map();
-
 export let cacheAdapter: CacheAdapter<CacheEntry<any>> = {
-  getItem: async (key) => DEFAULT_MEMORY_CACHE.get(key),
-  setItem: async (key, value) => DEFAULT_MEMORY_CACHE.set(key, value),
-  removeItem: async (key) => DEFAULT_MEMORY_CACHE.delete(key),
+  getItem: async (key) => MEMORY_STORE.get(key),
+  setItem: async (key, value) => MEMORY_STORE.set(key, value),
+  removeItem: async (key) => MEMORY_STORE.delete(key),
 };
 
 /**
  * Creates a storage adapter from a standard Web Storage object
  * @template T The type of data being cached
  * @param storage Web Storage object (localStorage/sessionStorage)
- * @param options Options to configure the adapter
  * @returns Cache adapter for the storage
  */
 export function augmentStorageAdapter<T>(
   storage: Storage,
-  options: AugmentStorageAdapterOption<T> = { useHybrid: false },
 ): CacheAdapter<CacheEntry<T>> {
-  if (!options.useHybrid) {
-    // Default behavior: Persistent storage only
-    return {
-      getItem: async (key) => {
-        const storedItem = storage.getItem(key);
-        if (!storedItem) return null;
-        try {
-          return JSON.parse(storedItem, dateReviver);
-        } catch (e) {
-          console.warn(`Error parsing cache for key: ${key}`, e);
-          return null;
-        }
-      },
-      setItem: async (key, value) =>
-        storage.setItem(key, JSON.stringify(value)),
-      removeItem: async (key) => storage.removeItem(key),
-    };
-  }
-  // Hybrid caching: Use provided memory adapter and persistent storage
-
   return {
     getItem: async (key) => {
-      const memoryEntry = await DEFAULT_MEMORY_CACHE.get(key);
-      if (memoryEntry) return memoryEntry;
-
       const storedItem = storage.getItem(key);
       if (!storedItem) return null;
-
       try {
-        const parsed = JSON.parse(storedItem, dateReviver);
-        DEFAULT_MEMORY_CACHE.set(key, parsed); // Populate memory cache
-        return parsed;
+        return JSON.parse(storedItem, dateReviver);
       } catch (e) {
         console.warn(`Error parsing cache for key: ${key}`, e);
         return null;
       }
     },
-    setItem: async (key, value) => {
-      DEFAULT_MEMORY_CACHE.set(key, value);
-      storage.setItem(key, JSON.stringify(value));
-    },
-    removeItem: async (key) => {
-      DEFAULT_MEMORY_CACHE.delete(key);
-      storage.removeItem(key);
-    },
+    setItem: async (key, value) => storage.setItem(key, JSON.stringify(value)),
+    removeItem: async (key) => storage.removeItem(key),
   };
 }
 
 /**
  * Creates a new cache adapter instance
  * @param adapter Factory function that returns a cache adapter
- * @param useHybrid
  * @returns Object containing the configured adapter
  */
-export const createCacheAdapter = (
-  adapter: () => CacheAdapter<CacheEntry<any>>,
-  {
-    useHybrid = false,
-  }: Pick<AugmentStorageAdapterOption<any>, "useHybrid"> = {},
-) => {
+export function createCacheAdapter<T>(
+  adapter: () => CacheAdapter<CacheEntry<T>>,
+) {
   if (typeof document === "undefined") return { adapter: undefined };
   const adapterInstance = adapter();
   if (adapterInstance instanceof Storage) {
     return {
-      adapter: augmentStorageAdapter(adapterInstance, { useHybrid }),
+      adapter: augmentStorageAdapter(adapterInstance),
     };
   }
   return {
     adapter: adapter(),
   };
-};
+}
 
 /**
  * Configures the global cache instance
  * @param newCacheInstance Factory function that returns a cache adapter or Storage object
- * @param useHybrid Whether to enable hybrid caching (default: false)
  */
 export const configureGlobalCache = (
   newCacheInstance: () => CacheAdapter<CacheEntry<any>> | Storage,
-  {
-    useHybrid = false,
-  }: Pick<AugmentStorageAdapterOption<any>, "useHybrid"> = {},
 ) => {
   if (typeof document === "undefined") return;
   const newCache = newCacheInstance();
 
   if (newCache instanceof Storage) {
-    cacheAdapter = augmentStorageAdapter(newCache, { useHybrid });
+    cacheAdapter = augmentStorageAdapter(newCache);
     return;
   }
   if (newCache) {
@@ -159,10 +151,7 @@ export const decacheClientLoader = async <TData,>(
     adapter = cacheAdapter,
   }: DecacheConfig<TData> = {},
 ): Promise<TData> => {
-  // Execute the server action first to ensure data is updated
   const data = await serverAction();
-  // Invalidate all specified cache keys
-
   await invalidateCache(key, adapter);
   return data;
 };
@@ -204,92 +193,204 @@ export async function cacheClientLoader<TData extends object>(
     key = constructKey(request),
     adapter = cacheAdapter,
     maxAge = type === "swr" ? null : DEFAULT_MAX_AGE,
+    revalidate = false,
   } = config;
   const cacheEntry = await adapter.getItem(key);
 
   const isValidCacheEntry = validateCacheEntry<TData>(cacheEntry);
 
-  console.log({ isValidCacheEntry });
-
-  if (!isValidCacheEntry || cacheEntry.revalidated) {
+  // If no cache or invalid cache, fetch fresh data
+  if (!isValidCacheEntry) {
     const data = await serverLoader();
     const validData = await handleResponse(data);
     await adapter.setItem(key, {
       data: validData,
       maxAge,
       timestamp: Date.now(),
-      revalidated: false,
     });
     return {
       ...validData,
-      revalidated: false,
       serverData: validData,
       deferredServerData: undefined,
       key,
       maxAge,
     };
   }
-  const {
-    timestamp,
-    maxAge: storedMaxAge,
-    data: cacheData,
-    revalidated,
-  } = cacheEntry;
+
+  const { timestamp, maxAge: storedMaxAge, data: cacheData } = cacheEntry;
 
   const cacheExpired = isCacheExpired(timestamp, storedMaxAge, type);
-  if (type === "normal" && !cacheExpired) {
+  const shouldRevalidate = cacheExpired || revalidate;
+
+  if (import.meta.env.DEV) {
+    console.log({ type, revalidate, cacheExpired, shouldRevalidate });
+  }
+
+  // For SWR, if the cache is marked for revalidation or expired, trigger background fetch
+  // but still return cached data immediately
+  if (type === "swr" && shouldRevalidate) {
+    // Mark cache as stale but still valid
+
+    await adapter.setItem(key, {
+      ...cacheEntry,
+    });
     return {
       ...cacheData,
-      key,
-      revalidated,
-      deferredServerData: undefined,
+
       serverData: cacheData,
+      deferredServerData: serverLoader(), // Background fetch
+      key,
       maxAge: storedMaxAge,
     };
   }
-  if (cacheExpired) {
+  // For normal caching, if expired or revalidated, wait for fresh data
+  if (type === "normal" && shouldRevalidate) {
     const data = await serverLoader();
     const validData = await handleResponse(data);
     await adapter.setItem(key, {
       data: validData,
       maxAge,
       timestamp: Date.now(),
-      revalidated: false,
     });
 
     return {
       ...validData,
-      revalidated,
+      revalidated: false,
+      stale: false,
       serverData: validData,
-      deferredServerData: type === "swr" ? serverLoader() : undefined,
+      deferredServerData: undefined,
       key,
       maxAge,
     };
   }
+
+  // Cache is still valid
   return {
     ...cacheData,
     serverData: cacheData,
-    revalidated,
+    revalidated: false,
     deferredServerData: type === "swr" ? serverLoader() : undefined,
     key,
     maxAge: storedMaxAge,
   };
 }
 
-type ClientCacheContext = {};
-
-const ClientCacheContext = React.createContext<ClientCacheContext | null>(null);
-const useClientCache = () => {
-  const context = React.useContext(ClientCacheContext);
-  if (!context) {
-    throw new Error(
-      "useClientCache must be used within the ClientCacheProvider",
-    );
-  }
-  return context;
+type MutableRevalidate = {
+  revalidate: boolean;
+};
+type ClientCacheProviderProps<TData> = {
+  children: (data: TData) => React.ReactNode;
+  enabled?: boolean;
+  mutableRevalidate: MutableRevalidate;
+  interval?: number;
+  loaderData: TData | (TData & CachedData<TData>);
 };
 
-export function ClientCacheProvider() {}
+export function ClientCacheProvider<TData extends object>({
+  children,
+  mutableRevalidate,
+  enabled = true,
+  interval = 50_000,
+  loaderData,
+}: ClientCacheProviderProps<TData>) {
+  const handleRevalidate = () => {
+    mutableRevalidate.revalidate = true;
+    if (import.meta.env.DEV) {
+      console.log("revalidating", {
+        revalidate: mutableRevalidate.revalidate,
+      });
+    }
+  };
+
+  const handleRevalidateCleanup = () => {
+    mutableRevalidate.revalidate = false;
+    if (import.meta.env.DEV) {
+      console.log("cleanup", { revalidate: mutableRevalidate.revalidate });
+    }
+  };
+
+  useRevalidateOnFocus({
+    enabled,
+    onRevalidate: () => handleRevalidate(),
+    onCleanup: () => handleRevalidateCleanup(),
+  });
+
+  useRevalidateOnInterval({
+    enabled,
+    interval,
+    onRevalidate: () => handleRevalidate(),
+    onCleanup: () => handleRevalidateCleanup(),
+  });
+
+  useRevalidateOnReconnect({
+    enabled,
+    onRevalidate: () => handleRevalidate(),
+    onCleanup: () => handleRevalidateCleanup(),
+  });
+
+  const SWR = useSwrData(loaderData);
+
+  return <SWR>{(data) => <>{children(data)}</>}</SWR>;
+}
+/**
+ * Creates a wrapper component that provides server data to children.
+ *
+ * @template TData The type of the server data being handled
+ * @returns A functional React component to use server data
+ *
+ * @example
+ * ```tsx
+ * const SWR = useSerData({
+ *   serverData: { name: "Alice" },
+ *   deferredServerData: fetchData(),
+ *   maxAge: 60,
+ *   key: "user-data",
+ * });
+ *
+ * return (
+ *   <SWR>
+ *     {(data) => <div>Name: {data.name}</div>}
+ *   </SWR>
+ * );
+ * ```
+ * @param loaderData
+ */
+
+export function useSwrData<TData extends object>(
+  loaderData: TData | (TData & CachedData<TData>),
+) {
+  return function SWR({
+    children,
+  }: {
+    children: (data: TData) => React.ReactElement;
+  }) {
+    // Type guard to narrow down the type
+    const isCachedData = (value: any): value is CachedData<TData> => {
+      return "deferredServerData" in value && "serverData" in value;
+    };
+
+    if (isCachedData(loaderData)) {
+      const { deferredServerData, serverData } = loaderData;
+
+      return (
+        <>
+          {deferredServerData ? (
+            <React.Suspense fallback={children(serverData)}>
+              <Await resolve={deferredServerData}>
+                {(resolvedData) => children(resolvedData)}
+              </Await>
+            </React.Suspense>
+          ) : (
+            children(serverData)
+          )}
+        </>
+      );
+    }
+
+    // Fallback for plain TData
+    return <>{children(loaderData)}</>;
+  };
+}
 
 /**
  * React hook for managing cached loader data
@@ -311,7 +412,7 @@ export function useCachedLoaderData<TData extends object>(
     (
       data: TData | (TData & CachedData<TData>),
     ): data is TData & CachedData<TData> => {
-      return "serverData" in data && "key" in data && "maxAge" in data;
+      return "deferredServerData" in data && "serverData" in data;
     },
     [],
   );
@@ -330,13 +431,11 @@ export function useCachedLoaderData<TData extends object>(
       .then((newData) => {
         if (!isMounted) return;
 
-        // Update cache if `key` is available
-        if (loaderData.key) {
+        if (isCachedData(loaderData)) {
           adapter.setItem(loaderData.key, {
             data: newData,
             timestamp: Date.now(),
             maxAge: loaderData.maxAge,
-            revalidated: false,
           });
         }
         setFreshData(newData);
@@ -355,12 +454,6 @@ export function useCachedLoaderData<TData extends object>(
     };
   }, [loaderData, adapter, navigate, isCachedData]);
 
-  // useEffect(() => {
-  //   if (isCachedData(loaderData) && loaderData.serverData !== freshData) {
-  //     setFreshData(loaderData.serverData);
-  //   }
-  // }, [loaderData, freshData, isCachedData]);
-
   // Update the cache if the data changes
   useEffect(() => {
     if (
@@ -374,35 +467,13 @@ export function useCachedLoaderData<TData extends object>(
 
   return {
     ...freshData,
+    ...loaderData,
     cacheKey: isCachedData(loaderData) ? loaderData.key : undefined,
     maxAge: isCachedData(loaderData) ? loaderData.maxAge : null,
     invalidate: isCachedData(loaderData)
       ? () => invalidateCache(loaderData.key)
-      : async () => {}, // No-op if no cache key
+      : async () => {},
   } as const;
-}
-
-/**
- * Hook to manually invalidate cache keys.
- * @returns A function to invalidate cache keys.
- */
-export function useRevalidatedCache<T = unknown>(
-  adapter: CacheAdapter<CacheEntry<T>> = cacheAdapter,
-) {
-  return async function invalidate(key: string | string[]) {
-    const keys = Array.isArray(key) ? key : [key];
-
-    // Mark cache entries as invalidated
-    await Promise.all(
-      keys.map(async (k) => {
-        const cacheEntry = await adapter.getItem(k);
-        if (cacheEntry) {
-          cacheEntry.revalidated = true; // Add invalidated flag
-          await adapter.setItem(k, cacheEntry); // Update cache with invalidation
-        }
-      }),
-    );
-  };
 }
 
 /**
@@ -454,7 +525,8 @@ export const createCacheEntrySchema = <T extends object>() =>
     }) as unknown as z.ZodType<T>,
     timestamp: z.number().positive(),
     maxAge: z.number().positive().nullable(),
-    revalidated: z.boolean(),
+    // revalidated: z.boolean(),
+    // stale: z.boolean(),
   });
 /**
  * Validates if a value is a valid cache entry
@@ -472,7 +544,6 @@ export function validateCacheEntry<T extends object>(
 export function isDataChanged<T>(newData: T, oldData: T): boolean {
   return JSON.stringify(newData) !== JSON.stringify(oldData);
 }
-
 /**
  * Constructs a cache key from either a Request object or React Router Location
  * @param source Request or Location object to generate key from

@@ -1,4 +1,4 @@
-import { fetchClient } from "~/fetch/fetch-client.server"; // Assuming fetchClient is properly set up
+import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server"; // Assuming fetchClient is properly set up
 import { getToken } from "~/session"; // Assuming you have a way to retrieve tokens
 
 export async function makeRepeatedRequests<T>(
@@ -12,7 +12,7 @@ export async function makeRepeatedRequests<T>(
   try {
     // Create an array of `times` length with fetchClient calls
     const requests = Array.from({ length: times }, () =>
-      fetchClient<T, string>(endpoint, {
+      fetchClient<T, ResponseKey<"response">>(endpoint, {
         responseKey: "response", // Use a generic key since it's the same request
         token,
       }),
