@@ -16,12 +16,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function Layout({ loaderData }: Route.ComponentProps) {
   return (
-    <div className={"px-5 md:px-28"}>
+    <div className={"min-h-screen flex flex-col"}>
       <Header
         roleRedirectUrl={loaderData?.roleRedirectUrl}
         isLoggedIn={loaderData.isLoggedIn}
       />
       <Outlet />
+       {/* Image Footer */}
+       <div className="relative mt-[180px]">
+       <img className="absolute z-[2] bottom-[-300px] " src="/landing/image-footer.png" alt="" />
+      <footer className="absolute bg-[#151515] h-[395px] w-full z-[10]"> 
+        Hello 
+      </footer>
+      </div>
     </div>
   );
 }

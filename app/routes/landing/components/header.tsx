@@ -16,7 +16,7 @@ export function Header({ isLoggedIn, roleRedirectUrl }: Props) {
     <>
       <header
         className={
-          "flex w-full items-start justify-between py-6 md:items-center"
+          "flex px-5 md:px-28 w-full items-start justify-between py-6 md:items-center"
         }
       >
         <img width={146} height={40} src={logo} alt="ICM Teach logo" />
