@@ -7,7 +7,7 @@ import type {
 import {
   constructKey,
   handleResponse,
-  isCacheExpired,
+  isState,
   validateCacheEntry,
 } from "../utils";
 import { getCacheAdapter } from "./adapters";
@@ -26,7 +26,7 @@ const DEFAULT_MAX_AGE = 60; // 1 minute;
  * @param config Cache configuration
  * @returns Cached data with additional metadata
  */
-export async function zzcacheClientLoader<TData extends object>(
+export async function cacheClientLoader<TData extends object>(
   { request, serverLoader }: RouteClientLoaderArgs<TData>,
   config: CacheConfig<CacheEntry<TData>> = {},
 ): Promise<TData & CachedData<TData>> {
@@ -69,10 +69,10 @@ export async function zzcacheClientLoader<TData extends object>(
     }
 
     const { timestamp, maxAge: storedMaxAge, data: cacheData } = cacheEntry;
-    const cacheExpired = isCacheExpired(timestamp, storedMaxAge, type);
+    const cacheExpired = isState(timestamp, storedMaxAge, type);
     const shouldRevalidate = cacheExpired || revalidate;
 
-    console.log({shouldRevalidate, revalidate, cacheExpired});
+    console.log({ revalidate, cacheExpired, shouldRevalidate, key });
 
     // For SWR - return cache immediately but revalidate in background
     if (type === "swr" && shouldRevalidate) {

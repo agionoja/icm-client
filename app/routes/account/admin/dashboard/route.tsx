@@ -1,6 +1,6 @@
 import type { Route } from "./+types/route";
 import { Outlet } from "react-router";
-import { cacheClientLoader } from "react-router-client-cache";
+import { cacheClientLoader } from "~/lib/src";
 import { getUserDataCookie } from "~/cookies/user-cookie";
 
 export const meta: Route.MetaFunction = () => {
