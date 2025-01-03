@@ -11,15 +11,19 @@ import { columns } from "~/routes/account/admin/users/columns";
 import { Await, data } from "react-router";
 import { toast } from "react-toastify";
 import { Suspense, useEffect } from "react";
-import {
-  cacheClientLoader,
-  ClientCacheProvider,
-  memoryAdapter,
-  useCachedLoaderData,
-} from "~/lib/cache/cache";
 import { Skeleton } from "~/components/ui/skeleton";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { envConfig } from "~/env-config.server";
+
+import {
+  ClientCacheProvider,
+  memoryAdapter,
+  useCachedLoaderData,
+  cacheClientLoader,
+  useCacheState,
+} from "react-router-client-cache";
+
+import { storeToken } from "../../../../../tokenManager";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -40,9 +44,13 @@ export type User = Pick<
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
   await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 10 : 0,
+    envConfig(process.env).NODE_ENV === "development" ? 0 : 0,
   );
+
   const token = await getToken(request);
+  if (token) {
+    await storeToken(token);
+  }
 
   const userPromise = fetchClient<IUser, ResponseKey<"user">>(
     "/users/6767d2de99ab57b2ce115c96",
@@ -72,7 +80,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       filter: {
         isSuspended: false,
         isVerified: true,
-
         role: Role.USER,
       },
     },
@@ -132,9 +139,15 @@ export function SkeletonCard() {
 }
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
-  const cachedLoaderData = useCachedLoaderData(loaderData, {
-    adapter: memoryAdapter,
-  });
+  // const cachedLoaderData = useCachedLoaderData(loaderData, {
+  //   adapter: memoryAdapter,
+  // });
+
+  // const state = useCacheState();
+
+  // console.log(state);
+
+  console.log(RouteComponent.name);
 
   let error = loaderData.error;
 
@@ -144,11 +157,13 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
     }
   }, [error]);
 
+  // console.log({ state });
   return (
     <ClientCacheProvider
       interval={60_000}
       mutableRevalidate={mutableRevalidate}
-      loaderData={cachedLoaderData}
+      loaderData={loaderData}
+      focusEnabled={false}
     >
       {({ data, error: err }) => {
         error = err;
@@ -157,6 +172,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
         return (
           <div className="container mx-auto py-10">
             <DataTable columns={columns} data={tableData} />
+            {/*{state.state === "loading" && <span>Loading</span>}*/}
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {

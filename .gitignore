@@ -6,3 +6,5 @@ public/.npmrc
 build
 node_modules
 *.tsbuildinfo
+load_test.sh
+temp

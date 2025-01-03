@@ -17,8 +17,6 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-international-phone/style.css";
 import { getToast } from "remix-toast";
 import { cn } from "~/lib/utils";
-import { cacheClientLoader, useCachedLoaderData } from "~/lib/cache/cache";
-import { SkeletonCard } from "~/routes/account/admin/users/route";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -69,23 +67,31 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const { toast, headers } = await getToast(request);
-  return data(
-    { toast },
-    {
-      headers,
-    },
-  );
-}
+// export function shouldRevalidate({
+//   defaultShouldRevalidate,
+// }: {
+//   defaultShouldRevalidate: boolean;
+// }) {
+//   return defaultShouldRevalidate;
+// }
+
+// export async function loader({ request }: Route.LoaderArgs) {
+//   const { toast, headers } = await getToast(request);
+//   return data(
+//     { toast },
+//     {
+//       headers,
+//     },
+//   );
+// }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  useEffect(() => {
-    if (loaderData.toast)
-      toast(loaderData.toast.message, {
-        type: loaderData.toast.type,
-      });
-  }, [loaderData.toast]);
+  // useEffect(() => {
+  //   if (loaderData.toast)
+  //     toast(loaderData.toast.message, {
+  //       type: loaderData.toast.type,
+  //     });
+  // }, [loaderData.toast]);
 
   return <Outlet />;
 }

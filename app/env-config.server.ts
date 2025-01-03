@@ -2,7 +2,7 @@ import { z } from "zod";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import dotenv from "dotenv";
 dotenv.config();
-import { makeTypedEnvironment } from "~/lib";
+import { makeTypedEnvironment } from "~/lib/makeTypedEnvironment";
 import * as process from "node:process";
 
 const envSchema = z.object({
