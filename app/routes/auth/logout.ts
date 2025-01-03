@@ -3,7 +3,7 @@ import { getRole, getToken, logout, RoleRedirects } from "~/session";
 import { redirect } from "react-router";
 import { flashMessage } from "~/utils/flash-message";
 import { SESSION_TIMEOUT_KEY, timeoutSession } from "~/toast/timeout-toast";
-import { clearStorageAdapters, memoryAdapter } from "~/lib/cache/cache";
+import { clearStorageAdapters, memoryAdapter } from "react-router-client-cache";
 
 export async function action({ request }: Route.ActionArgs) {
   const { _action, ...values } = Object.fromEntries(await request.formData());

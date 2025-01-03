@@ -3,3 +3,5 @@ build
 node_modules
 README.lg
 public/.npmrc
+load_test.sh
+temp

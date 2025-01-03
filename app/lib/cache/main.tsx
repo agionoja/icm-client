@@ -1,5 +1,4 @@
-import { Await, type Location } from "react-router";
-import { useLocation, useNavigate } from "react-router";
+import { Await, useLocation, useNavigate } from "react-router";
 import React, { useCallback, useEffect, useState } from "react";
 import type {
   CacheAdapter,
@@ -11,12 +10,17 @@ import type {
   RouteClientLoaderArgs,
 } from "~/lib/cache/types";
 import { z } from "zod";
-import { dateReviver } from "~/utils/date-reviver";
 import {
   useRevalidateOnFocus,
   useRevalidateOnInterval,
   useRevalidateOnReconnect,
 } from "~/hooks/revalidate";
+import { cacheAdapter, getCacheAdapter } from "~/lib/cache/adapters";
+import {
+  constructKey,
+  handleResponse,
+  invalidateCache,
+} from "~/lib/cache/utils";
 
 /**
  *
@@ -24,135 +28,11 @@ import {
  */
 const DEFAULT_MAX_AGE = 60; // 1 minute;
 
-const MEMORY_STORE = new Map();
-
-/**
- * Immutable memory cache adapter for handling Promise-containing data
- * Useful when caching data that cannot be serialized (e.g., Promises, Functions)
- *
- * @example
- * ```ts
- * import { memoryAdapter } from './cache-adapters';
- *
- * const loader = async ({ request }) => {
- *   return cacheClientLoader({ request, serverLoader }, {
- *     adapter: memoryAdapter,
- *     type: 'swr'
- *   });
- * };
- * ```
- */
-export const memoryAdapter: CacheAdapter<any> = {
-  getItem: async (key) => MEMORY_STORE.get(key) ?? null,
-  setItem: async (key, value) => {
-    MEMORY_STORE.set(key, { ...value });
-  },
-  removeItem: async (key) => {
-    MEMORY_STORE.delete(key);
-  },
-
-  clear: async () => MEMORY_STORE.clear(),
-};
-
-export function memoryAdapterFactory<T>(): CacheAdapter<CacheEntry<T>> {
-  return memoryAdapter;
-}
-
-/**
- * Removes cached data after performing a server action
- * @template TData The type of data being cached
- * @param args Action arguments containing request and server action
- * @param config Cache configuration with optional key(s) to invalidate
- * @returns Result of the server action
- *
- * @example
- * // Invalidate single cache
- * decacheClientLoader(args, { key: '/amin/users' })
- *
- * @example
- * // Invalidate multiple caches
- * decacheClientLoader(args, {
- *   key: ['/admin/dashboard', '/api/settings', '/api/profile']
- * })
- */
-
-export let cacheAdapter: CacheAdapter<CacheEntry<any>> = {
-  getItem: async (key) => MEMORY_STORE.get(key),
-  setItem: async (key, value) => MEMORY_STORE.set(key, value),
-  removeItem: async (key) => MEMORY_STORE.delete(key),
-  clear: async () => MEMORY_STORE.clear(),
-};
-
-/**
- * Creates a storage adapter from a standard Web Storage object
- * @template T The type of data being cached
- * @param storage Web Storage object (localStorage/sessionStorage)
- * @returns Cache adapter for the storage
- */
-export function augmentStorageAdapter<T>(
-  storage: Storage,
-): CacheAdapter<CacheEntry<T>> {
-  return {
-    getItem: async (key) => {
-      const storedItem = storage.getItem(key);
-      if (!storedItem) return null;
-      try {
-        return JSON.parse(storedItem, dateReviver);
-      } catch (e) {
-        console.warn(`Error parsing cache for key: ${key}`, e);
-        return null;
-      }
-    },
-    setItem: async (key, value) => storage.setItem(key, JSON.stringify(value)),
-    removeItem: async (key) => storage.removeItem(key),
-    clear: async () => storage.clear(),
-  };
-}
-
-/**
- * Creates a new cache adapter instance
- * @param adapter Factory function that returns a cache adapter
- * @returns Object containing the configured adapter
- */
-export function createCacheAdapter<T>(
-  adapter: () => CacheAdapter<CacheEntry<T>>,
-) {
-  if (typeof document === "undefined") return { adapter: undefined };
-  const adapterInstance = adapter();
-  if (adapterInstance instanceof Storage) {
-    return {
-      adapter: augmentStorageAdapter(adapterInstance),
-    };
-  }
-  return {
-    adapter: adapter(),
-  };
-}
-
-/**
- * Configures the global cache instance
- * @param newCacheInstance Factory function that returns a cache adapter or Storage object
- */
-export const configureGlobalCache = (
-  newCacheInstance: () => CacheAdapter<CacheEntry<any>> | Storage,
-) => {
-  if (typeof document === "undefined") return;
-  const newCache = newCacheInstance();
-
-  if (newCache instanceof Storage) {
-    cacheAdapter = augmentStorageAdapter(newCache);
-    return;
-  }
-  if (newCache) {
-    cacheAdapter = newCache;
-  }
-};
-
 export const decacheClientLoader = async <TData,>(
   { request, serverAction }: RouteClientActionArgs<TData>,
   {
     key = constructKey(request),
-    adapter = cacheAdapter,
+    adapter = getCacheAdapter.cacheAdapter,
   }: DecacheConfig<TData> = {},
 ): Promise<TData> => {
   const data = await serverAction();
@@ -163,7 +43,7 @@ export const decacheClientLoader = async <TData,>(
 export async function clearStorageAdapters<TData>(
   { serverAction }: RouteClientActionArgs<TData>,
   {
-    adapters = [cacheAdapter],
+    adapters = [getCacheAdapter.cacheAdapter],
   }: { adapters: Array<CacheAdapter<CacheEntry<TData>> | Storage> },
 ) {
   // Execute the server action
@@ -180,27 +60,6 @@ export async function clearStorageAdapters<TData>(
   return data;
 }
 
-function isRedirect(response: Response): boolean {
-  return response.status >= 300 && response.status < 400;
-}
-
-function isRouteError(response: Response): boolean {
-  return response.status >= 400 && response.status < 600;
-}
-
-function isResponse(value: unknown): value is Response {
-  return value instanceof Response;
-}
-
-async function handleResponse<T>(data: T | Response) {
-  if (isResponse(data)) {
-    if (isRedirect(data) || isRouteError(data)) {
-      throw data;
-    }
-  }
-  return data as T;
-}
-
 /**
  * Main caching function for client-side loaders
  * @template TData The type of data being cached
@@ -215,7 +74,7 @@ export async function cacheClientLoader<TData extends object>(
   const {
     type = "swr",
     key = constructKey(request),
-    adapter = cacheAdapter,
+    adapter = getCacheAdapter.cacheAdapter,
     maxAge = type === "swr" ? null : DEFAULT_MAX_AGE,
     revalidate = false,
   } = config;
@@ -564,43 +423,3 @@ export function validateCacheEntry<T extends object>(
   const schema = createCacheEntrySchema<T>();
   return schema.safeParse(value).success;
 }
-// Helper function to check data changes
-export function isDataChanged<T>(newData: T, oldData: T): boolean {
-  return JSON.stringify(newData) !== JSON.stringify(oldData);
-}
-/**
- * Constructs a cache key from either a Request object or React Router Location
- * @param source Request or Location object to generate key from
- * @returns Cache key string representing the current route/URL
- *
- * @example
- * // Using with Request
- * const key = constructKey(request);
- *
- * @example
- * // Using with React Router Location
- * const location = useLocation();
- * const key = constructKey(location);
- */
-export function constructKey(source: Request | Location): string {
-  if (source instanceof Request) {
-    const url = new URL(source.url);
-    return url.pathname + url.search + url.hash;
-  }
-  // Handle Location object
-
-  return source.pathname + source.search + source.hash;
-}
-
-/**
- * Invalidates cache entries in parallel
- * @param key Single key or array of keys to invalidate
- * @param adapter
- */
-export const invalidateCache = async (
-  key: string | string[],
-  adapter = cacheAdapter,
-) => {
-  const keys = Array.isArray(key) ? key : [key];
-  await Promise.all(keys.map((k) => adapter.removeItem(k)));
-};
