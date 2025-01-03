@@ -11,17 +11,14 @@ import { columns } from "~/routes/account/admin/users/columns";
 import { Await, data } from "react-router";
 import { toast } from "react-toastify";
 import { Suspense, useEffect } from "react";
-import { Skeleton } from "~/components/ui/skeleton";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { envConfig } from "~/env-config.server";
 
 import {
+  cacheClientLoader,
   ClientCacheProvider,
   memoryAdapter,
-  useCachedLoaderData,
-  cacheClientLoader,
-  useCacheState,
-} from "react-router-client-cache";
+} from "~/lib/src";
 
 import { storeToken } from "../../../../../tokenManager";
 
@@ -72,7 +69,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 100, page: 50 },
+      paginate: { limit: 50, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -113,30 +110,14 @@ const mutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "swr",
+    type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    // maxAge: 10,
+    maxAge: 60,
     adapter: memoryAdapter,
   });
 }
 
 clientLoader.hydrate = true as const;
-
-// export function HydrateFallback() {
-//   return <SkeletonCard />;
-// }
-
-export function SkeletonCard() {
-  return (
-    <div className="flex flex-col space-y-3 px-4 md:px-8">
-      <Skeleton className="h-[80vh] w-full rounded-xl" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-4 w-1/2" />
-      </div>
-    </div>
-  );
-}
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
   // const cachedLoaderData = useCachedLoaderData(loaderData, {
@@ -163,12 +144,11 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
       interval={60_000}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      focusEnabled={false}
+      focusEnabled={true}
     >
       {({ data, error: err }) => {
         error = err;
         const tableData = data?.users || [];
-
         return (
           <div className="container mx-auto py-10">
             <DataTable columns={columns} data={tableData} />
@@ -176,6 +156,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {
+                  console.log(data);
                   return <h3>Streamed user: {data?.data?.user.firstname}</h3>;
                 }}
               </Await>

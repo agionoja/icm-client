@@ -188,9 +188,14 @@ export async function requireUser(
 export async function restrictTo(request: Request, ...roles: Role[]) {
   const role = await getRole(request);
 
-  if (!role || !RoleRedirects[role])
-    throw new Response(null, { status: 400, statusText: "Invalid user role" });
-
+  if (!role || !RoleRedirects[role]) {
+    // Session has expired and wasn't caught my requireUser
+    const redirectUrl = authRouteConfig.login.generate(
+      {},
+      { redirect: new URL(request.url).pathname },
+    );
+    throw redirect(redirectUrl);
+  }
   if (!roles.includes(role)) {
     throw await redirectWithError(RoleRedirects[role], FORBIDDEN_ERROR_MESSAGE);
   }
