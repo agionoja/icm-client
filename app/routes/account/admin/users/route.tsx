@@ -149,7 +149,6 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
       {({ data, error: err }) => {
         error = err;
         const tableData = data?.users || [];
-
         return (
           <div className="container mx-auto py-10">
             <DataTable columns={columns} data={tableData} />
@@ -157,6 +156,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {
+                  console.log(data);
                   return <h3>Streamed user: {data?.data?.user.firstname}</h3>;
                 }}
               </Await>
