@@ -248,7 +248,7 @@ export const routesConfig = {
     }),
   },
 };
-
+export const accountRouteConfig = routesConfig.account;
 export const userRouteConfig = routesConfig.account.user;
 export const adminRouteConfig = routesConfig.account.admin;
 export const settingsRouteConfig = routesConfig.account.settings;

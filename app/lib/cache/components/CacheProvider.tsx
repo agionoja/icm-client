@@ -12,18 +12,18 @@ type MutableRevalidate = {
 };
 
 type ClientCacheProviderProps<TData> = {
-  children: (data: TData) => React.ReactNode;
+  children: (cachedData: TData) => React.ReactNode;
   focusEnabled?: boolean;
   intervalEnabled?: boolean;
   reconnectEnabled?: boolean;
-  mutableRevalidate: MutableRevalidate;
+  mutableRevalidate?: MutableRevalidate;
   interval?: number;
   loaderData: TData | (TData & CachedData<TData>);
 };
 
-export function ClientCacheProvider<TData extends object>({
+export function ClientCache<TData extends object>({
   children,
-  mutableRevalidate,
+  mutableRevalidate = { revalidate: false },
   focusEnabled = true,
   intervalEnabled = true,
   reconnectEnabled = true,
@@ -59,5 +59,5 @@ export function ClientCacheProvider<TData extends object>({
 
   const SWR = useSwrData(loaderData);
 
-  return <SWR>{(data) => <>{children(data)}</>}</SWR>;
+  return <SWR>{(cachedData) => <>{children(cachedData)}</>}</SWR>;
 }
