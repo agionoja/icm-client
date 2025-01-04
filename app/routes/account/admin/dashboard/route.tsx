@@ -1,6 +1,6 @@
 import type { Route } from "./+types/route";
 import { Outlet } from "react-router";
-import { cacheClientLoader } from "~/lib/cache";
+import { cacheClientLoader, ClientCache } from "~/lib/cache";
 import { getUserDataCookie } from "~/cookies/user-cookie";
 
 export const meta: Route.MetaFunction = () => {
@@ -26,10 +26,16 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 
 clientLoader.hydrate = true as const;
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
   return (
-    <>
-      <Outlet />
-    </>
+    <ClientCache loaderData={loaderData}>
+      {() => {
+        return (
+          <>
+            <Outlet />
+          </>
+        );
+      }}
+    </ClientCache>
   );
 }

@@ -16,9 +16,10 @@ import { envConfig } from "~/env-config.server";
 
 import {
   cacheClientLoader,
-  ClientCacheProvider,
+  ClientCache,
   memoryAdapter,
   useCacheState,
+  useRouteKey,
 } from "~/lib/cache";
 
 import { storeToken } from "../../../../../tokenManager";
@@ -42,7 +43,7 @@ export type User = Pick<
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
   await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 0 : 0,
+    envConfig(process.env).NODE_ENV === "development" ? 2 : 0,
   );
 
   const token = await getToken(request);
@@ -61,6 +62,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
   );
 
+  const url = new URL(request.url); // Parse the full URL
+  const searchParams = new URLSearchParams(url.search); // Extract query string
+
+  const limit = parseInt(searchParams.get("limit") || "20", 10); // Parse limit
+
+  console.log(searchParams);
   const response = await fetchClient<
     User,
     ResponseKey<"users">,
@@ -70,7 +77,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 121, page: 50 },
+      paginate: { limit: limit, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -111,17 +118,19 @@ const mutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "normal",
+    type: "swr",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 20,
-    adapter: memoryAdapter,
+    maxAge: 90,
+    // adapter: memoryAdapter,
+    // key: "wow",
   });
 }
 
 clientLoader.hydrate = true as const;
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
-  const state = useCacheState();
+  const routeKey = useRouteKey();
+  const state = useCacheState(routeKey);
   console.log(state);
   let error = loaderData.error;
 
@@ -132,10 +141,11 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
   }, [error]);
 
   return (
-    <ClientCacheProvider
+    <ClientCache
       interval={60_000}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
+      key={"wow"}
     >
       {({ data, error: err }) => {
         error = err;
@@ -155,6 +165,6 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
           </div>
         );
       }}
-    </ClientCacheProvider>
+    </ClientCache>
   );
 }

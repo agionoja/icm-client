@@ -177,11 +177,11 @@ export const cacheStateManager = new CacheStateManager();
  * }
  * ```
  */
-export function useCacheState(key?: string) {
+export function useCacheState(key: string) {
   const fallbackKey = useRouteKey();
   const [state, setState] = useState<CacheState>({
     state: "idle",
-    key: key || fallbackKey,
+    key: key,
   });
 
   useEffect(

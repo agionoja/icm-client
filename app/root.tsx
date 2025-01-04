@@ -17,6 +17,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-international-phone/style.css";
 import { getToast } from "remix-toast";
 import { cn } from "~/lib/utils";
+import { cacheClientLoader, memoryAdapter } from "~/lib/cache";
+import { throttleNetwork } from "~/utils/throttle-network";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -34,7 +36,6 @@ export const links: LinksFunction = () => [
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
 
-  // Extract route checking logic into a separate function
   const isAccountRoute = (pathname: string): boolean => {
     const authenticatedPaths = ["admin", "user", "settings"];
     return authenticatedPaths.some((path) => pathname.includes(path));
@@ -67,15 +68,9 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-// export function shouldRevalidate({
-//   defaultShouldRevalidate,
-// }: {
-//   defaultShouldRevalidate: boolean;
-// }) {
-//   return defaultShouldRevalidate;
-// }
-
 export async function loader({ request }: Route.LoaderArgs) {
+  await throttleNetwork(2);
+
   const { toast, headers } = await getToast(request);
   return data(
     { toast },
@@ -84,6 +79,17 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
   );
 }
+
+export async function clientLoader(args: Route.ClientLoaderArgs) {
+  return cacheClientLoader(args, {
+    type: "swr",
+    key: "_root",
+    adapter: memoryAdapter,
+    // revalidate: false,
+  });
+}
+
+clientLoader.hydrate = true as const;
 
 export default function App({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
