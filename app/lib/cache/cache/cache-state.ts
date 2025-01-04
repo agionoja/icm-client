@@ -188,7 +188,7 @@ export function useCacheState(key?: string) {
     () =>
       // Directly return the cleanup function from subscribe
       cacheStateManager.subscribe(key || fallbackKey, setState),
-    [key],
+    [fallbackKey, key],
   );
 
   return state;

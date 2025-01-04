@@ -17,7 +17,7 @@ import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
-import { cacheClientLoader } from "~/lib/src";
+import { cacheClientLoader } from "~/lib/cache";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state

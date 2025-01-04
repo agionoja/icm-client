@@ -18,7 +18,8 @@ import {
   cacheClientLoader,
   ClientCacheProvider,
   memoryAdapter,
-} from "~/lib/src";
+  useCacheState,
+} from "~/lib/cache";
 
 import { storeToken } from "../../../../../tokenManager";
 
@@ -69,7 +70,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 50, page: 50 },
+      paginate: { limit: 100, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -112,7 +113,7 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 60,
+    maxAge: 20,
     adapter: memoryAdapter,
   });
 }
@@ -120,16 +121,8 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 clientLoader.hydrate = true as const;
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
-  // const cachedLoaderData = useCachedLoaderData(loaderData, {
-  //   adapter: memoryAdapter,
-  // });
-
-  // const state = useCacheState();
-
-  // console.log(state);
-
-  console.log(RouteComponent.name);
-
+  const state = useCacheState();
+  console.log(state);
   let error = loaderData.error;
 
   useEffect(() => {
@@ -138,13 +131,11 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
     }
   }, [error]);
 
-  // console.log({ state });
   return (
     <ClientCacheProvider
       interval={60_000}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      focusEnabled={true}
     >
       {({ data, error: err }) => {
         error = err;
@@ -152,7 +143,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
         return (
           <div className="container mx-auto py-10">
             <DataTable columns={columns} data={tableData} />
-            {/*{state.state === "loading" && <span>Loading</span>}*/}
+            {state.state === "loading" && <span>Refreshing...</span>}
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {

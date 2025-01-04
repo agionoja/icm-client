@@ -1,7 +1,6 @@
 import type { CachedData } from "../types";
 import React from "react";
 import { Await } from "react-router";
-import { cacheStateManager } from "../cache/cache-state";
 
 export function useSwrData<TData extends object>(
   loaderData: TData | (TData & CachedData<TData>),
@@ -25,10 +24,6 @@ export function useSwrData<TData extends object>(
             <React.Suspense fallback={children(serverData)}>
               <Await resolve={deferredServerData}>
                 {(resolvedData) => {
-                  cacheStateManager.setState(loaderData.key, {
-                    state: "success",
-                    key: loaderData.key,
-                  });
                   return children(resolvedData);
                 }}
               </Await>

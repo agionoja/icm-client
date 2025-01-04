@@ -1,4 +1,4 @@
-import type { CacheAdapter, CacheEntry } from "~/lib/cache/types";
+import type { CacheAdapter, CacheEntry } from "~/hooks/cache/types";
 
 const Cache = new Map();
 

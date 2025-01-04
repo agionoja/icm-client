@@ -3,7 +3,6 @@ import type { CacheAdapter, CachedData, CacheEntry } from "../types";
 import { cacheAdapter } from "../cache";
 import { useNavigate } from "react-router";
 import { useCallback, useEffect, useState } from "react";
-import { cacheStateManager } from "../cache/cache-state";
 
 /**
  * Creates a wrapper component that provides server data to children.
@@ -67,19 +66,6 @@ export function useCachedLoaderData<TData extends object>(
     loaderData.deferredServerData
       .then((newData) => {
         if (!isMounted) return;
-
-        if (isCachedData(loaderData)) {
-          adapter.setItem(loaderData.key, {
-            data: newData,
-            timestamp: Date.now(),
-            maxAge: loaderData.maxAge,
-          });
-        }
-
-        cacheStateManager.setState(loaderData.key, {
-          state: "success",
-          key: loaderData.key,
-        });
         setFreshData(newData);
       })
       .catch((e) => {
@@ -88,12 +74,12 @@ export function useCachedLoaderData<TData extends object>(
           to && navigate(to);
           return;
         }
-        if (isCachedData(loaderData)) {
-          cacheStateManager.setState(loaderData.key, {
-            state: "error",
-            key: loaderData.key,
-          });
-        }
+        // if (isCachedData(loaderData)) {
+        //   cacheStateManager.setState(loaderData.key, {
+        //     state: "error",
+        //     key: loaderData.key,
+        //   });
+        // }
         throw e;
       });
 
@@ -102,7 +88,9 @@ export function useCachedLoaderData<TData extends object>(
     };
   }, [loaderData, adapter, navigate, isCachedData]);
 
-  // Update the cache if the data changes
+  /**
+   * Effect 2: Synchronizes state with changes to `serverData`.
+   */
   useEffect(() => {
     if (
       isCachedData(loaderData) &&
