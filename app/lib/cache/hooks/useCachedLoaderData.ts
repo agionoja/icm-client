@@ -66,14 +66,6 @@ export function useCachedLoaderData<TData extends object>(
     loaderData.deferredServerData
       .then((newData) => {
         if (!isMounted) return;
-
-        if (isCachedData(loaderData)) {
-          adapter.setItem(loaderData.key, {
-            data: newData,
-            timestamp: Date.now(),
-            maxAge: loaderData.maxAge,
-          });
-        }
         setFreshData(newData);
       })
       .catch((e) => {
@@ -82,6 +74,12 @@ export function useCachedLoaderData<TData extends object>(
           to && navigate(to);
           return;
         }
+        // if (isCachedData(loaderData)) {
+        //   cacheStateManager.setState(loaderData.key, {
+        //     state: "error",
+        //     key: loaderData.key,
+        //   });
+        // }
         throw e;
       });
 
@@ -90,7 +88,9 @@ export function useCachedLoaderData<TData extends object>(
     };
   }, [loaderData, adapter, navigate, isCachedData]);
 
-  // Update the cache if the data changes
+  /**
+   * Effect 2: Synchronizes state with changes to `serverData`.
+   */
   useEffect(() => {
     if (
       isCachedData(loaderData) &&

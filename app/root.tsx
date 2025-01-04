@@ -75,23 +75,23 @@ export function Layout({ children }: { children: ReactNode }) {
 //   return defaultShouldRevalidate;
 // }
 
-// export async function loader({ request }: Route.LoaderArgs) {
-//   const { toast, headers } = await getToast(request);
-//   return data(
-//     { toast },
-//     {
-//       headers,
-//     },
-//   );
-// }
+export async function loader({ request }: Route.LoaderArgs) {
+  const { toast, headers } = await getToast(request);
+  return data(
+    { toast },
+    {
+      headers,
+    },
+  );
+}
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  // useEffect(() => {
-  //   if (loaderData.toast)
-  //     toast(loaderData.toast.message, {
-  //       type: loaderData.toast.type,
-  //     });
-  // }, [loaderData.toast]);
+  useEffect(() => {
+    if (loaderData.toast)
+      toast(loaderData.toast.message, {
+        type: loaderData.toast.type,
+      });
+  }, [loaderData.toast]);
 
   return <Outlet />;
 }

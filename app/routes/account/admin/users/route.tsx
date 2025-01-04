@@ -18,7 +18,6 @@ import {
   cacheClientLoader,
   ClientCacheProvider,
   memoryAdapter,
-  useCachedLoaderData,
   useCacheState,
 } from "~/lib/cache";
 
@@ -43,7 +42,7 @@ export type User = Pick<
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
   await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 4 : 0,
+    envConfig(process.env).NODE_ENV === "development" ? 0 : 0,
   );
 
   const token = await getToken(request);
@@ -71,7 +70,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 20, page: 50 },
+      paginate: { limit: 100, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -112,9 +111,9 @@ const mutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "swr",
+    type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 10,
+    maxAge: 20,
     adapter: memoryAdapter,
   });
 }
@@ -132,13 +131,11 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
     }
   }, [error]);
 
-  // console.log({ state });
   return (
     <ClientCacheProvider
-      interval={10_000}
+      interval={60_000}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      focusEnabled={false}
     >
       {({ data, error: err }) => {
         error = err;

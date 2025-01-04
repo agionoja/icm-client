@@ -42,6 +42,9 @@ function createWrappedLoader<TData>(
       cacheStateManager.setState(key, { state: "success", key });
       return validData;
     } catch (error) {
+      if (import.meta.env.DEV) {
+        console.dir({ cacheError: error }, { depth: null });
+      }
       cacheStateManager.setState(key, { state: "error", key });
       throw error;
     }
@@ -136,6 +139,9 @@ export async function cacheClientLoader<TData extends object>(
       maxAge: revalidate ? maxAge : storedMaxAge,
     };
   } catch (error) {
+    if (import.meta.env.DEV) {
+      console.dir({ cacheError: error }, { depth: null });
+    }
     cacheStateManager.setState(key, { state: "error", key });
     throw error;
   }
