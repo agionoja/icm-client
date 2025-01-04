@@ -1,5 +1,8 @@
-export * from "~/lib/cache/utils";
-export * from "~/lib/cache/adapter-config";
-export * from "~/lib/cache/adapters";
-export * from "~/lib/cache/main";
-export * from "~/lib/cache/types";
+// This is your packages entry point, everything exported from here will be accessible to the end-user.
+export const test = (): void => {};
+
+export * from "./hooks";
+export * from "./utils";
+export * from "./components";
+export * from "./cache";
+export * from "./types";

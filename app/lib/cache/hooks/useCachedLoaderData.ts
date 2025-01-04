@@ -3,7 +3,6 @@ import type { CacheAdapter, CachedData, CacheEntry } from "../types";
 import { cacheAdapter } from "../cache";
 import { useNavigate } from "react-router";
 import { useCallback, useEffect, useState } from "react";
-import { cacheStateManager } from "../cache/cache-state";
 
 /**
  * Creates a wrapper component that provides server data to children.
@@ -75,11 +74,6 @@ export function useCachedLoaderData<TData extends object>(
             maxAge: loaderData.maxAge,
           });
         }
-
-        cacheStateManager.setState(loaderData.key, {
-          state: "success",
-          key: loaderData.key,
-        });
         setFreshData(newData);
       })
       .catch((e) => {
@@ -87,12 +81,6 @@ export function useCachedLoaderData<TData extends object>(
           const to = e.headers.get("Location");
           to && navigate(to);
           return;
-        }
-        if (isCachedData(loaderData)) {
-          cacheStateManager.setState(loaderData.key, {
-            state: "error",
-            key: loaderData.key,
-          });
         }
         throw e;
       });

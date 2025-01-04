@@ -1,12 +1,11 @@
 import React from "react";
 import type { CachedData } from "../types";
 import {
-  type RevalidateProps,
   useRevalidateOnFocus,
   useRevalidateOnInterval,
   useRevalidateOnReconnect,
+  useSwrData,
 } from "../hooks";
-import { useSwrData } from "../hooks";
 
 type MutableRevalidate = {
   revalidate: boolean;

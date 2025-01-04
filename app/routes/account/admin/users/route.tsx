@@ -18,7 +18,9 @@ import {
   cacheClientLoader,
   ClientCacheProvider,
   memoryAdapter,
-} from "~/lib/src";
+  useCachedLoaderData,
+  useCacheState,
+} from "~/lib/cache";
 
 import { storeToken } from "../../../../../tokenManager";
 
@@ -41,7 +43,7 @@ export type User = Pick<
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
   await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 0 : 0,
+    envConfig(process.env).NODE_ENV === "development" ? 4 : 0,
   );
 
   const token = await getToken(request);
@@ -69,7 +71,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: 50, page: 50 },
+      paginate: { limit: 20, page: 50 },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
       select: ["+isActive", "email", "firstname", "lastname", "role"],
@@ -110,9 +112,9 @@ const mutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "normal",
+    type: "swr",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 60,
+    maxAge: 10,
     adapter: memoryAdapter,
   });
 }
@@ -120,16 +122,8 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 clientLoader.hydrate = true as const;
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
-  // const cachedLoaderData = useCachedLoaderData(loaderData, {
-  //   adapter: memoryAdapter,
-  // });
-
-  // const state = useCacheState();
-
-  // console.log(state);
-
-  console.log(RouteComponent.name);
-
+  const state = useCacheState();
+  console.log(state);
   let error = loaderData.error;
 
   useEffect(() => {
@@ -141,10 +135,10 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
   // console.log({ state });
   return (
     <ClientCacheProvider
-      interval={60_000}
+      interval={10_000}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      focusEnabled={true}
+      focusEnabled={false}
     >
       {({ data, error: err }) => {
         error = err;
@@ -152,7 +146,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
         return (
           <div className="container mx-auto py-10">
             <DataTable columns={columns} data={tableData} />
-            {/*{state.state === "loading" && <span>Loading</span>}*/}
+            {state.state === "loading" && <span>Refreshing...</span>}
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {

@@ -1,5 +1,5 @@
-import { getCacheAdapter } from "~/lib/cache/adapters";
-import type { CacheAdapter, CacheEntry } from "~/lib/cache/types";
+import { getCacheAdapter } from "~/hooks/cache/adapters";
+import type { CacheAdapter, CacheEntry } from "~/hooks/cache/types";
 import { dateReviver } from "~/utils/date-reviver";
 
 /**

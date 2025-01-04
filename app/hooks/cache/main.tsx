@@ -8,19 +8,19 @@ import type {
   DecacheConfig,
   RouteClientActionArgs,
   RouteClientLoaderArgs,
-} from "~/lib/cache/types";
+} from "~/hooks/cache/types";
 import { z } from "zod";
 import {
   useRevalidateOnFocus,
   useRevalidateOnInterval,
   useRevalidateOnReconnect,
 } from "~/hooks/revalidate";
-import { cacheAdapter, getCacheAdapter } from "~/lib/cache/adapters";
+import { cacheAdapter, getCacheAdapter } from "~/hooks/cache/adapters";
 import {
   constructKey,
   handleResponse,
   invalidateCache,
-} from "~/lib/cache/utils";
+} from "~/hooks/cache/utils";
 
 /**
  *
