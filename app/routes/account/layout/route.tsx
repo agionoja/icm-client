@@ -17,7 +17,7 @@ import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
-import { cacheClientLoader, ClientCache } from "~/lib/cache";
+import { cacheClientLoader } from "~/lib/cache";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -89,12 +89,14 @@ clientLoader.hydrate = true;
 
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   const { state } = useNavigation();
-  const submit = useSubmit();
+  const { sessionTimeout, sessionTimeoutKey, redirectTo, user, defaultOpen } =
+    loaderData;
 
-  useSessionTimeout(loaderData.sessionTimeout, () => {
+  const submit = useSubmit();
+  useSessionTimeout(sessionTimeout, () => {
     const formData = new FormData();
-    formData.append("_action", loaderData.sessionTimeoutKey);
-    formData.append("redirectTo", loaderData.redirectTo);
+    formData.append("_action", sessionTimeoutKey);
+    formData.append("redirectTo", redirectTo);
 
     return submit(formData, {
       method: "POST",
@@ -103,28 +105,26 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   });
 
   return (
-    <ClientCache loaderData={loaderData} interval={60_000 * 4}>
-      {(cacheData) => (
-        <SidebarProvider
-          defaultOpen={cacheData.defaultOpen}
-          style={
-            {
-              "--sidebar-width": "18rem",
-            } as React.CSSProperties
-          }
+    <>
+      <SidebarProvider
+        defaultOpen={defaultOpen}
+        style={
+          {
+            "--sidebar-width": "18rem",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar user={user} collapsible={"icon"} />
+        <main
+          className={cn(
+            "w-full",
+            state === "loading" ? "animate-pulse opacity-80" : "",
+          )}
         >
-          <AppSidebar user={cacheData.user} collapsible="icon" />
-          <main
-            className={cn(
-              "w-full",
-              state === "loading" ? "animate-pulse opacity-80" : "",
-            )}
-          >
-            <SidebarTrigger variant="link" />
-            <Outlet />
-          </main>
-        </SidebarProvider>
-      )}
-    </ClientCache>
+          <SidebarTrigger variant={"link"} />
+          <Outlet />
+        </main>
+      </SidebarProvider>
+    </>
   );
 }

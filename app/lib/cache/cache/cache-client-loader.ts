@@ -83,7 +83,7 @@ export async function cacheClientLoader<TData extends object>(
   const {
     type = "swr",
     key = constructKey(request),
-    adapter = getCacheAdapter.cacheAdapter,
+    adapter = getCacheAdapter.cacheAdapter, // issues: when wrapped in the root route only memory adapter does swr
     maxAge = type === "swr" ? null : DEFAULT_MAX_AGE,
     revalidate = false,
   } = config;

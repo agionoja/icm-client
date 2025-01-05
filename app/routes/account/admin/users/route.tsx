@@ -67,7 +67,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const limit = parseInt(searchParams.get("limit") || "20", 10); // Parse limit
 
-  console.log(searchParams);
   const response = await fetchClient<
     User,
     ResponseKey<"users">,
