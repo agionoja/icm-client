@@ -55,7 +55,7 @@ export async function login(
 
   const token = userToken?.accessToken;
 
-  return createSession(
+  throw await createSession(
     {
       role: profile.user.role,
       request,

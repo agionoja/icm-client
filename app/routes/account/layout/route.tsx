@@ -17,7 +17,12 @@ import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
-import { cacheClientLoader } from "~/lib/cache";
+import {
+  cacheClientLoader,
+  CacheProvider,
+  memoryAdapter,
+  type MutableRevalidate,
+} from "~/lib/cache";
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -77,27 +82,32 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+const mutableRevalidate: MutableRevalidate = { revalidate: false };
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "normal",
-    maxAge: 60 * 4,
+    type: "swr",
+    // maxAge: 60 * 4,
     key: routesConfig.account.layout.getFile,
+    revalidate: mutableRevalidate.revalidate,
+    adapter: memoryAdapter,
   });
 }
 
-clientLoader.hydrate = true;
+clientLoader.hydrate = true as const;
 
-export default function AccountLayout({ loaderData }: Route.ComponentProps) {
+function AccountLayoutContent({
+  loaderData,
+}: Pick<Route.ComponentProps, "loaderData">) {
   const { state } = useNavigation();
-  const { sessionTimeout, sessionTimeoutKey, redirectTo, user, defaultOpen } =
-    loaderData;
 
   const submit = useSubmit();
-  useSessionTimeout(sessionTimeout, () => {
-    const formData = new FormData();
-    formData.append("_action", sessionTimeoutKey);
-    formData.append("redirectTo", redirectTo);
 
+  useSessionTimeout(loaderData.sessionTimeout, () => {
+    const formData = new FormData();
+    formData.append("_action", loaderData.sessionTimeoutKey);
+    formData.append("redirectTo", loaderData.redirectTo);
+
+    console.log(loaderData.sessionTimeout);
     return submit(formData, {
       method: "POST",
       action: authRouteConfig.logout.getPath,
@@ -105,26 +115,37 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   });
 
   return (
-    <>
-      <SidebarProvider
-        defaultOpen={defaultOpen}
-        style={
-          {
-            "--sidebar-width": "18rem",
-          } as React.CSSProperties
-        }
+    <SidebarProvider
+      defaultOpen={loaderData.defaultOpen}
+      style={
+        {
+          "--sidebar-width": "18rem",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar user={loaderData.user} collapsible="icon" />
+      <main
+        className={cn(
+          "w-full",
+          state === "loading" ? "animate-pulse opacity-80" : "",
+        )}
       >
-        <AppSidebar user={user} collapsible={"icon"} />
-        <main
-          className={cn(
-            "w-full",
-            state === "loading" ? "animate-pulse opacity-80" : "",
-          )}
-        >
-          <SidebarTrigger variant={"link"} />
-          <Outlet />
-        </main>
-      </SidebarProvider>
-    </>
+        <SidebarTrigger variant="link" />
+        <Outlet />
+      </main>
+    </SidebarProvider>
+  );
+}
+
+export default function AccountLayout({ loaderData }: Route.ComponentProps) {
+  return (
+    <CacheProvider
+      mutableRevalidate={mutableRevalidate}
+      loaderData={loaderData}
+      interval={20}
+      focusEnabled={false}
+    >
+      {(cacheData) => <AccountLayoutContent loaderData={cacheData} />}
+    </CacheProvider>
   );
 }

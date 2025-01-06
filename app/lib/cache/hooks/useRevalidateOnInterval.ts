@@ -2,12 +2,17 @@ import type { RevalidateProps } from "./type";
 import { useEffect, useRef } from "react";
 import { useRevalidator } from "react-router";
 
+type Interval = {
+  //The interval for revalidation seconds
+  interval?: number;
+};
+
 export function useRevalidateOnInterval({
   enabled = false,
-  interval = 1000,
+  interval = 60,
   onRevalidate,
   onCleanup,
-}: { interval?: number } & RevalidateProps = {}) {
+}: Interval & RevalidateProps = {}) {
   const { revalidate } = useRevalidator();
   const isMounted = useRef(true);
 
@@ -21,7 +26,7 @@ export function useRevalidateOnInterval({
         revalidate().catch((err) => console.error(err));
         onRevalidate?.();
       }
-    }, interval);
+    }, interval * 1000);
 
     return () => {
       isMounted.current = false;

@@ -10,6 +10,8 @@ export interface CacheEntry<T> {
   timestamp: number;
   /** Maximum age of the cache entry in seconds */
   maxAge: number | null;
+
+  // state: "pending" | "loading" | "idle";
 }
 
 /**
