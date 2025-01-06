@@ -22,7 +22,7 @@ export const MEMORY_STORE = new Map();
  * import { memoryAdapter } from './cache-adapters';
  *
  * const loader = async ({ request }) => {
- *   return cacheClientLoader({ request, serverLoader }, {
+ *   return cache({ request, serverLoader }, {
  *     adapter: memoryAdapter,
  *     type: 'swr'
  *   });

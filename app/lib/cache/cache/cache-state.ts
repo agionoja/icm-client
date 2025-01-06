@@ -129,15 +129,36 @@ class CacheStateManager {
    * , []);
    * ```
    */
+  // subscribe(key: string, listener: (state: CacheState) => void): () => void {
+  //   if (!this.listeners.has(key)) {
+  //     this.listeners.set(key, new Set());
+  //   }
+  //
+  //   this.listeners.get(key)?.add(listener);
+  //
+  //   return () => {
+  //     this.listeners.get(key)?.delete(listener);
+  //   };
+  // }
+
   subscribe(key: string, listener: (state: CacheState) => void): () => void {
     if (!this.listeners.has(key)) {
       this.listeners.set(key, new Set());
     }
 
+    console.log(
+      `Subscribing to ${key}. Current listeners:`,
+      this.listeners.get(key)?.size,
+    );
+
     this.listeners.get(key)?.add(listener);
 
     return () => {
       this.listeners.get(key)?.delete(listener);
+      console.log(
+        `Unsubscribing from ${key}. Remaining listeners:`,
+        this.listeners.get(key)?.size,
+      );
     };
   }
 

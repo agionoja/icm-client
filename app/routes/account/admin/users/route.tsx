@@ -16,9 +16,11 @@ import { envConfig } from "~/env-config.server";
 
 import {
   cacheClientLoader,
-  ClientCache,
+  CacheProvider,
   memoryAdapter,
+  type MutableRevalidate,
   useCacheState,
+  useRevalidateOnFocus,
   useRouteKey,
 } from "~/lib/cache";
 
@@ -113,14 +115,14 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
-const mutableRevalidate = { revalidate: false };
+const mutableRevalidate: MutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "swr",
     revalidate: mutableRevalidate.revalidate,
     maxAge: 90,
-    // adapter: memoryAdapter,
+    adapter: memoryAdapter,
     // key: "wow",
   });
 }
@@ -139,20 +141,26 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
     }
   }, [error]);
 
+  useRevalidateOnFocus({
+    enabled: true,
+    onRevalidate: () => (mutableRevalidate.revalidate = true),
+    onCleanup: () => (mutableRevalidate.revalidate = false),
+  });
+
   return (
-    <ClientCache
-      interval={60_000}
+    <CacheProvider
+      interval={60}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      key={"wow"}
+      focusEnabled={false}
     >
       {({ data, error: err }) => {
         error = err;
         const tableData = data?.users || [];
         return (
           <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={tableData} />
             {state.state === "loading" && <span>Refreshing...</span>}
+            <DataTable columns={columns} data={tableData} />
             <Suspense fallback={<div>Loading non-critical value...</div>}>
               <Await resolve={data?.userPromise}>
                 {(data) => {
@@ -164,6 +172,6 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
           </div>
         );
       }}
-    </ClientCache>
+    </CacheProvider>
   );
 }

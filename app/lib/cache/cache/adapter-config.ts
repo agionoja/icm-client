@@ -104,9 +104,10 @@ export const decacheClientLoader = async <TData>(
 
 export async function clearStorageAdapters<TData>(
   { serverAction }: RouteClientActionArgs<TData>,
-  {
-    adapters = [getCacheAdapter.cacheAdapter],
-  }: { adapters: Array<CacheAdapter<CacheEntry<TData>> | Storage> },
+
+  adapters: Array<CacheAdapter<CacheEntry<TData>> | Storage> = [
+    getCacheAdapter.cacheAdapter,
+  ],
 ) {
   // Execute the server action
   const data = await serverAction();

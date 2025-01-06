@@ -22,6 +22,7 @@ export async function action({ request }: Route.ActionArgs) {
           });
         }
         default: {
+          console.log("Default logout");
           return logout(request);
         }
       }
@@ -38,9 +39,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export async function clientAction(args: Route.ClientActionArgs) {
-  return clearStorageAdapters(args, {
-    adapters: [localStorage, memoryAdapter],
-  });
+  return clearStorageAdapters(args, [localStorage, memoryAdapter]);
 }
 
 // This is a catch for when a user hits this route manually, which shouldn't happen often
@@ -49,5 +48,5 @@ export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   if (!role || !token) return redirect("/");
 
-  return redirect(RoleRedirects[role]);
+  throw redirect(RoleRedirects[role]);
 }
