@@ -150,7 +150,7 @@ export async function requireUser(
 ) {
   const redirectUrl = authRouteConfig.login.generate(
     {},
-    { redirect: `/${redirectTo}` },
+    { redirect: redirectTo },
   );
 
   if (!(await hasSession(request))) {

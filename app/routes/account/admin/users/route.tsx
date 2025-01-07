@@ -7,12 +7,10 @@ import {
 import { getToken, restrictTo } from "~/session";
 import { type IUser, Role } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/components/data-table";
-import { columns } from "~/routes/account/admin/users/columns";
+import { columns, type UserColumn } from "~/routes/account/admin/users/columns";
 import { Await, data } from "react-router";
 import { toast } from "react-toastify";
 import { Suspense, useEffect } from "react";
-import { throttleNetwork } from "~/utils/throttle-network";
-import { envConfig } from "~/env-config.server";
 
 import {
   cacheClientLoader,
@@ -20,7 +18,6 @@ import {
   memoryAdapter,
   type MutableRevalidate,
   useCacheState,
-  useRevalidateOnFocus,
   useRouteKey,
 } from "~/lib/cache";
 
@@ -37,16 +34,8 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-export type User = Pick<
-  IUser,
-  "isActive" | "role" | "lastname" | "firstname" | "email"
->;
-
 export async function loader({ request }: Route.LoaderArgs) {
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
-  await throttleNetwork(
-    envConfig(process.env).NODE_ENV === "development" ? 2 : 0,
-  );
 
   const token = await getToken(request);
   if (token) {
@@ -67,10 +56,12 @@ export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url); // Parse the full URL
   const searchParams = new URLSearchParams(url.search); // Extract query string
 
-  const limit = parseInt(searchParams.get("limit") || "20", 10); // Parse limit
+  const limit = parseInt(searchParams.get("limit") || "100", 10); // Parse limit
+  const page = parseInt(searchParams.get("page") || "1", 10); // Parse limit
+  const search = searchParams.get("search");
 
   const response = await fetchClient<
-    User,
+    UserColumn,
     ResponseKey<"users">,
     IUser,
     Paginated
@@ -78,10 +69,18 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      paginate: { limit: limit, page: 50 },
+      search: { firstname: search?.toString() },
+      paginate: { limit, page },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
-      select: ["+isActive", "email", "firstname", "lastname", "role"],
+      select: [
+        "+isActive",
+        "email",
+        "firstname",
+        "lastname",
+        "role",
+        "createdAt",
+      ],
       sort: ["role", "createdAt", "updatedAt", "firstname", "lastname"],
       filter: {
         isSuspended: false,
@@ -119,7 +118,7 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "swr",
+    type: "normal",
     revalidate: mutableRevalidate.revalidate,
     maxAge: 90,
     adapter: memoryAdapter,
@@ -129,11 +128,15 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 
 clientLoader.hydrate = true as const;
 
-export default function RouteComponent({ loaderData }: Route.ComponentProps) {
+function AdminUsersContent({
+  loaderData,
+}: Pick<Route.ComponentProps, "loaderData">) {
   const routeKey = useRouteKey();
   const state = useCacheState(routeKey);
   console.log(state);
-  let error = loaderData.error;
+  console.log(loaderData.data?.metadata);
+  const error = loaderData.error;
+  const tableData = loaderData?.data?.users || [];
 
   useEffect(() => {
     if (error) {
@@ -141,37 +144,29 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
     }
   }, [error]);
 
-  useRevalidateOnFocus({
-    enabled: true,
-    onRevalidate: () => (mutableRevalidate.revalidate = true),
-    onCleanup: () => (mutableRevalidate.revalidate = false),
-  });
+  return (
+    <div className="container mx-auto py-10">
+      {state.state === "loading" && <span>Refreshing...</span>}
+      <DataTable columns={columns} data={tableData} />
+      <Suspense fallback={<div>Loading non-critical value...</div>}>
+        <Await resolve={loaderData?.data?.userPromise}>
+          {(data) => {
+            return <h3>Streamed user: {data?.data?.user.firstname}</h3>;
+          }}
+        </Await>
+      </Suspense>
+    </div>
+  );
+}
 
+export default function AdminUsers({ loaderData }: Route.ComponentProps) {
   return (
     <CacheProvider
       interval={60}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      focusEnabled={false}
     >
-      {({ data, error: err }) => {
-        error = err;
-        const tableData = data?.users || [];
-        return (
-          <div className="container mx-auto py-10">
-            {state.state === "loading" && <span>Refreshing...</span>}
-            <DataTable columns={columns} data={tableData} />
-            <Suspense fallback={<div>Loading non-critical value...</div>}>
-              <Await resolve={data?.userPromise}>
-                {(data) => {
-                  console.log(data);
-                  return <h3>Streamed user: {data?.data?.user.firstname}</h3>;
-                }}
-              </Await>
-            </Suspense>
-          </div>
-        );
-      }}
+      {(cachedData) => <AdminUsersContent loaderData={cachedData} />}
     </CacheProvider>
   );
 }

@@ -71,6 +71,7 @@ export default [
       route(admin.services.getPath, admin.services.getFile),
       route(admin.tv.getPath, admin.tv.getFile),
       route(admin.users.getPath, admin.users.getFile),
+      route(admin.user.getPath, admin.user.getFile),
     ]),
   ]),
 

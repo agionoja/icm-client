@@ -107,7 +107,6 @@ function AccountLayoutContent({
     formData.append("_action", loaderData.sessionTimeoutKey);
     formData.append("redirectTo", loaderData.redirectTo);
 
-    console.log(loaderData.sessionTimeout);
     return submit(formData, {
       method: "POST",
       action: authRouteConfig.logout.getPath,
