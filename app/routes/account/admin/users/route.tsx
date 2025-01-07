@@ -8,20 +8,20 @@ import { getToken, restrictTo } from "~/session";
 import { type IUser, Role } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/components/data-table";
 import { columns, type UserColumn } from "~/routes/account/admin/users/columns";
-import { Await, data } from "react-router";
+import { data } from "react-router";
 import { toast } from "react-toastify";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 
 import {
   cacheClientLoader,
   CacheProvider,
   memoryAdapter,
   type MutableRevalidate,
-  useCacheState,
-  useRouteKey,
 } from "~/lib/cache";
 
 import { storeToken } from "../../../../../tokenManager";
+import { TableControls } from "~/routes/account/admin/users/table-control";
+import qs from "qs";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -42,23 +42,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     await storeToken(token);
   }
 
-  const userPromise = fetchClient<IUser, ResponseKey<"user">>(
-    "/users/6767d2de99ab57b2ce115c96",
-    {
-      responseKey: "user",
-      token,
-      query: {
-        ignoreFilterFlags: ["isActive"],
-      },
-    },
-  );
-
   const url = new URL(request.url); // Parse the full URL
   const searchParams = new URLSearchParams(url.search); // Extract query string
 
-  const limit = parseInt(searchParams.get("limit") || "100", 10); // Parse limit
+  const limit = parseInt(searchParams.get("limit") || "10", 10); // Parse limit
   const page = parseInt(searchParams.get("page") || "1", 10); // Parse limit
-  const search = searchParams.get("search");
+  const search = searchParams.get("search") || "";
+  const query = qs.parse(searchParams.toString());
+
+  console.log({ query });
 
   const response = await fetchClient<
     UserColumn,
@@ -69,7 +61,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      search: { firstname: search?.toString() },
+      search: {
+        firstname: search,
+        lastname: search,
+        email: search,
+        role: search.toUpperCase() as Role,
+      },
       paginate: { limit, page },
       ignoreFilterFlags: ["isActive"],
       countFilter: { isActive: { exists: true } },
@@ -84,34 +81,16 @@ export async function loader({ request }: Route.LoaderArgs) {
       sort: ["role", "createdAt", "updatedAt", "firstname", "lastname"],
       filter: {
         isSuspended: false,
-        isVerified: true,
-        role: Role.USER,
       },
     },
   });
 
   if (response.exception) {
     console.log(response.exception);
-    return data(
-      {
-        error: {
-          message: response.exception.message,
-          status: response.exception.status,
-        },
-        data: null,
-      },
-      { status: response.exception.statusCode },
-    );
+    return data(response, { status: response.exception.statusCode });
   }
 
-  return {
-    data: {
-      users: response.data.users,
-      metadata: response.metadata,
-      userPromise,
-    },
-    error: null,
-  };
+  return response;
 }
 
 const mutableRevalidate: MutableRevalidate = { revalidate: false };
@@ -131,11 +110,8 @@ clientLoader.hydrate = true as const;
 function AdminUsersContent({
   loaderData,
 }: Pick<Route.ComponentProps, "loaderData">) {
-  const routeKey = useRouteKey();
-  const state = useCacheState(routeKey);
-  console.log(state);
-  console.log(loaderData.data?.metadata);
-  const error = loaderData.error;
+  console.log(loaderData.data?.users);
+  const error = loaderData?.exception;
   const tableData = loaderData?.data?.users || [];
 
   useEffect(() => {
@@ -144,17 +120,31 @@ function AdminUsersContent({
     }
   }, [error]);
 
+  const filters = [
+    {
+      label: "Status",
+      value: "active",
+      options: [
+        { label: "Active", value: "true" },
+        { label: "Inactive", value: "false" },
+      ],
+    },
+    {
+      label: "Role",
+      value: "role",
+      options: [
+        { label: "Admin", value: Role.ADMIN },
+        { label: "User", value: Role.USER },
+      ],
+    },
+  ];
+
   return (
     <div className="container mx-auto py-10">
-      {state.state === "loading" && <span>Refreshing...</span>}
+      {"metadata" in loaderData && (
+        <TableControls metadata={loaderData.metadata} filters={filters} />
+      )}
       <DataTable columns={columns} data={tableData} />
-      <Suspense fallback={<div>Loading non-critical value...</div>}>
-        <Await resolve={loaderData?.data?.userPromise}>
-          {(data) => {
-            return <h3>Streamed user: {data?.data?.user.firstname}</h3>;
-          }}
-        </Await>
-      </Suspense>
     </div>
   );
 }
