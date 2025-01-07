@@ -236,6 +236,11 @@ export const routesConfig = {
         path: "/admin/users",
         file: paths.admin("users/route"),
       }),
+      user: defineRoute({
+        path: "/admin/users/:id",
+        params: { id: z.string() },
+        file: paths.admin("user/route"),
+      }),
     },
   },
 

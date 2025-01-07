@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { NoResultIcon } from "~/components/icons";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -24,13 +25,18 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   });
   return (
-    <div className={"rounded-md border bg-white px-6 py-10"}>
+    <div className={"rounded-lg border bg-white py-10"}>
       <Table className={"border-collapse"}>
-        <TableHeader>
+        <TableHeader className={""}>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  className={
+                    "px-4 py-4 text-left text-xs text-gray-400 md:px-6 md:text-md"
+                  }
+                  key={header.id}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -50,7 +56,10 @@ export function DataTable<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell
+                    className={"px-4 text-left text-xs md:px-6 md:text-md"}
+                    key={cell.id}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -58,13 +67,22 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+              <TableCell colSpan={columns.length} className={"h-[50vh]"}>
+                <NoResult />
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+    </div>
+  );
+}
+
+function NoResult() {
+  return (
+    <div className={"flex flex-col items-center justify-center text-center"}>
+      <NoResultIcon />
+      <span>Sorry no results.</span>
     </div>
   );
 }
