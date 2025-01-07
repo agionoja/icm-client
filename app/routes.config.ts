@@ -53,7 +53,7 @@ export const routesConfig = {
       path: "/auth/login",
       file: paths.auth("login/route"),
       queryParams: {
-        redirect: z.string().nullable().default("/"),
+        redirect: z.string(),
       },
     }),
     logout: defineRoute({
