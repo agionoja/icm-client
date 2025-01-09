@@ -5,8 +5,14 @@ import {
   type ResponseKey,
 } from "~/fetch/fetch-client.server";
 import { getToken, restrictTo } from "~/session";
-import { type IUser, Role } from "icm-shared";
-import { DataTable } from "~/routes/account/admin/users/components/data-table";
+import {
+  type FilterQuery,
+  type IQueryBuilder,
+  type IUser,
+  Role,
+  type SearchableFields,
+} from "icm-shared";
+import { DataTable } from "~/routes/account/admin/users/data-table";
 import { columns, type UserColumn } from "~/routes/account/admin/users/columns";
 import { data } from "react-router";
 import { toast } from "react-toastify";
@@ -22,6 +28,8 @@ import {
 import { storeToken } from "../../../../../tokenManager";
 import { TableControls } from "~/routes/account/admin/users/table-control";
 import qs from "qs";
+import { throttleNetwork } from "~/utils/throttle-network";
+import { z } from "zod";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -34,7 +42,32 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
+// Helper function to extract typed query parameters
+export function getQueryParams(request: Request) {
+  const url = new URL(request.url);
+  const rawParams = Object.fromEntries(url.searchParams.entries());
+  return querySchema.safeParse(rawParams);
+}
+// Zod schema for query parameters
+const querySchema = z.object({
+  limit: z.coerce.number().min(1).max(100).default(10),
+  page: z.coerce.number().min(1).default(1),
+  search: z.string().default(""),
+  role: z.nativeEnum(Role).optional(),
+  active: z
+    .enum(["true", "false", ""])
+    .transform((val) => {
+      if (val === "true") return true;
+      if (val === "false") return false;
+      return undefined;
+    })
+    .optional(),
+});
+
+type QuerySchema = z.infer<typeof querySchema>;
+
 export async function loader({ request }: Route.LoaderArgs) {
+  await throttleNetwork(0.5);
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
 
   const token = await getToken(request);
@@ -42,15 +75,29 @@ export async function loader({ request }: Route.LoaderArgs) {
     await storeToken(token);
   }
 
-  const url = new URL(request.url); // Parse the full URL
-  const searchParams = new URLSearchParams(url.search); // Extract query string
+  const url = new URL(request.url);
 
-  const limit = parseInt(searchParams.get("limit") || "10", 10); // Parse limit
-  const page = parseInt(searchParams.get("page") || "1", 10); // Parse limit
-  const search = searchParams.get("search") || "";
-  const query = qs.parse(searchParams.toString());
+  // Parse and validate query parameters
+  const rawParams = Object.fromEntries(url.searchParams.entries());
+  const { limit, page, search, role, active } = querySchema.parse(rawParams);
 
-  console.log({ query });
+  // Build the filter query
+  const filter: FilterQuery<IUser> = {};
+
+  if (role && Role[role]) {
+    filter.role = role;
+  }
+
+  if (active !== undefined) {
+    filter.isActive = active;
+  }
+
+  const searchQuery: SearchableFields<IUser> = {
+    firstname: search,
+    lastname: search,
+    email: search,
+    ...(search ? { role: search.toUpperCase() as Role } : {}),
+  };
 
   const response = await fetchClient<
     UserColumn,
@@ -61,15 +108,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     responseKey: "users",
     token,
     query: {
-      search: {
-        firstname: search,
-        lastname: search,
-        email: search,
-        role: search.toUpperCase() as Role,
-      },
+      search: searchQuery,
+      filter,
       paginate: { limit, page },
       ignoreFilterFlags: ["isActive"],
-      countFilter: { isActive: { exists: true } },
+      countFilter:
+        active !== undefined
+          ? { isActive: active }
+          : { isActive: { exists: true } },
       select: [
         "+isActive",
         "email",
@@ -79,14 +125,11 @@ export async function loader({ request }: Route.LoaderArgs) {
         "createdAt",
       ],
       sort: ["role", "createdAt", "updatedAt", "firstname", "lastname"],
-      filter: {
-        isSuspended: false,
-      },
-    },
+    } satisfies IQueryBuilder<IUser>,
   });
 
   if (response.exception) {
-    console.log(response.exception);
+    console.error(response.exception);
     return data(response, { status: response.exception.statusCode });
   }
 
@@ -97,11 +140,10 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "normal",
+    type: "swr",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 90,
-    adapter: memoryAdapter,
-    // key: "wow",
+    // maxAge: 90,
+    // adapter: memoryAdapter,
   });
 }
 
@@ -110,7 +152,6 @@ clientLoader.hydrate = true as const;
 function AdminUsersContent({
   loaderData,
 }: Pick<Route.ComponentProps, "loaderData">) {
-  console.log(loaderData.data?.users);
   const error = loaderData?.exception;
   const tableData = loaderData?.data?.users || [];
 

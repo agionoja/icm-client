@@ -146,7 +146,10 @@ export async function createSession(
  */
 export async function requireUser(
   request: Request,
-  redirectTo: string = new URL(request.url).pathname,
+  redirectTo: string = (() => {
+    const url = new URL(request.url);
+    return url.pathname + url.search + url.hash;
+  })(),
 ) {
   const redirectUrl = authRouteConfig.login.generate(
     {},
@@ -190,9 +193,10 @@ export async function restrictTo(request: Request, ...roles: Role[]) {
 
   if (!role || !RoleRedirects[role]) {
     // Session has expired and wasn't caught my requireUser
+    const url = new URL(request.url);
     const redirectUrl = authRouteConfig.login.generate(
       {},
-      { redirect: new URL(request.url).pathname },
+      { redirect: url.pathname + url.search + url.hash },
     );
     throw redirect(redirectUrl);
   }

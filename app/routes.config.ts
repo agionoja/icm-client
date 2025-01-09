@@ -235,6 +235,10 @@ export const routesConfig = {
       users: defineRoute({
         path: "/admin/users",
         file: paths.admin("users/route"),
+        queryParams: {
+          page: z.string().nullable().default("1"),
+          limit: z.string().nullable().default("10"),
+        },
       }),
       user: defineRoute({
         path: "/admin/users/:id",
