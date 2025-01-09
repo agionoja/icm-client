@@ -1,5 +1,10 @@
-import React from "react";
-import { useSearchParams } from "react-router";
+import React, {
+  type ComponentProps,
+  forwardRef,
+  useEffect,
+  useState,
+} from "react";
+import { Form, useFetcher, useSearchParams } from "react-router";
 import {
   Select,
   SelectContent,
@@ -32,24 +37,57 @@ interface PaginationControlsProps {
   metadata: PaginationMetadata;
 }
 
+interface TableSearchProps extends ComponentProps<"input"> {
+  onSearch?: (search: string) => void;
+  search?: string;
+  delay?: number;
+}
+
+export const TableSearch = forwardRef<HTMLInputElement, TableSearchProps>(
+  function TableSearch(
+    { onSearch, search: initialSearch = "", delay = 1000, ...props },
+    ref,
+  ) {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const _search = initialSearch || searchParams.get("search") || "";
+    const [search, setSearch] = useState(_search);
+
+    useEffect(() => {
+      const timeout = setTimeout(() => {
+        setSearchParams((prev) => {
+          if (search) {
+            prev.set("search", search);
+          } else {
+            prev.delete("search");
+          }
+          return prev;
+        });
+        onSearch?.(search);
+      }, delay);
+
+      return () => clearTimeout(timeout);
+    }, [search, delay, onSearch, searchParams, setSearchParams]);
+
+    return (
+      <Input
+        ref={ref}
+        name="search"
+        type="search"
+        value={search}
+        defaultValue={_search}
+        onChange={(e) => setSearch(e.target.value)}
+        {...props}
+      />
+    );
+  },
+);
+
 export const TableControls = ({
   metadata,
   onSearch,
   filters,
 }: TableControlsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value) {
-      searchParams.set("search", value);
-    } else {
-      searchParams.delete("search");
-    }
-    searchParams.set("page", "1"); // Reset to first page on search
-    setSearchParams(searchParams);
-    onSearch?.(value);
-  };
 
   const handleFilterChange = (filterName: string, value: string) => {
     if (value === "all") {
@@ -71,14 +109,7 @@ export const TableControls = ({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
         {/* Search Input */}
-        <div className="min-w-[200px] flex-1">
-          <Input
-            placeholder="Search..."
-            value={searchParams.get("search") || ""}
-            onChange={handleSearch}
-            className="w-full"
-          />
-        </div>
+        <TableSearch delay={500} className={"w-2/6"} />
 
         {/* Filters */}
         {filters?.map((filter) => (
@@ -111,8 +142,8 @@ export const TableControls = ({
             <SelectTrigger className="w-[70px]">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              {[10, 20, 30, 50].map((value) => (
+            <SelectContent className={"bg-sidebar text-white"}>
+              {[10, 20, 30, 50, 60, 70, 80, 90, 100].map((value) => (
                 <SelectItem key={value} value={value.toString()}>
                   {value}
                 </SelectItem>
