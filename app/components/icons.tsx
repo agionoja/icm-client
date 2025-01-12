@@ -5,7 +5,7 @@ import {
   SlArrowUp,
 } from "react-icons/sl";
 import type { IconBaseProps } from "react-icons";
-import { HiOutlineDotsVertical } from "react-icons/hi";
+import { HiOutlineDotsVertical, HiOutlineDotsHorizontal } from "react-icons/hi";
 import { BsDot } from "react-icons/bs";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import { FcGoogle } from "react-icons/fc";
@@ -28,8 +28,11 @@ export const Close = (props: IconBaseProps) => <IoMdClose {...props} />;
 export const Hamburger = (props: IconBaseProps) => (
   <RxHamburgerMenu {...props} />
 );
-export const ThreeVerticalDots = (props: IconBaseProps) => (
+export const VerticalDots = (props: IconBaseProps) => (
   <HiOutlineDotsVertical {...props} />
+);
+export const HorizontalDots = (props: IconBaseProps) => (
+  <HiOutlineDotsHorizontal {...props} />
 );
 
 export const NoResultIcon = (props: IconBaseProps) => (

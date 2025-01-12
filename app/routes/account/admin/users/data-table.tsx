@@ -3,6 +3,7 @@ import { flexRender, useReactTable } from "@tanstack/react-table";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -26,7 +27,8 @@ export function DataTable<TData, TValue>({
   });
   return (
     <div className={"rounded-lg border bg-white py-10"}>
-      <Table className={"border-collapse"}>
+      <Table className={"caption-top border-collapse"}>
+        <TableCaption className={"px-4 text-left md:px-6"}>Users</TableCaption>
         <TableHeader className={""}>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

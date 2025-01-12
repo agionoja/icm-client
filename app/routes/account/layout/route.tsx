@@ -86,7 +86,7 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "swr",
-    // maxAge: 60 * 4,
+    // maxAge: 60,
     key: routesConfig.account.layout.getFile,
     revalidate: mutableRevalidate.revalidate,
     adapter: memoryAdapter,
@@ -125,11 +125,11 @@ function AccountLayoutContent({
       <AppSidebar user={loaderData.user} collapsible="icon" />
       <main
         className={cn(
-          "w-full",
+          "w-full px-5 md:px-8",
           state === "loading" ? "animate-pulse opacity-80" : "",
         )}
       >
-        <SidebarTrigger variant="link" />
+        <SidebarTrigger variant="link" className={"p-0"} />
         <Outlet />
       </main>
     </SidebarProvider>
@@ -141,7 +141,7 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
     <CacheProvider
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
-      interval={20}
+      interval={60 * 4}
       focusEnabled={false}
     >
       {(cacheData) => <AccountLayoutContent loaderData={cacheData} />}

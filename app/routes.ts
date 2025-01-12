@@ -51,7 +51,9 @@ export default [
       route(user.dashboard.getPath, user.dashboard.getFile),
       route(user.data.getPath, user.data.getFile),
       route(user.giftCard.getPath, user.giftCard.getFile),
-      route(user.wallet.getPath, user.wallet.getFile),
+      route(user.wallet.getPath, user.wallet.getFile, [
+        route(user.fundWallet.getPath, user.fundWallet.getFile),
+      ]),
       route(user.transactions.getPath, user.transactions.getFile),
     ]),
 
@@ -77,4 +79,5 @@ export default [
 
   // Resources Routes
   route(resources.spinServer.getPath, resources.spinServer.getFile),
+  route(resources.wallet.getPath, resources.wallet.getFile),
 ] satisfies RouteConfig;

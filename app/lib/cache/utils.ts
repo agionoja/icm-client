@@ -110,13 +110,8 @@ export const useCacheInvalidator = () => ({
   invalidateCache,
 });
 
-export function isExpired(
-  timestamp: number,
-  maxAge: number | null,
-  type: CacheConfig<any>["type"],
-): boolean {
-  if (!maxAge && type === "swr") return true;
-  if (!maxAge) return true;
+export function isExpired(timestamp: number, maxAge?: number | null): boolean {
+  if (!maxAge) return false;
   const maxAgeInMs = maxAge * 1000;
 
   const currentTime = Date.now();

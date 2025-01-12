@@ -50,7 +50,7 @@ export function getQueryParams(request: Request) {
 }
 // Zod schema for query parameters
 const querySchema = z.object({
-  limit: z.coerce.number().min(1).max(100).default(10),
+  limit: z.coerce.number().min(1).max(10000).default(10),
   page: z.coerce.number().min(1).default(1),
   search: z.string().default(""),
   role: z.nativeEnum(Role).optional(),
@@ -140,9 +140,9 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "swr",
+    type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    // maxAge: 90,
+    maxAge: Infinity,
     // adapter: memoryAdapter,
   });
 }
@@ -181,7 +181,7 @@ function AdminUsersContent({
   ];
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="mx-auto w-full">
       {"metadata" in loaderData && (
         <TableControls metadata={loaderData.metadata} filters={filters} />
       )}
