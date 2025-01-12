@@ -74,7 +74,6 @@ export const TableSearch = forwardRef<HTMLInputElement, TableSearchProps>(
         name="search"
         type="search"
         value={search}
-        defaultValue={_search}
         onChange={(e) => setSearch(e.target.value)}
         {...props}
       />

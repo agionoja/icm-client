@@ -176,6 +176,10 @@ export const routesConfig = {
         path: "/user/wallet",
         file: paths.user("wallet/route"),
       }),
+      fundWallet: defineRoute({
+        path: "/user/wallet/fund-wallet",
+        file: paths.user("wallet/fund-wallet/route"),
+      }),
     },
 
     // Admin Routes
@@ -254,6 +258,11 @@ export const routesConfig = {
     spinServer: defineRoute({
       path: "resources/spin-server",
       file: paths.resources("spin-server", "ts"),
+    }),
+
+    wallet: defineRoute({
+      path: "resources/fund-wallet/:reference",
+      file: paths.resources("wallet", "ts"),
     }),
   },
 };

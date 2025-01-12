@@ -26,7 +26,7 @@ const data = [
         pathname: userRouteConfig.dashboard.getPath,
       },
       {
-        title: "Fund Wallet",
+        title: "Wallet",
         icon: UserIcon,
         pathname: userRouteConfig.wallet.getPath,
       },

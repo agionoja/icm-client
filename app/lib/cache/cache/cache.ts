@@ -106,9 +106,19 @@ export async function cacheClientLoader<TData extends object>(
     }
 
     const { timestamp, maxAge: storedMaxAge, data: cacheData } = cacheEntry;
-    const cacheExpired = isExpired(timestamp, storedMaxAge, type);
+    const cacheExpired = isExpired(timestamp, storedMaxAge);
     const shouldRevalidate = cacheExpired || revalidate;
 
+    if (import.meta.env.DEV) {
+      console.log({
+        isValidCacheEntry,
+        cacheExpired,
+        revalidate,
+        shouldRevalidate,
+        type,
+        key,
+      });
+    }
     // Handle SWR background revalidation
     if (type === "swr" && shouldRevalidate) {
       return {

@@ -10,8 +10,9 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { formatDate } from "~/utils/format-date";
-import { useNavigate } from "react-router";
+import { Form, useNavigate } from "react-router";
 import { adminRouteConfig } from "~/routes.config";
+import { HorizontalDots, VerticalDots } from "~/components/icons";
 
 export type UserColumn = Pick<
   IUser,
@@ -77,18 +78,20 @@ function ActionsCell<TData extends UserColumn>({ row }: { row: Row<TData> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 pt-0">
+        <button>
           <span className="sr-only">Open Menu</span>
-        </Button>
+          <HorizontalDots size={20} />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-sidebar text-white" align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem
+          className={"hover:bg-sidebar-accent"}
           onClick={() => navigator.clipboard.writeText(original._id)}
         >
           Copy user ID
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem className={"hover:bg-sidebar-accent"}>
           <button
             onClick={() =>
               navigate(adminRouteConfig.user.generate({ id: original._id }))
@@ -97,7 +100,20 @@ function ActionsCell<TData extends UserColumn>({ row }: { row: Row<TData> }) {
             View User
           </button>
         </DropdownMenuItem>
-        <DropdownMenuItem>View payment details</DropdownMenuItem>
+        <DropdownMenuItem className={"hover:bg-sidebar-accent"}>
+          <Form method={"DELETE"} action={"/resources/users"}>
+            <button type={"submit"} name={"_action"} value={"deactivate"}>
+              Deactivate user
+            </button>
+          </Form>
+        </DropdownMenuItem>
+        <DropdownMenuItem className={"hover:bg-sidebar-accent"}>
+          <Form method={"PATCH"} action={"/resources/users"}>
+            <button type={"submit"} name={"_action"} value={"deactivate"}>
+              Suspend user
+            </button>
+          </Form>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/routes/account/user/wallet/fund-wallet/route.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/resources/wallet.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/icons.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/icons.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/fetch/logger.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/fetch/logger.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/cache/cache/cache.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/cache/cache.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/cache/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/data-table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/data-table.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/table-control.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/table-control.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/components/user-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/user-sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/user/wallet/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/user/wallet/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;agionoja&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/agionoja/icm-client.git&quot;,
+    &quot;accountId&quot;: &quot;65a57d58-0104-46f9-8c6b-e43d20ca184e&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2rPA9hKFEUinxQXBr67G6foCUtb" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;agi&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;/home/agionoja/.nvm/versions/node/v22.12.0/bin/node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.build.executor&quot;: &quot;Run&quot;,
+    &quot;npm.build:start.executor&quot;: &quot;Run&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;npm.start.executor&quot;: &quot;Run&quot;,
+    &quot;npm.typecheck.executor&quot;: &quot;Run&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/home/agionoja/code/icm/icm-client/node_modules/prettier&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editing.templates&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/home/agionoja/code/icm/icm-client/node_modules/typescript/lib&quot;
+  }
+}</component>
+  <component name="RunManager" selected="npm.dev">
+    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="build:start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build:start" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="start" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="typecheck" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="typecheck" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+        <item itemvalue="npm.build" />
+        <item itemvalue="npm.build:start" />
+        <item itemvalue="npm.start" />
+        <item itemvalue="npm.typecheck" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-WS-242.23726.96" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="" />
+      <created>1736450186456</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1736450186456</updated>
+      <workItem from="1736450187942" duration="12674000" />
+      <workItem from="1736530843668" duration="20065000" />
+      <workItem from="1736678550920" duration="2555000" />
+      <workItem from="1736709533680" duration="1446000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
