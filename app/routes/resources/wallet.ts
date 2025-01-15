@@ -9,7 +9,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   await requireUser(request);
   await restrictTo(request, Role.USER);
   const token = await getToken(request);
-  const { exception, message, data } = await fetchClient<
+  const { exception, message } = await fetchClient<
     IWalletTopUpTransaction,
     ResponseKey<"transaction">
   >(`/transactions/wallet/verify/${params.reference}`, {
@@ -18,14 +18,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   });
 
   if (exception) {
-    console.log(exception);
     throw await redirectWithError(
       userRouteConfig.fundWallet.getPath,
       exception.message,
     );
   }
-
-  console.log(data);
 
   throw await redirectWithSuccess(
     userRouteConfig.fundWallet.getPath,

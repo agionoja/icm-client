@@ -53,18 +53,20 @@ export const TableSearch = forwardRef<HTMLInputElement, TableSearchProps>(
     const [search, setSearch] = useState(_search);
 
     useEffect(() => {
-      const timeout = setTimeout(() => {
-        setSearchParams((prev) => {
-          if (search) {
-            prev.set("search", search);
-          } else {
-            prev.delete("search");
-          }
-          return prev;
-        });
-        onSearch?.(search);
-      }, delay);
-
+      let timeout: NodeJS.Timeout;
+      if (search.trim().length > 2) {
+        timeout = setTimeout(() => {
+          setSearchParams((prev) => {
+            if (search) {
+              prev.set("search", search);
+            } else {
+              prev.delete("search");
+            }
+            return prev;
+          });
+          onSearch?.(search);
+        }, delay);
+      }
       return () => clearTimeout(timeout);
     }, [search, delay, onSearch, searchParams, setSearchParams]);
 
