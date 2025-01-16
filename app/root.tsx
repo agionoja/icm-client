@@ -55,6 +55,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <body
         className={cn(
           isAccountRoute(location.pathname) ? "bg-account-bg" : "bg-landing",
+          "max-w-screen-3xl mx-auto",
         )}
       >
         <ToastContainer
