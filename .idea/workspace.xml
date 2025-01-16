@@ -5,28 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/routes/account/user/wallet/fund-wallet/route.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/routes/resources/wallet.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/icons.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/icons.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/fetch/logger.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/fetch/logger.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/cache/cache.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/cache/cache.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/account/admin/users/tableControl.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/ui/sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/ui/sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/root.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/root.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/data-table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/data-table.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/table-control.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/table-control.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/user-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/user-sidebar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/user/wallet/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/user/wallet/route.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tailwind.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tailwind.config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +40,31 @@
     &quot;assignee&quot;: &quot;agionoja&quot;
   }
 }</component>
+  <component name="GitToolBoxStore">
+    <option name="recentBranches">
+      <RecentBranches>
+        <option name="branchesForRepo">
+          <list>
+            <RecentBranchesForRepo>
+              <option name="branches">
+                <list>
+                  <RecentBranch>
+                    <option name="branchName" value="agi" />
+                    <option name="lastUsedInstant" value="1736962514" />
+                  </RecentBranch>
+                  <RecentBranch>
+                    <option name="branchName" value="main" />
+                    <option name="lastUsedInstant" value="1736962413" />
+                  </RecentBranch>
+                </list>
+              </option>
+              <option name="repositoryRootUrl" value="file://$PROJECT_DIR$" />
+            </RecentBranchesForRepo>
+          </list>
+        </option>
+      </RecentBranches>
+    </option>
+  </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/agionoja/icm-client.git&quot;,
@@ -84,7 +99,7 @@
     &quot;ts.external.directory.path&quot;: &quot;/home/agionoja/code/icm/icm-client/node_modules/typescript/lib&quot;
   }
 }</component>
-  <component name="RunManager" selected="npm.dev">
+  <component name="RunManager" selected="npm.build:start">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -137,9 +152,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.build:start" />
         <item itemvalue="npm.dev" />
         <item itemvalue="npm.build" />
-        <item itemvalue="npm.build:start" />
         <item itemvalue="npm.start" />
         <item itemvalue="npm.typecheck" />
       </list>
@@ -163,7 +178,9 @@
       <workItem from="1736450187942" duration="12674000" />
       <workItem from="1736530843668" duration="20065000" />
       <workItem from="1736678550920" duration="2555000" />
-      <workItem from="1736709533680" duration="1446000" />
+      <workItem from="1736709533680" duration="2412000" />
+      <workItem from="1736769503545" duration="5709000" />
+      <workItem from="1737032341691" duration="4781000" />
     </task>
     <servers />
   </component>

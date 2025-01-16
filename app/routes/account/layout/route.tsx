@@ -116,6 +116,7 @@ function AccountLayoutContent({
   return (
     <SidebarProvider
       defaultOpen={loaderData.defaultOpen}
+      className={"mx-auto max-w-screen-3xl"}
       style={
         {
           "--sidebar-width": "18rem",
@@ -123,14 +124,23 @@ function AccountLayoutContent({
       }
     >
       <AppSidebar user={loaderData.user} collapsible="icon" />
-      <main
-        className={cn(
-          "w-full px-5 md:px-8",
-          state === "loading" ? "animate-pulse opacity-80" : "",
-        )}
-      >
-        <SidebarTrigger variant="link" className={"p-0"} />
-        <Outlet />
+      <main className={cn("flex w-full flex-col gap-4")}>
+        <div className={"w-full min-w-full bg-sidebar px-4 py-4"}>
+          <SidebarTrigger
+            color={"white"}
+            variant={"link"}
+            className={"ml-auto text-white"}
+          />
+        </div>
+        <div
+          className={cn(
+            "w-full md:px-4",
+            state === "loading" ? "animate-pulse opacity-80" : "",
+          )}
+        >
+          <Outlet />
+        </div>
+        `
       </main>
     </SidebarProvider>
   );

@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "~/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, style, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -13,6 +13,21 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         )}
         ref={ref}
         {...props}
+        style={
+          {
+            MozAppearance: "textfield",
+            appearance: "textfield",
+            "&::-webkit-inner-spin-button": {
+              WebkitAppearance: "none",
+              margin: 0,
+            },
+            "&::-webkit-outer-spin-button": {
+              WebkitAppearance: "none",
+              margin: 0,
+            },
+            ...style,
+          } as React.CSSProperties
+        }
       />
     );
   },

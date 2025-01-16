@@ -64,6 +64,9 @@ export default {
         "sidebar-width-md": "var(--sidebar-width-md)",
         "sidebar-with-desktop": "var(--sidebar-width-desktop)",
       },
+      maxWidth: {
+        "screen-3xl": "1920px",
+      },
     },
   },
   plugins: [],

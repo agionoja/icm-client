@@ -100,7 +100,7 @@ export async function cacheClientLoader<TData extends object>(
     const cacheEntry = await adapter.getItem(key);
     const isValidCacheEntry = validateCacheEntry<TData>(cacheEntry);
 
-    // No cache or invalid cache - fetch fresh
+    // No cache or invalid cache – fetch fresh
     if (!isValidCacheEntry) {
       return handleFreshFetch(wrappedLoader, { key, maxAge });
     }

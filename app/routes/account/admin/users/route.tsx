@@ -21,15 +21,13 @@ import { useEffect } from "react";
 import {
   cacheClientLoader,
   CacheProvider,
-  memoryAdapter,
   type MutableRevalidate,
 } from "~/lib/cache";
 
 import { storeToken } from "../../../../../tokenManager";
-import { TableControls } from "~/routes/account/admin/users/table-control";
-import qs from "qs";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { z } from "zod";
+import TableControls from "~/routes/account/admin/users/tableControl";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -50,7 +48,7 @@ export function getQueryParams(request: Request) {
 }
 // Zod schema for query parameters
 const querySchema = z.object({
-  limit: z.coerce.number().min(1).max(10000).default(10),
+  limit: z.coerce.number().min(1).max(100).default(10),
   page: z.coerce.number().min(1).default(1),
   search: z.string().default(""),
   role: z.nativeEnum(Role).optional(),
@@ -122,9 +120,10 @@ export async function loader({ request }: Route.LoaderArgs) {
         "firstname",
         "lastname",
         "role",
+        "phone",
         "createdAt",
       ],
-      sort: ["role", "createdAt", "updatedAt", "firstname", "lastname"],
+      sort: ["-createdAt"],
     } satisfies IQueryBuilder<IUser>,
   });
 
@@ -182,10 +181,18 @@ function AdminUsersContent({
 
   return (
     <div className="mx-auto w-full">
-      {"metadata" in loaderData && (
-        <TableControls metadata={loaderData.metadata} filters={filters} />
-      )}
-      <DataTable columns={columns} data={tableData} />
+      {/*{"metadata" in loaderData && (*/}
+      {/*  // <TableControls metadata={loaderData.metadata} filters={filters} />*/}
+      {/*  <TableControls*/}
+      {/*    metadata={loaderData.metadata}*/}
+      {/*    onSearch={(term) => console.log("Searching:", term)}*/}
+      {/*  />*/}
+      {/*)}*/}
+      <DataTable
+        metadata={"metadata" in loaderData ? loaderData.metadata : undefined}
+        columns={columns}
+        data={tableData}
+      />
     </div>
   );
 }

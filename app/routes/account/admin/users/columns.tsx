@@ -8,15 +8,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Button } from "~/components/ui/button";
 import { formatDate } from "~/utils/format-date";
 import { Form, useNavigate } from "react-router";
 import { adminRouteConfig } from "~/routes.config";
-import { HorizontalDots, VerticalDots } from "~/components/icons";
+import { HorizontalDots } from "~/components/icons";
 
 export type UserColumn = Pick<
   IUser,
-  "isActive" | "role" | "lastname" | "firstname" | "email" | "_id" | "createdAt"
+  | "isActive"
+  | "role"
+  | "lastname"
+  | "firstname"
+  | "email"
+  | "_id"
+  | "createdAt"
+  | "phone"
 >;
 
 export const columns: ColumnDef<UserColumn>[] = [
@@ -36,6 +42,10 @@ export const columns: ColumnDef<UserColumn>[] = [
   {
     accessorKey: "lastname",
     header: "Lastname",
+  },
+  {
+    accessorKey: "phone",
+    header: "Phone",
   },
   {
     accessorKey: "role",

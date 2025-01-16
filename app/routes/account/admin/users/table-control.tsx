@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { Form, useFetcher, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import {
   Select,
   SelectContent,
@@ -22,7 +22,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import type { PaginationMetadata } from "icm-shared";
 
-// Types
 interface TableControlsProps {
   metadata: PaginationMetadata;
   onSearch?: (value: string) => void;
@@ -64,7 +63,6 @@ export const TableSearch = forwardRef<HTMLInputElement, TableSearchProps>(
         });
         onSearch?.(search);
       }, delay);
-
       return () => clearTimeout(timeout);
     }, [search, delay, onSearch, searchParams, setSearchParams]);
 
@@ -74,6 +72,7 @@ export const TableSearch = forwardRef<HTMLInputElement, TableSearchProps>(
         name="search"
         type="search"
         value={search}
+        placeholder={"Search..."}
         onChange={(e) => setSearch(e.target.value)}
         {...props}
       />

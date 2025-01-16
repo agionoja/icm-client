@@ -5,26 +5,38 @@ import {
   TableBody,
   TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
 import { NoResultIcon } from "~/components/icons";
+import type { PaginationMetadata } from "icm-shared";
+import {
+  PageSizeSelector,
+  PaginationControls,
+} from "~/routes/account/admin/users/tableControl";
+import { useIsMobile } from "~/hooks/use-mobile";
+import React from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  metadata?: PaginationMetadata;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  metadata,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+  const isMobile = useIsMobile();
+
   return (
     <div className={"rounded-lg border bg-white py-10"}>
       <Table className={"caption-top border-collapse"}>
@@ -75,6 +87,27 @@ export function DataTable<TData, TValue>({
             </TableRow>
           )}
         </TableBody>
+        {metadata && (
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={columns.length}>
+                <div className="flex flex-col gap-4 px-4 pt-4 md:flex-row md:items-center md:justify-between md:px-6">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">Show</span>
+                    <PageSizeSelector
+                      step={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      of {metadata.totalDocuments}
+                    </span>
+                  </div>
+
+                  <PaginationControls maxVisiblePages={5} metadata={metadata} />
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
     </div>
   );
