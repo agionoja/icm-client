@@ -12,6 +12,9 @@ import { formatDate } from "~/utils/format-date";
 import { Form, useNavigate } from "react-router";
 import { adminRouteConfig } from "~/routes.config";
 import { HorizontalDots } from "~/components/icons";
+import { Button } from "~/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
+import { SortHeader } from "~/routes/account/components/sort-table";
 
 export type UserColumn = Pick<
   IUser,
@@ -28,37 +31,50 @@ export type UserColumn = Pick<
 export const columns: ColumnDef<UserColumn>[] = [
   {
     accessorKey: "createdAt",
-    header: "Date",
+    header: () => {
+      return <SortHeader<UserColumn> label={"Date"} field={"createdAt"} />;
+    },
     cell: ({ row }) => formatDate(row.getValue("createdAt")),
   },
   {
     accessorKey: "email",
-    header: "Email",
+
+    header: () => {
+      return <SortHeader<UserColumn> label={"Email"} field={"email"} />;
+    },
   },
   {
     accessorKey: "firstname",
-    header: "Firstname",
+    header: () => {
+      return <SortHeader<UserColumn> label={"Firstname"} field={"firstname"} />;
+    },
   },
   {
     accessorKey: "lastname",
-    header: "Lastname",
+    header: () => {
+      return <SortHeader<UserColumn> label={"Lastname"} field={"lastname"} />;
+    },
   },
   {
     accessorKey: "phone",
-    header: "Phone",
+    header: () => {
+      return <SortHeader<UserColumn> label={"Phone"} field={"phone"} />;
+    },
   },
-  {
-    accessorKey: "role",
-    header: () => <div>Role</div>,
-    cell: ({ row }) => (
-      <span className={"capitalize"}>
-        {String(row.getValue("role")).toLowerCase()}
-      </span>
-    ),
-  },
+  // {
+  //   accessorKey: "role",
+  //   header: () => <div>Role</div>,
+  //   cell: ({ row }) => (
+  //     <span className={"capitalize"}>
+  //       {String(row.getValue("role")).toLowerCase()}
+  //     </span>
+  //   ),
+  // },
   {
     accessorKey: "isActive",
-    header: () => "Status",
+    header: () => {
+      return <SortHeader<UserColumn> label={"Status"} field={"isActive"} />;
+    },
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") as boolean;
       return (

@@ -116,16 +116,23 @@ function AccountLayoutContent({
   return (
     <SidebarProvider
       defaultOpen={loaderData.defaultOpen}
-      className={"mx-auto max-w-screen-3xl"}
       style={
         {
           "--sidebar-width": "18rem",
         } as React.CSSProperties
       }
     >
-      <AppSidebar user={loaderData.user} collapsible="icon" />
-      <main className={cn("flex w-full flex-col gap-4")}>
-        <div className={"w-full min-w-full bg-sidebar px-4 py-4"}>
+      <AppSidebar
+        className={"z-[1000000]"}
+        user={loaderData.user}
+        collapsible="icon"
+      />
+      <main className={cn("flex w-full flex-col md:gap-4")}>
+        <div
+          className={
+            "sticky top-0 z-[1000] w-full min-w-full bg-sidebar px-4 py-4"
+          }
+        >
           <SidebarTrigger
             color={"white"}
             variant={"link"}
