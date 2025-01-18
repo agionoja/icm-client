@@ -11,6 +11,7 @@ import {
   type IUser,
   Role,
   type SearchableFields,
+  type SortKey,
 } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/data-table";
 import { columns, type UserColumn } from "~/routes/account/admin/users/columns";
@@ -27,7 +28,6 @@ import {
 import { storeToken } from "../../../../../tokenManager";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { z } from "zod";
-import TableControls from "~/routes/account/admin/users/tableControl";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -40,13 +40,10 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-// Helper function to extract typed query parameters
-export function getQueryParams(request: Request) {
-  const url = new URL(request.url);
-  const rawParams = Object.fromEntries(url.searchParams.entries());
-  return querySchema.safeParse(rawParams);
-}
-// Zod schema for query parameters
+const sortSchema = z
+  .array(z.custom<SortKey<IUser>>())
+  .default(["-isActive", "role", "-email"]);
+
 const querySchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(10),
   page: z.coerce.number().min(1).default(1),
@@ -60,6 +57,7 @@ const querySchema = z.object({
       return undefined;
     })
     .optional(),
+  sort: sortSchema,
 });
 
 type QuerySchema = z.infer<typeof querySchema>;
@@ -74,10 +72,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   const url = new URL(request.url);
+  const rawParams = {
+    ...Object.fromEntries(url.searchParams.entries()),
+    sort: url.searchParams.getAll("sort"),
+  };
 
-  // Parse and validate query parameters
-  const rawParams = Object.fromEntries(url.searchParams.entries());
-  const { limit, page, search, role, active } = querySchema.parse(rawParams);
+  const { limit, page, search, role, active, sort } =
+    querySchema.parse(rawParams);
 
   // Build the filter query
   const filter: FilterQuery<IUser> = {};
@@ -123,7 +124,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         "phone",
         "createdAt",
       ],
-      sort: ["-createdAt"],
+      sort,
     } satisfies IQueryBuilder<IUser>,
   });
 
@@ -133,6 +134,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   return response;
+}
+
+export function getQueryParams(request: Request) {
+  const url = new URL(request.url);
+  const rawParams = {
+    ...Object.fromEntries(url.searchParams.entries()),
+    sort: url.searchParams.getAll("sort"),
+  };
+  return querySchema.safeParse(rawParams);
 }
 
 const mutableRevalidate: MutableRevalidate = { revalidate: false };
@@ -181,16 +191,10 @@ function AdminUsersContent({
 
   return (
     <div className="mx-auto w-full">
-      {/*{"metadata" in loaderData && (*/}
-      {/*  // <TableControls metadata={loaderData.metadata} filters={filters} />*/}
-      {/*  <TableControls*/}
-      {/*    metadata={loaderData.metadata}*/}
-      {/*    onSearch={(term) => console.log("Searching:", term)}*/}
-      {/*  />*/}
-      {/*)}*/}
       <DataTable
         metadata={"metadata" in loaderData ? loaderData.metadata : undefined}
         columns={columns}
+        tableId={"user-table"}
         data={tableData}
       />
     </div>

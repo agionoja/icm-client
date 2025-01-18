@@ -55,10 +55,11 @@ export function Layout({ children }: { children: ReactNode }) {
       <body
         className={cn(
           isAccountRoute(location.pathname) ? "bg-account-bg" : "bg-landing",
-          "max-w-screen-3xl mx-auto",
+          // "mx-auto max-w-screen-3xl",
         )}
       >
         <ToastContainer
+          className={"z-[10000]"}
           autoClose={5000}
           draggable={true}
           theme="light"
