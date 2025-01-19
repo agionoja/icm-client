@@ -57,7 +57,8 @@ export const PaginationControls = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
+        event.target instanceof HTMLTextAreaElement ||
+        isLoading
       ) {
         return; // Don't handle if user is typing in an input
       }
@@ -71,7 +72,7 @@ export const PaginationControls = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [metadata.previous, metadata.next, handlePageChange]);
+  }, [metadata.previous, metadata.next, handlePageChange, isLoading]);
 
   return (
     <div className="flex items-center space-x-1">

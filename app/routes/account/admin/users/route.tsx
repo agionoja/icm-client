@@ -1,33 +1,18 @@
 import type { Route } from "./+types/route";
-import {
-  fetchClient,
-  type Paginated,
-  type ResponseKey,
-} from "~/fetch/fetch-client.server";
 import { getToken, restrictTo } from "~/session";
-import {
-  type FilterQuery,
-  type IQueryBuilder,
-  type IUser,
-  Role,
-  type SearchableFields,
-  type SortKey,
-} from "icm-shared";
+import { Role } from "icm-shared";
 import { DataTable } from "~/routes/account/admin/users/data-table";
-import { columns, type UserColumn } from "~/routes/account/admin/users/columns";
+import { columns } from "~/routes/account/admin/users/columns";
 import { data } from "react-router";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
-
 import {
   cacheClientLoader,
   CacheProvider,
   type MutableRevalidate,
 } from "~/lib/cache";
-
 import { storeToken } from "../../../../../tokenManager";
-import { throttleNetwork } from "~/utils/throttle-network";
-import { z } from "zod";
+import { getUsers } from "~/routes/account/admin/users/queries";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -40,30 +25,7 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-const sortSchema = z
-  .array(z.custom<SortKey<IUser>>())
-  .default(["-isActive", "role", "-email"]);
-
-const querySchema = z.object({
-  limit: z.coerce.number().min(1).max(100).default(10),
-  page: z.coerce.number().min(1).default(1),
-  search: z.string().default(""),
-  role: z.nativeEnum(Role).optional(),
-  active: z
-    .enum(["true", "false", ""])
-    .transform((val) => {
-      if (val === "true") return true;
-      if (val === "false") return false;
-      return undefined;
-    })
-    .optional(),
-  sort: sortSchema,
-});
-
-type QuerySchema = z.infer<typeof querySchema>;
-
 export async function loader({ request }: Route.LoaderArgs) {
-  await throttleNetwork(0.5);
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
 
   const token = await getToken(request);
@@ -71,62 +33,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     await storeToken(token);
   }
 
-  const url = new URL(request.url);
-  const rawParams = {
-    ...Object.fromEntries(url.searchParams.entries()),
-    sort: url.searchParams.getAll("sort"),
-  };
-
-  const { limit, page, search, role, active, sort } =
-    querySchema.parse(rawParams);
-
-  // Build the filter query
-  const filter: FilterQuery<IUser> = {};
-
-  if (role && Role[role]) {
-    filter.role = role;
-  }
-
-  if (active !== undefined) {
-    filter.isActive = active;
-  }
-
-  const searchQuery: SearchableFields<IUser> = {
-    firstname: search,
-    lastname: search,
-    email: search,
-    ...(search ? { role: search.toUpperCase() as Role } : {}),
-  };
-
-  const response = await fetchClient<
-    UserColumn,
-    ResponseKey<"users">,
-    IUser,
-    Paginated
-  >("/users", {
-    responseKey: "users",
-    token,
-    query: {
-      search: searchQuery,
-      filter,
-      paginate: { limit, page },
-      ignoreFilterFlags: ["isActive"],
-      countFilter:
-        active !== undefined
-          ? { isActive: active }
-          : { isActive: { exists: true } },
-      select: [
-        "+isActive",
-        "email",
-        "firstname",
-        "lastname",
-        "role",
-        "phone",
-        "createdAt",
-      ],
-      sort,
-    } satisfies IQueryBuilder<IUser>,
-  });
+  const response = await getUsers(request, token);
 
   if (response.exception) {
     console.error(response.exception);
@@ -134,15 +41,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   return response;
-}
-
-export function getQueryParams(request: Request) {
-  const url = new URL(request.url);
-  const rawParams = {
-    ...Object.fromEntries(url.searchParams.entries()),
-    sort: url.searchParams.getAll("sort"),
-  };
-  return querySchema.safeParse(rawParams);
 }
 
 const mutableRevalidate: MutableRevalidate = { revalidate: false };
@@ -194,7 +92,6 @@ function AdminUsersContent({
       <DataTable
         metadata={"metadata" in loaderData ? loaderData.metadata : undefined}
         columns={columns}
-        tableId={"user-table"}
         data={tableData}
       />
     </div>
@@ -205,6 +102,7 @@ export default function AdminUsers({ loaderData }: Route.ComponentProps) {
   return (
     <CacheProvider
       interval={60}
+      focusEnabled={false}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
     >

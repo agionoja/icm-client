@@ -12,7 +12,7 @@ import {
 import { NoResultIcon } from "~/components/icons";
 import type { PaginationMetadata } from "icm-shared";
 import { FormattedCount } from "~/routes/account/components/format-count";
-import { TableSearch } from "~/routes/account/components/table-search";
+import { Search } from "~/routes/account/components/search";
 import { PageSizeSelector } from "~/routes/account/components/page-size-selector";
 import { PaginationControls } from "~/routes/account/components/pagination-controls";
 
@@ -20,14 +20,12 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   metadata?: PaginationMetadata;
-  tableId: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   metadata,
-  tableId,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -37,10 +35,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <div className="sticky top-[3.78rem] z-20 bg-white p-4">
+      <div className="sticky top-[3.78rem] z-30 bg-white p-4">
         {/* Your future search/filter components will go here */}
         <div className="h-12 w-full rounded-lg">
-          <TableSearch className={"w-52"} />
+          <Search className={"w-52"} delay={500} />
           {/* Placeholder for search/filter UI */}
         </div>
       </div>
@@ -52,7 +50,7 @@ export function DataTable<TData, TValue>({
             Users
           </TableCaption>
 
-          <TableHeader className="sticky top-0 z-[100] bg-white shadow-sm">
+          <TableHeader className="sticky top-0 bg-white shadow-sm">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
