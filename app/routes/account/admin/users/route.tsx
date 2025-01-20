@@ -47,10 +47,9 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "normal",
+    type: "swr",
     revalidate: mutableRevalidate.revalidate,
     maxAge: Infinity,
-    // adapter: memoryAdapter,
   });
 }
 
