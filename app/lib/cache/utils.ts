@@ -1,6 +1,6 @@
 import { type Location, useLocation } from "react-router";
 import { cacheAdapter } from "./cache";
-import type { CacheConfig, CacheEntry } from "./types";
+import type { CacheAdapter, CacheConfig, CacheEntry } from "./types";
 import { z } from "zod";
 
 export function isRedirect(response: Response): boolean {
@@ -106,9 +106,12 @@ export function useRouteKey(): string {
  * Hook providing cache invalidation functionality
  * @returns Object containing invalidateCache function
  */
-export const useCacheInvalidator = () => ({
-  invalidateCache,
-});
+export const useCacheInvalidator = (
+  key: string,
+  adapter?: CacheAdapter<CacheEntry<any>>,
+) => {
+  return () => invalidateCache(key, adapter);
+};
 
 export function isExpired(timestamp: number, maxAge?: number | null): boolean {
   if (!maxAge) return false;

@@ -126,6 +126,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { PaginationMetadata } from "icm-shared";
 import { usePagination } from "~/hooks/usePaginaiton";
 import { useEffect } from "react";
+import { cn } from "~/lib/utils";
 
 export const PaginationControls = ({
   metadata,
@@ -177,13 +178,17 @@ export const PaginationControls = ({
         <Button
           key={index}
           disabled={isLoading}
+          // disabled={isLoading || metadata.currentPage === page.number}
           variant={metadata.currentPage === page.number ? "default" : "ghost"}
           size="sm"
-          className={`h-8 px-3 text-sm font-medium tabular-nums ${
-            page.type === "edge"
-              ? "border-2 border-transparent hover:border-gray-200"
-              : ""
-          }`}
+          className={cn(
+            `h-8 px-3 text-sm font-medium tabular-nums disabled:opacity-100 ${
+              page.type === "edge"
+                ? "border-2 border-transparent hover:border-gray-200"
+                : ""
+            }`,
+            `${metadata.currentPage === page.number ? "bg-sidebar" : ""}`,
+          )}
           onClick={() => handlePageChange(page.number)}
           onMouseEnter={() => prefetchPage(page.number)}
           onFocus={() => prefetchPage(page.number)}
