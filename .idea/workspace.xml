@@ -5,7 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/hooks/usePaginaiton.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/ui/input.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/ui/input.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/cache/cache/adapter-config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/cache/adapter-config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" afterDir="false" />
     </list>
@@ -175,6 +180,13 @@
       <workItem from="1737308740387" duration="1083000" />
       <workItem from="1737346239034" duration="3514000" />
       <workItem from="1737382446233" duration="3022000" />
+      <workItem from="1737402490472" duration="1256000" />
+      <workItem from="1737442070835" duration="17450000" />
+      <workItem from="1737481150424" duration="5794000" />
+      <workItem from="1737546993054" duration="153000" />
+      <workItem from="1737555703333" duration="864000" />
+      <workItem from="1737571416164" duration="17439000" />
+      <workItem from="1737625372440" duration="378000" />
     </task>
     <servers />
   </component>

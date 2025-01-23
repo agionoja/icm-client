@@ -11,6 +11,18 @@
 /*  }*/
 /*}*/
 
+/* Add this to your global CSS file */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield; /* Standard syntax */
+}
+
 @layer base {
   :root {
     --sidebar-background: 235.9, 69.8%, 24.7%;
@@ -50,6 +62,7 @@
   body {
     @apply text-sm;
   }
+
 }
 
 @layer components {
@@ -69,6 +82,8 @@
     @apply px-2 py-1.5 md:py-2;
   }
 }
+
+
 
 @layer components {
   /** {*/

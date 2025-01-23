@@ -121,11 +121,11 @@
 //   );
 // };
 
-import { useNavigation, useSearchParams, useFetcher } from "react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { PaginationMetadata } from "icm-shared";
+import { usePagination } from "~/hooks/usePaginaiton";
+import { useEffect } from "react";
 
 export const PaginationControls = ({
   metadata,
@@ -134,165 +134,24 @@ export const PaginationControls = ({
   metadata: PaginationMetadata;
   maxVisiblePages?: number;
 }) => {
-  const { state } = useNavigation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const fetcher = useFetcher();
-  const activeRequestsRef = useRef(new Map<number, AbortController>());
-  const [prefetchedPages, setPrefetchedPages] = useState<Set<number>>(
-    new Set(),
-  );
-  const currentPrefetchTimeout = useRef<NodeJS.Timeout>();
-
-  const isLoading = state !== "idle";
-
-  const getVisiblePages = useCallback(() => {
-    const currentPage = metadata.currentPage;
-    const totalPages = metadata.pageCount;
-    const pages: Array<{ number: number; type: "edge" | "middle" }> = [];
-
-    pages.push({ number: 1, type: "edge" });
-
-    const start = Math.max(
-      2,
-      currentPage - Math.floor((maxVisiblePages - 2) / 2),
-    );
-    const end = Math.min(totalPages - 1, start + maxVisiblePages - 3);
-
-    for (let i = start; i <= end; i++) {
-      pages.push({ number: i, type: "middle" });
-    }
-
-    if (totalPages > 1) {
-      pages.push({ number: totalPages, type: "edge" });
-    }
-
-    return pages;
-  }, [metadata.currentPage, metadata.pageCount, maxVisiblePages]);
-
-  const cleanupRequests = useCallback(() => {
-    activeRequestsRef.current.forEach((controller) => {
-      controller.abort();
+  const { isLoading, visiblePages, handlePageChange, prefetchPage } =
+    usePagination({
+      metadata,
+      maxVisiblePages,
     });
-    activeRequestsRef.current.clear();
 
-    if (currentPrefetchTimeout.current) {
-      clearTimeout(currentPrefetchTimeout.current);
-    }
-  }, []);
-
-  const prefetchPage = useCallback(
-    (page: number) => {
-      if (page === metadata.currentPage || prefetchedPages.has(page)) {
-        return;
-      }
-
-      if (currentPrefetchTimeout.current) {
-        clearTimeout(currentPrefetchTimeout.current);
-      }
-
-      currentPrefetchTimeout.current = setTimeout(() => {
-        const controller = new AbortController();
-        activeRequestsRef.current.set(page, controller);
-
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set("page", String(page));
-
-        // Instead of using signal directly, we'll handle the abortion manually
-        const fetchPromise = fetcher.load(`?${newParams.toString()}`);
-
-        // Set up abort handling
-        controller.signal.addEventListener("abort", () => {
-          // The fetch will be automatically aborted when the controller is aborted
-          activeRequestsRef.current.delete(page);
-        });
-
-        // Handle successful fetch
-        Promise.resolve(fetchPromise).then(() => {
-          if (!controller.signal.aborted) {
-            setPrefetchedPages((prev) => new Set(prev).add(page));
-            activeRequestsRef.current.delete(page);
-          }
-        });
-      }, 100);
-    },
-    [fetcher, searchParams, metadata.currentPage, prefetchedPages],
-  );
-
-  const prefetchAdjacentPages = useCallback(() => {
-    if (metadata.next) {
-      prefetchPage(metadata.next.page);
-    }
-    if (metadata.previous) {
-      prefetchPage(metadata.previous.page);
-    }
-
-    // Use requestAnimationFrame for the rest
-    requestAnimationFrame(() => {
-      getVisiblePages().forEach((page) => {
-        if (Math.abs(page.number - metadata.currentPage) <= 2) {
-          prefetchPage(page.number);
-        }
-      });
-    });
-  }, [metadata, prefetchPage, getVisiblePages]);
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      cleanupRequests();
-
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("page", String(page));
-      setSearchParams(newParams);
-
-      setPrefetchedPages(new Set());
-
-      setTimeout(() => {
-        prefetchAdjacentPages();
-      }, 150);
-    },
-    [searchParams, setSearchParams, cleanupRequests, prefetchAdjacentPages],
-  );
-
+  // Focus management for better keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement ||
-        isLoading
-      ) {
-        return;
-      }
-
-      if (event.key === "ArrowLeft" && metadata.previous) {
-        handlePageChange(metadata.previous.page);
-      } else if (event.key === "ArrowRight" && metadata.next) {
-        handlePageChange(metadata.next.page);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      cleanupRequests();
-    };
-  }, [
-    metadata.previous,
-    metadata.next,
-    handlePageChange,
-    isLoading,
-    cleanupRequests,
-  ]);
-
-  useEffect(() => {
-    const initTimeout = setTimeout(prefetchAdjacentPages, 200);
-    return () => {
-      clearTimeout(initTimeout);
-      cleanupRequests();
-    };
-  }, [prefetchAdjacentPages, cleanupRequests]);
+    const currentPageButton = document.querySelector(
+      '[aria-current="page"]',
+    ) as HTMLButtonElement | null;
+    if (currentPageButton) {
+      currentPageButton.focus({ preventScroll: true });
+    }
+  }, [metadata.currentPage]);
 
   return (
-    <div className="flex items-center space-x-1">
+    <nav aria-label="Pagination" className="flex items-center space-x-1">
       <Button
         variant="ghost"
         size="sm"
@@ -307,11 +166,14 @@ export const PaginationControls = ({
         onFocus={() =>
           metadata.previous && prefetchPage(metadata.previous.page)
         }
+        aria-label="Previous page"
+        tabIndex={!metadata.previous ? -1 : 0}
       >
         <ChevronLeft className="h-4 w-4" />
+        <span className="sr-only">Previous page</span>
       </Button>
 
-      {getVisiblePages().map((page, index) => (
+      {visiblePages.map((page, index) => (
         <Button
           key={index}
           disabled={isLoading}
@@ -325,6 +187,15 @@ export const PaginationControls = ({
           onClick={() => handlePageChange(page.number)}
           onMouseEnter={() => prefetchPage(page.number)}
           onFocus={() => prefetchPage(page.number)}
+          aria-label={
+            metadata.currentPage === page.number
+              ? `Current page, page ${page.number}`
+              : `Go to page ${page.number}`
+          }
+          aria-current={
+            metadata.currentPage === page.number ? "page" : undefined
+          }
+          tabIndex={metadata.currentPage === page.number ? -1 : 0}
         >
           {page.number}
         </Button>
@@ -338,9 +209,12 @@ export const PaginationControls = ({
         onClick={() => metadata.next && handlePageChange(metadata.next.page)}
         onMouseEnter={() => metadata.next && prefetchPage(metadata.next.page)}
         onFocus={() => metadata.next && prefetchPage(metadata.next.page)}
+        aria-label="Next page"
+        tabIndex={!metadata.next ? -1 : 0}
       >
         <ChevronRight className="h-4 w-4" />
+        <span className="sr-only">Next page</span>
       </Button>
-    </div>
+    </nav>
   );
 };

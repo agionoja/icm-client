@@ -47,9 +47,9 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
-    type: "swr",
+    type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: Infinity,
+    maxAge: 60 * 4,
   });
 }
 
@@ -67,25 +67,6 @@ function AdminUsersContent({
     }
   }, [error]);
 
-  const filters = [
-    {
-      label: "Status",
-      value: "active",
-      options: [
-        { label: "Active", value: "true" },
-        { label: "Inactive", value: "false" },
-      ],
-    },
-    {
-      label: "Role",
-      value: "role",
-      options: [
-        { label: "Admin", value: Role.ADMIN },
-        { label: "User", value: Role.USER },
-      ],
-    },
-  ];
-
   return (
     <div className="mx-auto w-full">
       <DataTable
@@ -100,7 +81,7 @@ function AdminUsersContent({
 export default function AdminUsers({ loaderData }: Route.ComponentProps) {
   return (
     <CacheProvider
-      interval={60}
+      intervalEnabled={false}
       focusEnabled={false}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}

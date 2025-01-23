@@ -6,6 +6,7 @@ import type {
 } from "../types";
 import { getCacheAdapter } from "./adapters";
 import { constructKey, dateReviver, invalidateCache } from "../utils";
+import { useEffect, useState } from "react";
 
 /**
  * Configures the global cache instance
@@ -50,6 +51,10 @@ export const configureGlobalCache = (
  * @param storage Web Storage object (localStorage/sessionStorage)
  * @returns Cache adapter for the storage
  */
+
+const storageClearListeners = new Set<() => void>();
+let storageClearCount = 0;
+
 export function augmentStorageAdapter<T>(
   storage: Storage,
 ): CacheAdapter<CacheEntry<T>> {
@@ -64,10 +69,48 @@ export function augmentStorageAdapter<T>(
         return null;
       }
     },
-    setItem: async (key, value) => storage.setItem(key, JSON.stringify(value)),
+    setItem: async (key, value) => {
+      try {
+        storage.setItem(key, JSON.stringify(value));
+      } catch (error) {
+        // Handle both localStorage/sessionStorage and IndexedDB quota errors
+        if (
+          error instanceof Error &&
+          (error.name === "QuotaExceededError" || // localStorage/sessionStorage
+            error.name === "DatabaseFullError") // IndexedDB
+        ) {
+          storage.clear();
+          storageClearCount++;
+          storageClearListeners.forEach((listener) => listener());
+          try {
+            storage.setItem(key, JSON.stringify(value));
+          } catch (retryError) {
+            console.warn("Storage failed even after cleanup:", retryError);
+            throw retryError;
+          }
+        } else {
+          throw error;
+        }
+      }
+    },
     removeItem: async (key) => storage.removeItem(key),
     clear: async () => storage.clear(),
   };
+}
+
+// Hook to detect storage clears
+export function useStorageCleared() {
+  const [clearCount, setClearCount] = useState(storageClearCount);
+
+  useEffect(() => {
+    const listener = () => setClearCount(storageClearCount);
+    storageClearListeners.add(listener);
+    return () => {
+      storageClearListeners.delete(listener);
+    };
+  }, []);
+
+  return clearCount;
 }
 
 /**

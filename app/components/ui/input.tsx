@@ -13,21 +13,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         )}
         ref={ref}
         {...props}
-        style={
-          {
-            MozAppearance: "textfield",
-            appearance: "textfield",
-            "&::-webkit-inner-spin-button": {
-              WebkitAppearance: "none",
-              margin: 0,
-            },
-            "&::-webkit-outer-spin-button": {
-              WebkitAppearance: "none",
-              margin: 0,
-            },
-            ...style,
-          } as React.CSSProperties
-        }
       />
     );
   },
