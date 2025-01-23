@@ -88,7 +88,6 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
     type: "swr",
     key: "_root",
     adapter: memoryAdapter,
-    // revalidate: false,
   });
 }
 

@@ -12,8 +12,6 @@ import { formatDate } from "~/utils/format-date";
 import { Form, useNavigate } from "react-router";
 import { adminRouteConfig } from "~/routes.config";
 import { HorizontalDots } from "~/components/icons";
-import { Button } from "~/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
 import { SortHeader } from "~/routes/account/components/sort-table";
 
 export type UserColumn = Pick<
