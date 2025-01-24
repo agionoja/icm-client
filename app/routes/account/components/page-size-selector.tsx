@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router";
+import { useFetcher, useSearchParams } from "react-router";
 import {
   Select,
   SelectContent,
@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useRef } from "react";
 
 export const PageSizeSelector = ({
   step = [10, 20, 30, 50],
@@ -15,6 +16,27 @@ export const PageSizeSelector = ({
   defaultValue?: number;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const fetcher = useFetcher();
+
+  // Ref to track hover timer
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handlePrefetch = (limit: string) => {
+    // Only prefetch if hovering for more than 500ms
+    hoverTimerRef.current = setTimeout(() => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("limit", limit);
+      newParams.set("page", "1");
+
+      fetcher.load(`?${newParams.toString()}`);
+    }, 200);
+  };
+
+  const handleCancelPrefetch = () => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+  };
 
   return (
     <Select
@@ -35,6 +57,8 @@ export const PageSizeSelector = ({
             className={"hover:bg-sidebar-accent"}
             key={option}
             value={String(option)}
+            onMouseEnter={() => handlePrefetch(String(option))}
+            onMouseLeave={handleCancelPrefetch}
           >
             {option}
           </SelectItem>
