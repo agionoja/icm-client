@@ -46,9 +46,7 @@ export function DataTable<TData, TValue>({
       {/* Table Container with Scroll */}
       <div className="flex-1 overflow-auto">
         <Table className="relative w-full caption-top border-collapse">
-          <TableCaption className="sr-only bg-white px-4 text-left md:px-6">
-            Users
-          </TableCaption>
+          <TableCaption className="sr-only">Users</TableCaption>
 
           <TableHeader className="sticky top-0 bg-white shadow-sm">
             {table.getHeaderGroups().map((headerGroup) => (

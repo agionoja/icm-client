@@ -68,13 +68,13 @@ function AdminUsersContent({
   }, [error]);
 
   return (
-    <div className="mx-auto w-full">
-      <DataTable
-        metadata={"metadata" in loaderData ? loaderData.metadata : undefined}
-        columns={columns}
-        data={tableData}
-      />
-    </div>
+    // <div className="mx-auto w-full">
+    <DataTable
+      metadata={"metadata" in loaderData ? loaderData.metadata : undefined}
+      columns={columns}
+      data={tableData}
+    />
+    // </div>
   );
 }
 

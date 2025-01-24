@@ -29,7 +29,7 @@ export const PageSizeSelector = ({
       newParams.set("page", "1");
 
       fetcher.load(`?${newParams.toString()}`);
-    }, 200);
+    }, 100);
   };
 
   const handleCancelPrefetch = () => {
