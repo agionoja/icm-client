@@ -60,7 +60,9 @@ export function usePagination({
         // Update URL to match server state without creating history entry
         const newParams = new URLSearchParams(searchParams);
         newParams.set("page", serverPage.toString());
-        setSearchParams(newParams, { replace: true });
+        setSearchParams(newParams, {
+          preventScrollReset: false,
+        });
       } catch (error) {
         console.error("Cache synchronization failed:", error);
       }
@@ -71,7 +73,6 @@ export function usePagination({
 
   // Pagination UI calculations
   const getVisiblePages = useCallback(() => {
-    const { currentPage, pageCount } = metadata;
     const pages: PaginationPage[] = [];
 
     // Always include first page
@@ -80,9 +81,9 @@ export function usePagination({
     // Calculate middle pages range
     const start = Math.max(
       2,
-      currentPage - Math.floor((maxVisiblePages - 2) / 2),
+      metadata.currentPage - Math.floor((maxVisiblePages - 2) / 2),
     );
-    const end = Math.min(pageCount - 1, start + maxVisiblePages - 3);
+    const end = Math.min(metadata.pageCount - 1, start + maxVisiblePages - 3);
 
     // Add middle pages
     for (let i = start; i <= end; i++) {
@@ -90,8 +91,8 @@ export function usePagination({
     }
 
     // Add last page if applicable
-    if (pageCount > 1) {
-      pages.push({ number: pageCount, type: "edge" });
+    if (metadata.pageCount > 1) {
+      pages.push({ number: metadata.pageCount, type: "edge" });
     }
 
     return pages;
@@ -160,7 +161,7 @@ export function usePagination({
 
       const newParams = new URLSearchParams(searchParams);
       newParams.set("page", page.toString());
-      setSearchParams(newParams);
+      setSearchParams(newParams, { preventScrollReset: false });
     },
     [metadata.currentPage, isLoading, searchParams, setSearchParams],
   );

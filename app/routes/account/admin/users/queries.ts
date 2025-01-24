@@ -19,7 +19,7 @@ const sortSchema = z
   .default(["-isActive", "role", "-email"]);
 
 const querySchema = z.object({
-  limit: z.coerce.number().min(1).max(1000).default(10),
+  limit: z.coerce.number().min(1).max(100).default(10),
   page: z.coerce.number().min(1).default(1),
   search: z.string().default(""),
   role: z.nativeEnum(Role).optional(),
