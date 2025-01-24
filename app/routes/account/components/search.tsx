@@ -10,7 +10,7 @@ interface TableSearchProps extends ComponentProps<"input"> {
 }
 
 export const Search = forwardRef<HTMLInputElement, TableSearchProps>(
-  function Search({ delay = 500, className, onSearch, ...props }, ref) {
+  function Search({ delay = 300, className, onSearch, ...props }, ref) {
     const [searchParams, setSearchParams] = useSearchParams();
     const searchParam = searchParams.get("search") || "";
     const [search, setSearch] = useState(searchParam);
@@ -23,15 +23,12 @@ export const Search = forwardRef<HTMLInputElement, TableSearchProps>(
         if (trimmedSearch !== searchParam) {
           // Minimum search length check
           if (trimmedSearch.length >= 3) {
-            setSearchParams(
-              (prev) => {
-                const newParams = new URLSearchParams(prev);
-                newParams.set("search", trimmedSearch);
-                newParams.set("page", "1");
-                return newParams;
-              },
-              { replace: true },
-            );
+            setSearchParams((prev) => {
+              const newParams = new URLSearchParams(prev);
+              newParams.set("search", trimmedSearch);
+              newParams.set("page", "1");
+              return newParams;
+            });
 
             // Optional callback for additional search handling
             onSearch?.(trimmedSearch);
