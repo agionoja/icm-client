@@ -63,13 +63,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const sidebarCookie = request.headers.get("Cookie");
   const defaultOpen = getCookieByName(sidebarCookie, "sidebar:state", true);
-
+  const url = new URL(request.url);
   return {
     defaultOpen: defaultOpen ?? true,
     sessionTimeout: await getJwtMaxAgeInMs(request),
     redirectTo: authRouteConfig.login.generate(
       {},
-      { redirect: new URL(request.url).pathname },
+      { redirect: url.pathname + url.search + url.hash },
     ),
     sessionTimeoutKey: SESSION_TIMEOUT_KEY,
     user: {
