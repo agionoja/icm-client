@@ -53,7 +53,7 @@ export interface CacheAdapter<T> {
    * @param key Cache key
    * @returns Cached value or undefined/null if not found
    */
-  getItem: (key: string) => T | undefined | Promise<T | null>;
+  getItem: (key: string) => T | undefined | Promise<T | null | undefined>;
 
   /**
    * Stores an item in the cache

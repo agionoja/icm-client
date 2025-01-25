@@ -114,22 +114,42 @@ export function useStorageCleared() {
 }
 
 /**
+ // Hook to detect storage clears
+ export function useStorageCleared() {
+ const [clearCount, setClearCount] = useState(storageClearCount);
+
+ useEffect(() => {
+ const listener = () => setClearCount(storageClearCount);
+ storageClearListeners.add(listener);
+ return () => {
+ storageClearListeners.delete(listener);
+ };
+ }, []);
+
+ return clearCount;
+ }
  * Creates a new cache adapter instance
  * @param adapter Factory function that returns a cache adapter
  * @returns Object containing the configured adapter
  */
+
 export function createCacheAdapter<T>(
-  adapter: () => CacheAdapter<CacheEntry<T>>,
-) {
-  if (typeof document === "undefined") return { adapter: undefined };
+  adapter: () => CacheAdapter<CacheEntry<T>> | Storage,
+): { adapter?: CacheAdapter<CacheEntry<T>> } {
+  if (typeof window === "undefined") return { adapter: undefined };
+
   const adapterInstance = adapter();
+
+  // Convert Storage to CacheAdapter
   if (adapterInstance instanceof Storage) {
     return {
-      adapter: augmentStorageAdapter(adapterInstance),
+      adapter: augmentStorageAdapter<T>(adapterInstance),
     };
   }
+
+  // Return existing CacheAdapter
   return {
-    adapter: adapter(),
+    adapter: adapterInstance,
   };
 }
 

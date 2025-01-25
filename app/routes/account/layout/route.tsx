@@ -126,9 +126,9 @@ function AccountLayoutContent({
         user={loaderData.user}
         collapsible="icon"
       />
-      <main className={cn("flex w-full flex-col md:gap-4")}>
+      <main className={cn("relative flex w-full flex-col md:gap-4")}>
         <div
-          className={"sticky top-0 z-50 w-full min-w-full bg-sidebar px-4 py-4"}
+          className={"fixed top-0 z-50 w-full min-w-full bg-sidebar px-4 py-4"}
         >
           <SidebarTrigger
             color={"white"}
@@ -138,7 +138,7 @@ function AccountLayoutContent({
         </div>
         <div
           className={cn(
-            "w-full md:px-4",
+            "w-full md:mt-20 md:px-4",
             state === "loading" ? "animate-pulse opacity-80" : "",
           )}
         >

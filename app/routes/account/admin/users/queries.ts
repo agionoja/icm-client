@@ -1,6 +1,5 @@
 import {
   type FilterQuery,
-  type IQueryBuilder,
   type IUser,
   Role,
   type SearchableFields,
@@ -13,15 +12,11 @@ import {
 } from "~/fetch/fetch-client.server";
 import type { UserColumn } from "~/routes/account/admin/users/columns";
 import { z } from "zod";
+import { baseSchema, parseQueryParams } from "~/utils/query";
 
-const sortSchema = z
-  .array(z.custom<SortKey<IUser>>())
-  .default(["-isActive", "role", "-email"]);
+const sortSchema = z.array(z.custom<SortKey<IUser>>()).default([]);
 
-const querySchema = z.object({
-  limit: z.coerce.number().min(1).max(100).default(10),
-  page: z.coerce.number().min(1).default(1),
-  search: z.string().default(""),
+const filterSchema = z.object({
   role: z.nativeEnum(Role).optional(),
   active: z
     .enum(["true", "false", ""])
@@ -31,18 +26,17 @@ const querySchema = z.object({
       return undefined;
     })
     .optional(),
+});
+
+const usersQuerySchema = baseSchema.merge(filterSchema).extend({
   sort: sortSchema,
 });
 
 export async function getUsers(request: Request, token?: string) {
-  const url = new URL(request.url);
-  const rawParams = {
-    ...Object.fromEntries(url.searchParams.entries()),
-    sort: url.searchParams.getAll("sort"),
-  };
-
-  const { limit, page, search, role, active, sort } =
-    querySchema.parse(rawParams);
+  const { limit, page, search, role, active, sort } = parseQueryParams(
+    request,
+    usersQuerySchema,
+  );
 
   // Build the filter query
   const filter: FilterQuery<IUser> = {};
@@ -86,7 +80,7 @@ export async function getUsers(request: Request, token?: string) {
           "createdAt",
         ],
         sort,
-      } satisfies IQueryBuilder<IUser>,
+      },
     },
   );
 }

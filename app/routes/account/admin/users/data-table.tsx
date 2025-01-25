@@ -18,7 +18,7 @@ import { PaginationControls } from "~/routes/account/components/pagination-contr
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  data?: TData[];
   metadata?: PaginationMetadata;
 }
 
@@ -27,6 +27,9 @@ export function DataTable<TData, TValue>({
   data,
   metadata,
 }: DataTableProps<TData, TValue>) {
+  if (!data) {
+    data = [];
+  }
   const table = useReactTable({
     data,
     columns,

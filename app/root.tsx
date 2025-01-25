@@ -1,6 +1,5 @@
 import type { Route } from "./+types/root";
 import {
-  data,
   isRouteErrorResponse,
   Links,
   type LinksFunction,
@@ -11,17 +10,11 @@ import {
   useLocation,
 } from "react-router";
 import "./app.css";
-import { type ReactNode, useEffect } from "react";
-import { Bounce, toast, ToastContainer } from "react-toastify";
+import { type ReactNode } from "react";
+import { Bounce, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-international-phone/style.css";
-import { getToast } from "remix-toast";
 import { cn } from "~/lib/utils";
-import {
-  cacheClientLoader,
-  memoryAdapter,
-  useCachedLoaderData,
-} from "~/lib/cache";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -73,37 +66,7 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const { toast, headers } = await getToast(request);
-  return data(
-    { toast },
-    {
-      headers,
-    },
-  );
-}
-
-export async function clientLoader(args: Route.ClientLoaderArgs) {
-  return cacheClientLoader(args, {
-    type: "swr",
-    key: "_root",
-    adapter: memoryAdapter,
-  });
-}
-
-clientLoader.hydrate = true as const;
-
-export default function App({ loaderData }: Route.ComponentProps) {
-  const cachedData = useCachedLoaderData(loaderData, {
-    adapter: memoryAdapter,
-  });
-  useEffect(() => {
-    if (cachedData.toast)
-      toast(cachedData.toast.message, {
-        type: cachedData.toast.type,
-      });
-  }, [cachedData.toast]);
-
+export default function App() {
   return <Outlet />;
 }
 
