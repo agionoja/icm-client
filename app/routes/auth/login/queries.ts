@@ -53,6 +53,8 @@ export async function login(
     profile?.user?.role ? (RoleRedirects[profile.user.role] ?? "/") : "/",
   );
 
+  console.log({ redirectUrl, redirectTo });
+
   const token = userToken?.accessToken;
 
   throw await createSession(

@@ -144,7 +144,6 @@ function AccountLayoutContent({
         >
           <Outlet />
         </div>
-        `
       </main>
     </SidebarProvider>
   );

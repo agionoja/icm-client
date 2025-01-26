@@ -15,11 +15,22 @@ export function isResponse(value: unknown): value is Response {
   return value instanceof Response;
 }
 
-export async function handleResponse<T>(data: T | Response) {
+// export async function handleResponse<T>(data: T | Response) {
+//   if (isResponse(data)) {
+//     if (isRedirect(data) || isRouteError(data)) {
+//       throw data;
+//     }
+//   }
+//   return data as T;
+// }
+
+// utils.ts
+export async function handleResponse<T>(data: T | Response): Promise<T> {
   if (isResponse(data)) {
     if (isRedirect(data) || isRouteError(data)) {
-      throw data;
+      throw data; // Prevent these from being returned
     }
+    return await data.json(); // Only cache successful data
   }
   return data as T;
 }

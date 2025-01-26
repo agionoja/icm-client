@@ -29,10 +29,10 @@ export function parseQueryParams<T extends ZodSchema>(
 
   const parsedSchema = schema.safeParse(parsedParams);
 
-  console.dir(
-    { parsedParams, parsedSchema: parsedSchema.data },
-    { depth: null },
-  );
+  // console.dir(
+  //   { parsedParams, parsedSchema: parsedSchema.data },
+  //   { depth: null },
+  // );
 
   return parsedSchema.success ? parsedSchema.data : {};
 }

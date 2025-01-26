@@ -11,13 +11,47 @@ import {
   validateCacheEntry,
 } from "../utils";
 import { getCacheAdapter } from "./adapters";
-import { cacheStateManager } from "./cache-state";
+import { cacheStateManager } from "~/lib/cache";
 
 const DEFAULT_MAX_AGE = 60; // 1 minute
 
 /**
  * Creates a wrapped server loader that handles state management and caching
  */
+// function createWrappedLoader<TData>(
+//   serverLoader: () => Promise<TData>,
+//   options: {
+//     key: string;
+//     adapter: CacheConfig<CacheEntry<TData>>["adapter"];
+//     maxAge: number | null;
+//   },
+// ) {
+//   const { key, adapter = getCacheAdapter.cacheAdapter, maxAge } = options;
+//
+//   return async () => {
+//     try {
+//       const data = await serverLoader();
+//       const validData = await handleResponse(data);
+//
+//       await adapter.setItem(key, {
+//         data: validData,
+//         maxAge,
+//         timestamp: Date.now(),
+//       });
+//
+//       cacheStateManager.setState(key, { state: "success", key });
+//       return validData;
+//     } catch (error) {
+//       if (import.meta.env.DEV) {
+//         console.dir({ cacheError: error }, { depth: null });
+//       }
+//       cacheStateManager.setState(key, { state: "error", key });
+//       throw error;
+//     }
+//   };
+// }
+
+// In your cache-client.ts
 function createWrappedLoader<TData>(
   serverLoader: () => Promise<TData>,
   options: {
@@ -26,14 +60,14 @@ function createWrappedLoader<TData>(
     maxAge: number | null;
   },
 ) {
-  const { key, adapter = getCacheAdapter.cacheAdapter, maxAge } = options;
+  const { key, adapter, maxAge } = options;
 
   return async () => {
     try {
       const data = await serverLoader();
-      const validData = await handleResponse(data);
+      const validData = await handleResponse(data); // Throws redirects/errors
 
-      await adapter.setItem(key, {
+      await adapter?.setItem(key, {
         data: validData,
         maxAge,
         timestamp: Date.now(),
@@ -42,9 +76,7 @@ function createWrappedLoader<TData>(
       cacheStateManager.setState(key, { state: "success", key });
       return validData;
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.dir({ cacheError: error }, { depth: null });
-      }
+      await adapter?.removeItem(key); // Clear cache on any error
       cacheStateManager.setState(key, { state: "error", key });
       throw error;
     }

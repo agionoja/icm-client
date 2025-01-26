@@ -9,7 +9,6 @@ import {
   CacheProvider,
   type MutableRevalidate,
 } from "~/lib/cache";
-
 import { getUsers } from "~/routes/account/admin/users/queries";
 import { useRouteComponentErrorToast } from "~/hooks/useRouteComponentErrorToast";
 import { getToast } from "remix-toast";
@@ -32,16 +31,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const token = await getToken(request);
 
-  if (import.meta.env.DEV) {
-    try {
-      const { storeToken } = await import("../../../../../tokenManager");
-      if (token) {
-        await storeToken(token);
-      }
-    } catch (error) {
-      console.error("Failed to load or use tokenManager module:", error);
-    }
-  }
   const response = await getUsers(request, token);
 
   if (response.exception) {
@@ -58,7 +47,7 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 60 * 4, // 4 minutes,
+    maxAge: 60,
   });
 }
 

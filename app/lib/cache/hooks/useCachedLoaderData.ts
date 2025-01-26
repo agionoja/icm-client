@@ -1,4 +1,4 @@
-import { invalidateCache } from "../utils";
+import { invalidateCache, isRedirect, isResponse } from "../utils";
 import type { CacheAdapter, CachedData, CacheEntry } from "../types";
 import { cacheAdapter } from "../cache";
 import { useNavigate } from "react-router";
@@ -68,25 +68,28 @@ export function useCachedLoaderData<TData extends object>(
         if (!isMounted) return;
         setFreshData(newData);
       })
-      .catch((e) => {
-        if (e instanceof Response && e.status === 302) {
-          const to = e.headers.get("Location");
-          to && navigate(to);
-          return;
+      .catch(async (error) => {
+        if (isResponse(error) && isRedirect(error)) {
+          await adapter.removeItem(loaderData.key);
+
+          const to = error.headers.get("Location");
+          to &&
+            navigate(
+              (() => {
+                const url = new URL(to);
+                return url.pathname + url.search + url.hash;
+              })(),
+              { replace: true },
+            );
+        } else {
+          throw error;
         }
-        // if (isCachedData(loaderData)) {
-        //   cacheStateManager.setState(loaderData.key, {
-        //     state: "error",
-        //     key: loaderData.key,
-        //   });
-        // }
-        throw e;
       });
 
     return () => {
       isMounted = false;
     };
-  }, [loaderData, adapter, navigate, isCachedData]);
+  }, [loaderData, navigate, isCachedData, adapter]);
 
   /**
    * Effect 2: Synchronizes state with changes to `serverData`.
