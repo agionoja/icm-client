@@ -5,23 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/routes/account/components/filter.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/routes/account/components/select-column.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/components/loading.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/components/CacheProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/components/CacheProvider.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/hooks/useCachedLoaderData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/hooks/useCachedLoaderData.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/data-table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/data-table-with-features.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/page-size-selector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/page-size-selector.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/search.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/search.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/sort-table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/sort-table.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/auth/login/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth/login/queries.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/auth/login/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth/login/route.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/utils/query.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/query.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -218,7 +208,7 @@
       <workItem from="1738054376694" duration="3524000" />
       <workItem from="1738129646888" duration="15369000" />
       <workItem from="1738187453325" duration="8651000" />
-      <workItem from="1738250993777" duration="5730000" />
+      <workItem from="1738250993777" duration="13224000" />
     </task>
     <servers />
   </component>

@@ -69,7 +69,6 @@ export function parseQueryParams<TSchema extends ZodSchema>(
   const parsedParams = qs.parse(url.search, {
     ignoreQueryPrefix: true,
     arrayLimit: 1000,
-    comma: true,
     parseArrays: true,
   });
 
@@ -87,7 +86,7 @@ export function parseQueryParams<TSchema extends ZodSchema>(
   const result = schema.safeParse(transformedParams);
 
   if (import.meta.env.DEV) {
-    console.dir({ parsedParams, transformedParams });
+    console.dir({ parsedParams, transformedParams }, { depth: null });
   }
 
   if (!result.success) {

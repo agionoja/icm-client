@@ -13,7 +13,7 @@ import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
 import { authRouteConfig, routesConfig } from "~/routes.config";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
@@ -22,6 +22,7 @@ import {
   CacheProvider,
   type MutableRevalidate,
 } from "~/lib/cache";
+import { Loading } from "~/components/loading";
 
 // TODO: implement server toast that will run on the root account layout. since it uses swr, it might just work
 
@@ -98,8 +99,13 @@ function AccountLayoutContent({
   loaderData,
 }: Pick<Route.ComponentProps, "loaderData">) {
   const { state } = useNavigation();
-
   const submit = useSubmit();
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useSessionTimeout(loaderData.sessionTimeout, () => {
     const formData = new FormData();
@@ -126,6 +132,13 @@ function AccountLayoutContent({
         user={loaderData.user}
         collapsible="icon"
       />
+
+      <Loading
+        loading={state === "loading"}
+        variant="page"
+        className="fixed z-[1000]"
+      />
+
       <main className={cn("relative flex w-full flex-col md:gap-4")}>
         <div
           className={"fixed top-0 z-50 w-full min-w-full bg-sidebar px-4 py-4"}
@@ -136,12 +149,7 @@ function AccountLayoutContent({
             className={"ml-auto text-white"}
           />
         </div>
-        <div
-          className={cn(
-            "mt-20 w-full md:px-5",
-            state === "loading" ? "animate-pulse opacity-80" : "",
-          )}
-        >
+        <div className={cn("mt-20 w-full md:px-5")}>
           <Outlet />
         </div>
       </main>

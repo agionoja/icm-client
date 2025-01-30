@@ -34,7 +34,7 @@ export async function getUsers(request: Request, token?: string) {
       responseKey: "users",
       token,
       query: {
-        sort,
+        sort: [...sort],
         paginate: {
           limit,
           page,
