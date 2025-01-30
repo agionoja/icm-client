@@ -1,5 +1,5 @@
 import React from "react";
-import type { CachedData } from "../types";
+import type { CacheAdapter, CachedData, CacheEntry } from "../types";
 import {
   useRevalidateOnFocus,
   useRevalidateOnInterval,
@@ -58,16 +58,18 @@ function useRevalidation({
 type ClientCacheProviderProps<TData> = RevalidationOptions & {
   children: (cachedData: TData) => React.ReactNode;
   loaderData: TData | (TData & CachedData<TData>);
+  adapter?: CacheAdapter<CacheEntry<TData>>;
 };
 
 export function CacheProvider<TData extends object>({
   children,
   loaderData,
+  adapter,
   ...revalidationOptions
 }: ClientCacheProviderProps<TData>) {
   useRevalidation(revalidationOptions);
 
-  const cachedData = useCachedLoaderData(loaderData);
+  const cachedData = useCachedLoaderData(loaderData, { adapter });
   return <>{children(cachedData)}</>;
 }
 

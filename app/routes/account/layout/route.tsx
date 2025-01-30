@@ -20,9 +20,10 @@ import { getCookieByName } from "~/cookies/get-cookie-by-name";
 import {
   cacheClientLoader,
   CacheProvider,
-  memoryAdapter,
   type MutableRevalidate,
 } from "~/lib/cache";
+
+// TODO: implement server toast that will run on the root account layout. since it uses swr, it might just work
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -88,7 +89,6 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
     type: "swr",
     key: routesConfig.account.layout.getFile,
     revalidate: mutableRevalidate.revalidate,
-    adapter: memoryAdapter,
   });
 }
 
@@ -138,7 +138,7 @@ function AccountLayoutContent({
         </div>
         <div
           className={cn(
-            "w-full md:mt-20 md:px-4",
+            "mt-20 w-full md:px-5",
             state === "loading" ? "animate-pulse opacity-80" : "",
           )}
         >

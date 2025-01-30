@@ -5,17 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/routes/account/components/filter.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/account/components/select-column.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/cache/cache.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/cache/cache.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/cache/components/CacheProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/components/CacheProvider.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/lib/cache/hooks/useCachedLoaderData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/hooks/useCachedLoaderData.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/dashboard/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/dashboard/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/data-table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/data-table-with-features.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/auth/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth/layout/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/components/page-size-selector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/page-size-selector.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/components/search.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/search.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/components/sort-table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/sort-table.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/auth/login/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth/login/queries.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/auth/login/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth/login/route.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/auth/logout.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth/logout.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/utils/query.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/query.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,8 +32,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript JSX File" />
         <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
@@ -103,7 +110,7 @@
     &quot;ts.external.directory.path&quot;: &quot;/home/agionoja/code/icm/icm-client/node_modules/typescript/lib&quot;
   }
 }</component>
-  <component name="RunManager" selected="npm.dev">
+  <component name="RunManager" selected="npm.typecheck">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -156,8 +163,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.dev" />
         <item itemvalue="npm.typecheck" />
+        <item itemvalue="npm.dev" />
         <item itemvalue="npm.start" />
         <item itemvalue="npm.build:start" />
         <item itemvalue="npm.build" />
@@ -202,6 +209,16 @@
       <workItem from="1737722593885" duration="11555000" />
       <workItem from="1737753232184" duration="18803000" />
       <workItem from="1737808658828" duration="12832000" />
+      <workItem from="1737916468014" duration="1153000" />
+      <workItem from="1737932372283" duration="3508000" />
+      <workItem from="1737974299250" duration="9950000" />
+      <workItem from="1738001409655" duration="1336000" />
+      <workItem from="1738015237694" duration="9000" />
+      <workItem from="1738020940190" duration="4417000" />
+      <workItem from="1738054376694" duration="3524000" />
+      <workItem from="1738129646888" duration="15369000" />
+      <workItem from="1738187453325" duration="8651000" />
+      <workItem from="1738250993777" duration="5730000" />
     </task>
     <servers />
   </component>

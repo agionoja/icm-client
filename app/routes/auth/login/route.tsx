@@ -20,7 +20,6 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  console.log({ values });
   switch (_action) {
     case "login": {
       return login(request, values.redirect, {

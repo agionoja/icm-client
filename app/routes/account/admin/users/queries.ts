@@ -1,10 +1,4 @@
-import {
-  type FilterQuery,
-  type IUser,
-  Role,
-  type SearchableFields,
-  type SortKey,
-} from "icm-shared";
+import { type IUser, Role } from "icm-shared";
 import {
   fetchClient,
   type Paginated,
@@ -12,11 +6,11 @@ import {
 } from "~/fetch/fetch-client.server";
 import type { UserColumn } from "~/routes/account/admin/users/columns";
 import { z } from "zod";
-import { baseSchema, parseQueryParams } from "~/utils/query";
+import { baseSchemaFactory, parseQueryParams } from "~/utils/query";
 
-const sortSchema = z.array(z.custom<SortKey<IUser>>()).default([]);
-
-const filterSchema = z.object({
+const usersQuerySchema = baseSchemaFactory<IUser>({
+  sortDefault: ["firstname"],
+}).extend({
   role: z.nativeEnum(Role).optional(),
   active: z
     .enum(["true", "false", ""])
@@ -28,33 +22,11 @@ const filterSchema = z.object({
     .optional(),
 });
 
-const usersQuerySchema = baseSchema.merge(filterSchema).extend({
-  sort: sortSchema,
-});
-
 export async function getUsers(request: Request, token?: string) {
   const { limit, page, search, role, active, sort } = parseQueryParams(
     request,
     usersQuerySchema,
   );
-
-  // Build the filter query
-  const filter: FilterQuery<IUser> = {};
-
-  if (role && Role[role]) {
-    filter.role = role;
-  }
-
-  if (active !== undefined) {
-    filter.isActive = active;
-  }
-
-  const searchQuery: SearchableFields<IUser> = {
-    firstname: search,
-    lastname: search,
-    email: search,
-    ...(search ? { role: search.toUpperCase() as Role } : {}),
-  };
 
   return await fetchClient<UserColumn, ResponseKey<"users">, IUser, Paginated>(
     "/users",
@@ -62,14 +34,28 @@ export async function getUsers(request: Request, token?: string) {
       responseKey: "users",
       token,
       query: {
-        search: searchQuery,
-        filter,
-        paginate: { limit, page },
-        ignoreFilterFlags: ["isActive"],
+        sort,
+        paginate: {
+          limit,
+          page,
+        },
+        filter: {
+          isActive: active,
+          role: role,
+        },
+        search: search
+          ? {
+              firstname: search,
+              email: search,
+              lastname: search,
+              role: search as Role,
+            }
+          : undefined,
         countFilter:
           active !== undefined
             ? { isActive: active }
             : { isActive: { exists: true } },
+        ignoreFilterFlags: ["isActive"],
         select: [
           "+isActive",
           "email",
@@ -79,7 +65,6 @@ export async function getUsers(request: Request, token?: string) {
           "phone",
           "createdAt",
         ],
-        sort,
       },
     },
   );

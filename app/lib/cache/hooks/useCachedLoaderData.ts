@@ -35,6 +35,7 @@ import { useCallback, useEffect, useState } from "react";
  * @param options Configuration options
  * @returns Updated data with cache management functions
  */
+
 export function useCachedLoaderData<TData extends object>(
   loaderData: TData | (TData & CachedData<TData>), // Supports both raw data and CachedData
   {
@@ -73,7 +74,8 @@ export function useCachedLoaderData<TData extends object>(
           await adapter.removeItem(loaderData.key);
 
           const to = error.headers.get("Location");
-          to &&
+
+          if (to) {
             navigate(
               (() => {
                 const url = new URL(to);
@@ -81,6 +83,7 @@ export function useCachedLoaderData<TData extends object>(
               })(),
               { replace: true },
             );
+          }
         } else {
           throw error;
         }

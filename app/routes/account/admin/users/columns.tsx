@@ -12,7 +12,7 @@ import { formatDate } from "~/utils/format-date";
 import { Form, useNavigate } from "react-router";
 import { adminRouteConfig } from "~/routes.config";
 import { HorizontalDots } from "~/components/icons";
-import { SortHeader } from "~/routes/account/components/sort-table";
+import { SortTable } from "~/routes/account/components/sort-table";
 
 export type UserColumn = Pick<
   IUser,
@@ -30,7 +30,7 @@ export const columns: ColumnDef<UserColumn>[] = [
   {
     accessorKey: "createdAt",
     header: () => {
-      return <SortHeader<UserColumn> label={"Date"} field={"createdAt"} />;
+      return <SortTable<UserColumn> label={"Date"} field={"createdAt"} />;
     },
     cell: ({ row }) => formatDate(row.getValue("createdAt")),
   },
@@ -38,25 +38,25 @@ export const columns: ColumnDef<UserColumn>[] = [
     accessorKey: "email",
 
     header: () => {
-      return <SortHeader<UserColumn> label={"Email"} field={"email"} />;
+      return <SortTable<UserColumn> label={"Email"} field={"email"} />;
     },
   },
   {
     accessorKey: "firstname",
     header: () => {
-      return <SortHeader<UserColumn> label={"Firstname"} field={"firstname"} />;
+      return <SortTable<UserColumn> label={"Firstname"} field={"firstname"} />;
     },
   },
   {
     accessorKey: "lastname",
     header: () => {
-      return <SortHeader<UserColumn> label={"Lastname"} field={"lastname"} />;
+      return <SortTable<UserColumn> label={"Lastname"} field={"lastname"} />;
     },
   },
   {
     accessorKey: "phone",
     header: () => {
-      return <SortHeader<UserColumn> label={"Phone"} field={"phone"} />;
+      return <SortTable<UserColumn> label={"Phone"} field={"phone"} />;
     },
   },
   // {
@@ -71,7 +71,7 @@ export const columns: ColumnDef<UserColumn>[] = [
   {
     accessorKey: "isActive",
     header: () => {
-      return <SortHeader<UserColumn> label={"Status"} field={"isActive"} />;
+      return <SortTable<UserColumn> label={"Status"} field={"isActive"} />;
     },
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") as boolean;

@@ -1,7 +1,7 @@
 import type { Route } from "./+types/route";
 import { getToken, restrictTo } from "~/session";
 import { Role } from "icm-shared";
-import { DataTable } from "~/routes/account/admin/users/data-table";
+import { DataTableWithFeatures } from "~/routes/account/admin/users/data-table-with-features";
 import { columns } from "~/routes/account/admin/users/columns";
 import { data } from "react-router";
 import {
@@ -53,14 +53,14 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 
 clientLoader.hydrate = true as const;
 
-function AdminUsersContent({
+function UsersContent({
   loaderData: { response, toast },
 }: Pick<Route.ComponentProps, "loaderData">) {
   useRouteComponentErrorToast(response.exception);
   useServerToast(toast);
 
   return (
-    <DataTable
+    <DataTableWithFeatures
       metadata={"metadata" in response ? response.metadata : undefined}
       columns={columns}
       data={response.data?.users}
@@ -68,7 +68,7 @@ function AdminUsersContent({
   );
 }
 
-export default function AdminUsers({ loaderData }: Route.ComponentProps) {
+export default function Users({ loaderData }: Route.ComponentProps) {
   return (
     <CacheProvider
       intervalEnabled={false}
@@ -76,7 +76,7 @@ export default function AdminUsers({ loaderData }: Route.ComponentProps) {
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
     >
-      {(cachedData) => <AdminUsersContent loaderData={cachedData} />}
+      {(cachedData) => <UsersContent loaderData={cachedData} />}
     </CacheProvider>
   );
 }
