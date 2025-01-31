@@ -1,6 +1,6 @@
 import { type Location, useLocation } from "react-router";
-import { cacheAdapter } from "./cache";
-import type { CacheAdapter, CacheConfig, CacheEntry } from "./types";
+import { cacheAdapter, createCacheAdapter } from "./cache";
+import type { CacheAdapter, CacheEntry } from "./types";
 import { z } from "zod";
 
 export function isRedirect(response: Response): boolean {
@@ -15,11 +15,22 @@ export function isResponse(value: unknown): value is Response {
   return value instanceof Response;
 }
 
-export async function handleResponse<T>(data: T | Response) {
+// export async function handleResponse<T>(data: T | Response) {
+//   if (isResponse(data)) {
+//     if (isRedirect(data) || isRouteError(data)) {
+//       throw data;
+//     }
+//   }
+//   return data as T;
+// }
+
+// utils.ts
+export async function handleResponse<T>(data: T | Response): Promise<T> {
   if (isResponse(data)) {
     if (isRedirect(data) || isRouteError(data)) {
-      throw data;
+      throw data; // Prevent these from being returned
     }
+    return await data.json(); // Only cache successful data
   }
   return data as T;
 }
@@ -104,13 +115,16 @@ export function useRouteKey(): string {
 
 /**
  * Hook providing cache invalidation functionality
- * @returns Object containing invalidateCache function
+ * @returns Function to invalidate cache
  */
-export const useCacheInvalidator = (
-  key: string,
-  adapter?: CacheAdapter<CacheEntry<any>>,
-) => {
-  return () => invalidateCache(key, adapter);
+export const useCacheInvalidator = <T = unknown>() => {
+  return (
+    key: string[],
+    adapter: CacheAdapter<CacheEntry<T>> | Storage = cacheAdapter,
+  ) => {
+    const { adapter: createdAdapter } = createCacheAdapter(() => adapter);
+    return invalidateCache(key, createdAdapter);
+  };
 };
 
 export function isExpired(timestamp: number, maxAge?: number | null): boolean {

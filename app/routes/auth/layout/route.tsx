@@ -1,10 +1,19 @@
-import { Link, Outlet, redirect } from "react-router";
+import { data, Link, Outlet, redirect } from "react-router";
 import logo from "~/assets/logos/svg/primary-logo-full-color.svg";
 import type { Route } from "./+types/route";
 import { getRole, getToken, hasSession, RoleRedirects } from "~/session";
 import { Role } from "icm-shared";
+import { getToast } from "remix-toast";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 
-export default function AuthLayout() {
+export default function AuthLayout({ loaderData }: Route.ComponentProps) {
+  const serverToast = "toast" in loaderData && loaderData.toast;
+  useEffect(() => {
+    if (serverToast) {
+      toast(serverToast.message, { ...serverToast });
+    }
+  }, [serverToast]);
   return (
     <div
       className={
@@ -26,17 +35,18 @@ export default function AuthLayout() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const { toast, headers } = await getToast(request);
   // Check if the user has a valid session
   const isLoggedIn = await hasSession(request);
   if (!isLoggedIn) {
-    return null; // Let unauthenticated users proceed
+    return data({ toast }, { headers });
   }
 
   // Retrieve token and role (skip if session already deemed invalid)
   const token = await getToken(request);
   const role = (await getRole(request)) as Role;
   if (!token || !role) {
-    return null; // Edge case: corrupted session
+    return data({ toast }, { headers });
   }
 
   // Determine the redirect path

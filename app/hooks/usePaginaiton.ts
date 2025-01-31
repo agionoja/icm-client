@@ -16,9 +16,11 @@ interface PaginationPage {
 export function usePagination({
   metadata,
   maxVisiblePages = 5,
+  maxPrefetchAge = 1000 * 60,
 }: {
   metadata: PaginationMetadata;
   maxVisiblePages?: number;
+  maxPrefetchAge?: number;
 }) {
   // Hook dependencies and state
   const location = useLocation();
@@ -28,7 +30,9 @@ export function usePagination({
   const storageClearCount = useStorageCleared();
 
   // Prefetch tracking and throttling
-  const [prefetchedKeys, setPrefetchedKeys] = useState<Set<string>>(new Set());
+  const [prefetchedKeys, setPrefetchedKeys] = useState<Map<string, number>>(
+    new Map(),
+  );
   const isPrefetching = useRef(false);
   const lastKeyPressTime = useRef<number>(0);
   const keyPressThrottle = 200;
@@ -37,11 +41,6 @@ export function usePagination({
 
   // Cache invalidation and state synchronization
   useEffect(() => {
-    /**
-     * Handles cache mismatch between URL parameters and server metadata
-     * - Invalidates stale cache entries
-     * - Synchronizes URL with server state
-     */
     const handleCacheState = () => {
       const urlPage = Number(searchParams.get("page") || "1");
       const serverPage = metadata.currentPage;
@@ -57,10 +56,11 @@ export function usePagination({
         localStorage.removeItem(currentKey);
         console.log("Invalidated cache for:", currentKey);
 
-        // Update URL to match server state without creating history entry
         const newParams = new URLSearchParams(searchParams);
         newParams.set("page", serverPage.toString());
-        setSearchParams(newParams, { replace: true });
+        setSearchParams(newParams, {
+          preventScrollReset: false,
+        });
       } catch (error) {
         console.error("Cache synchronization failed:", error);
       }
@@ -71,27 +71,22 @@ export function usePagination({
 
   // Pagination UI calculations
   const getVisiblePages = useCallback(() => {
-    const { currentPage, pageCount } = metadata;
     const pages: PaginationPage[] = [];
 
-    // Always include first page
     pages.push({ number: 1, type: "edge" });
 
-    // Calculate middle pages range
     const start = Math.max(
       2,
-      currentPage - Math.floor((maxVisiblePages - 2) / 2),
+      metadata.currentPage - Math.floor((maxVisiblePages - 2) / 2),
     );
-    const end = Math.min(pageCount - 1, start + maxVisiblePages - 3);
+    const end = Math.min(metadata.pageCount - 1, start + maxVisiblePages - 3);
 
-    // Add middle pages
     for (let i = start; i <= end; i++) {
       pages.push({ number: i, type: "middle" });
     }
 
-    // Add last page if applicable
-    if (pageCount > 1) {
-      pages.push({ number: pageCount, type: "edge" });
+    if (metadata.pageCount > 1) {
+      pages.push({ number: metadata.pageCount, type: "edge" });
     }
 
     return pages;
@@ -116,8 +111,9 @@ export function usePagination({
         search: newParams.toString(),
       });
 
-      // Check if this specific key has been prefetched
-      if (prefetchedKeys.has(prefetchKey)) {
+      // Check if this specific key has been prefetched and is not stale
+      const prefetchTime = prefetchedKeys.get(prefetchKey);
+      if (prefetchTime && Date.now() - prefetchTime < maxPrefetchAge) {
         return;
       }
 
@@ -127,7 +123,7 @@ export function usePagination({
         console.debug(`Prefetching page: ${page}`);
         await fetcher.load(`?${newParams.toString()}`);
 
-        setPrefetchedKeys((prev) => new Set(prev).add(prefetchKey));
+        setPrefetchedKeys((prev) => new Map(prev).set(prefetchKey, Date.now()));
       } finally {
         isPrefetching.current = false;
       }
@@ -139,11 +135,9 @@ export function usePagination({
   const prefetchAdjacentPages = useCallback(() => {
     const { currentPage } = metadata;
 
-    // Immediate neighbors
     if (metadata.next) prefetchPage(metadata.next.page);
     if (metadata.previous) prefetchPage(metadata.previous.page);
 
-    // Visual range prefetch
     requestAnimationFrame(() => {
       getVisiblePages().forEach((page) => {
         if (Math.abs(page.number - currentPage) <= 2) {
@@ -160,7 +154,7 @@ export function usePagination({
 
       const newParams = new URLSearchParams(searchParams);
       newParams.set("page", page.toString());
-      setSearchParams(newParams);
+      setSearchParams(newParams, { preventScrollReset: false });
     },
     [metadata.currentPage, isLoading, searchParams, setSearchParams],
   );
@@ -197,7 +191,7 @@ export function usePagination({
 
   // Reset prefetch state on cache clearance or key change
   useEffect(() => {
-    setPrefetchedKeys(new Set());
+    setPrefetchedKeys(new Map());
   }, [storageClearCount]);
 
   // Automatic prefetching on idle

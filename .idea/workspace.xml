@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/components/loading.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/hooks/usePaginaiton.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/hooks/usePaginaiton.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/cache/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/cache/utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/pagination-controls.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/queries.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils/query.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/query.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,8 +22,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript JSX File" />
         <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
@@ -63,6 +67,11 @@
     &quot;accountId&quot;: &quot;65a57d58-0104-46f9-8c6b-e43d20ca184e&quot;
   }
 }</component>
+  <component name="JsbtTreeLayoutManager">
+    <layout place="tools.popupGrunt">
+      <scroll-view-position x="0" y="0" />
+    </layout>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -91,7 +100,7 @@
     &quot;ts.external.directory.path&quot;: &quot;/home/agionoja/code/icm/icm-client/node_modules/typescript/lib&quot;
   }
 }</component>
-  <component name="RunManager" selected="npm.build:start">
+  <component name="RunManager" selected="npm.typecheck">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -144,11 +153,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.typecheck" />
         <item itemvalue="npm.dev" />
+        <item itemvalue="npm.start" />
         <item itemvalue="npm.build:start" />
         <item itemvalue="npm.build" />
-        <item itemvalue="npm.start" />
-        <item itemvalue="npm.typecheck" />
       </list>
     </recent_temporary>
   </component>
@@ -183,7 +192,23 @@
       <workItem from="1737555703333" duration="864000" />
       <workItem from="1737571416164" duration="17439000" />
       <workItem from="1737625372440" duration="1187000" />
-      <workItem from="1737629115893" duration="8754000" />
+      <workItem from="1737629115893" duration="9822000" />
+      <workItem from="1737657858833" duration="5427000" />
+      <workItem from="1737702332197" duration="5950000" />
+      <workItem from="1737712632126" duration="4196000" />
+      <workItem from="1737722593885" duration="11555000" />
+      <workItem from="1737753232184" duration="18803000" />
+      <workItem from="1737808658828" duration="12832000" />
+      <workItem from="1737916468014" duration="1153000" />
+      <workItem from="1737932372283" duration="3508000" />
+      <workItem from="1737974299250" duration="9950000" />
+      <workItem from="1738001409655" duration="1336000" />
+      <workItem from="1738015237694" duration="9000" />
+      <workItem from="1738020940190" duration="4417000" />
+      <workItem from="1738054376694" duration="3524000" />
+      <workItem from="1738129646888" duration="15369000" />
+      <workItem from="1738187453325" duration="8651000" />
+      <workItem from="1738250993777" duration="13224000" />
     </task>
     <servers />
   </component>

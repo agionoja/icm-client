@@ -1,18 +1,18 @@
 import type { Route } from "./+types/route";
 import { getToken, restrictTo } from "~/session";
 import { Role } from "icm-shared";
-import { DataTable } from "~/routes/account/admin/users/data-table";
+import { DataTableWithFeatures } from "~/routes/account/admin/users/data-table-with-features";
 import { columns } from "~/routes/account/admin/users/columns";
 import { data } from "react-router";
-import { toast } from "react-toastify";
-import { useEffect } from "react";
 import {
   cacheClientLoader,
   CacheProvider,
   type MutableRevalidate,
 } from "~/lib/cache";
-import { storeToken } from "../../../../../tokenManager";
 import { getUsers } from "~/routes/account/admin/users/queries";
+import { useRouteComponentErrorToast } from "~/hooks/useRouteComponentErrorToast";
+import { getToast } from "remix-toast";
+import { useServerToast } from "~/hooks/useServerToast";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -26,21 +26,19 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const { toast, headers } = await getToast(request);
   await restrictTo(request, Role.ADMIN, Role.SUPER_ADMIN);
 
   const token = await getToken(request);
-  if (token) {
-    await storeToken(token);
-  }
 
   const response = await getUsers(request, token);
 
   if (response.exception) {
     console.error(response.exception);
-    return data(response, { status: response.exception.statusCode });
+    return data({ response, toast }, { status: response.exception.statusCode });
   }
 
-  return response;
+  return data({ response, toast }, { headers });
 }
 
 const mutableRevalidate: MutableRevalidate = { revalidate: false };
@@ -49,44 +47,36 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 60 * 4,
+    maxAge: 60,
   });
 }
 
 clientLoader.hydrate = true as const;
 
-function AdminUsersContent({
-  loaderData,
+function UsersContent({
+  loaderData: { response, toast },
 }: Pick<Route.ComponentProps, "loaderData">) {
-  const error = loaderData?.exception;
-  const tableData = loaderData?.data?.users || [];
-
-  useEffect(() => {
-    if (error) {
-      toast(error.message, { type: "error" });
-    }
-  }, [error]);
+  useRouteComponentErrorToast(response.exception);
+  useServerToast(toast);
 
   return (
-    <div className="mx-auto w-full">
-      <DataTable
-        metadata={"metadata" in loaderData ? loaderData.metadata : undefined}
-        columns={columns}
-        data={tableData}
-      />
-    </div>
+    <DataTableWithFeatures
+      metadata={"metadata" in response ? response.metadata : undefined}
+      columns={columns}
+      data={response.data?.users}
+    />
   );
 }
 
-export default function AdminUsers({ loaderData }: Route.ComponentProps) {
+export default function Users({ loaderData }: Route.ComponentProps) {
   return (
     <CacheProvider
       intervalEnabled={false}
-      focusEnabled={false}
+      focusEnabled={true}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
     >
-      {(cachedData) => <AdminUsersContent loaderData={cachedData} />}
+      {(cachedData) => <UsersContent loaderData={cachedData} />}
     </CacheProvider>
   );
 }

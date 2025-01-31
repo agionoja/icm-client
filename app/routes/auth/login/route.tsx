@@ -11,7 +11,6 @@ import { login } from "~/routes/auth/login/queries";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { clearStorageAdapters, memoryAdapter } from "~/lib/cache";
 
 export const meta: Route.MetaFunction = () => {
   return [{ title: "ICM Tech - Login" }];
@@ -32,9 +31,9 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 // Clear in client cache before login
-export async function clientAction(args: Route.ClientActionArgs) {
-  return clearStorageAdapters(args, [localStorage, memoryAdapter]);
-}
+// export async function clientAction(args: Route.ClientActionArgs) {
+//   return clearStorageAdapters(args, [localStorage, memoryAdapter]);
+// }
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { flash, headers } = await getFlashSession(request, {

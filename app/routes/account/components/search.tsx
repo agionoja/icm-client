@@ -1,63 +1,99 @@
 import { type ComponentProps, forwardRef, useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Input } from "~/components/ui/input";
+import { X } from "lucide-react";
+import { cn } from "~/lib/utils";
 
-interface TableSearchProps extends ComponentProps<"input"> {
-  onSearch?: (search: string) => void;
-  search?: string;
+export interface SearchProps extends ComponentProps<"input"> {
   delay?: number;
+  onSearch?: (searchTerm: string) => void;
 }
 
-export const Search = forwardRef<HTMLInputElement, TableSearchProps>(
-  function Search({ onSearch, search, delay = 1000, ...props }, ref) {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const searchParam = search || searchParams.get("search") || "";
-    const [_search, set_search] = useState(searchParam);
+export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
+  { delay = 300, className, onSearch, ...props },
+  ref,
+) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchParam = searchParams.get("search") || "";
+  const [search, setSearch] = useState(searchParam);
 
-    useEffect(() => {
-      const timeout = setTimeout(() => {
-        if (_search !== searchParam) {
-          // Only update if value has changed
+  // Debounced search update
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const trimmedSearch = search.trim();
+
+      if (trimmedSearch !== searchParam) {
+        // Minimum search length check
+        if (trimmedSearch.length >= 3) {
+          setSearchParams((prev) => {
+            const newParams = new URLSearchParams(prev);
+            newParams.set("search", trimmedSearch);
+            newParams.set("page", "1");
+            return newParams;
+          });
+
+          // Optional callback for additional search handling
+          onSearch?.(trimmedSearch);
+        } else {
+          // Clear search if below minimum length
           setSearchParams(
             (prev) => {
               const newParams = new URLSearchParams(prev);
-              if (_search) {
-                newParams.set("search", _search);
-              } else {
-                newParams.delete("search");
-              }
-              // Reset page to 1 whenever search changes
+              newParams.delete("search");
               newParams.set("page", "1");
               return newParams;
             },
-            {
-              replace: true, // Use replace to avoid adding to history
-            },
+            { replace: true },
           );
-          onSearch?.(_search);
         }
-      }, delay);
-
-      return () => clearTimeout(timeout);
-    }, [_search, delay, onSearch, setSearchParams, searchParam]);
-
-    // Sync with URL params when they change externally
-    useEffect(() => {
-      if (searchParam !== _search) {
-        set_search(searchParam);
       }
-    }, [searchParam]);
+    }, delay);
 
-    return (
+    return () => clearTimeout(timeout);
+  }, [search, delay, searchParam, setSearchParams, onSearch]);
+
+  // Clear search handler
+  const handleClear = () => {
+    setSearch("");
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete("search");
+        newParams.set("page", "1");
+        return newParams;
+      },
+      { replace: true },
+    );
+  };
+
+  return (
+    <div className="relative w-fit">
       <Input
         ref={ref}
         name="search"
         type="search"
-        value={_search}
+        value={search}
         placeholder="Search..."
-        onChange={(e) => set_search(e.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
+        className={cn(
+          "pr-10",
+          "[&::-webkit-search-cancel-button]:hidden",
+          className,
+        )}
+        aria-label="Search input"
         {...props}
       />
-    );
-  },
-);
+      {search && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="ring-offset-background focus:ring-ring absolute right-3 top-1/2 -translate-y-1/2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
+          aria-label="Clear search"
+          tabIndex={0}
+        >
+          <X className="text-muted-foreground h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+});

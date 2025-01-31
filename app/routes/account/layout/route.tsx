@@ -13,16 +13,18 @@ import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
 import { authRouteConfig, routesConfig } from "~/routes.config";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
 import {
   cacheClientLoader,
   CacheProvider,
-  memoryAdapter,
   type MutableRevalidate,
 } from "~/lib/cache";
+import { Loading } from "~/components/loading";
+
+// TODO: implement server toast that will run on the root account layout. since it uses swr, it might just work
 
 export async function loader({ request }: Route.LoaderArgs) {
   // Retrieve both current backend user state and stored cookie state
@@ -63,13 +65,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const sidebarCookie = request.headers.get("Cookie");
   const defaultOpen = getCookieByName(sidebarCookie, "sidebar:state", true);
-
+  const url = new URL(request.url);
   return {
     defaultOpen: defaultOpen ?? true,
     sessionTimeout: await getJwtMaxAgeInMs(request),
     redirectTo: authRouteConfig.login.generate(
       {},
-      { redirect: new URL(request.url).pathname },
+      { redirect: url.pathname + url.search + url.hash },
     ),
     sessionTimeoutKey: SESSION_TIMEOUT_KEY,
     user: {
@@ -88,7 +90,6 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
     type: "swr",
     key: routesConfig.account.layout.getFile,
     revalidate: mutableRevalidate.revalidate,
-    adapter: memoryAdapter,
   });
 }
 
@@ -98,8 +99,13 @@ function AccountLayoutContent({
   loaderData,
 }: Pick<Route.ComponentProps, "loaderData">) {
   const { state } = useNavigation();
-
   const submit = useSubmit();
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useSessionTimeout(loaderData.sessionTimeout, () => {
     const formData = new FormData();
@@ -126,9 +132,16 @@ function AccountLayoutContent({
         user={loaderData.user}
         collapsible="icon"
       />
-      <main className={cn("flex w-full flex-col md:gap-4")}>
+
+      <Loading
+        loading={state === "loading"}
+        variant="page"
+        className="fixed z-[1000]"
+      />
+
+      <main className={cn("relative flex w-full flex-col md:gap-4")}>
         <div
-          className={"sticky top-0 z-50 w-full min-w-full bg-sidebar px-4 py-4"}
+          className={"fixed top-0 z-50 w-full min-w-full bg-sidebar px-4 py-4"}
         >
           <SidebarTrigger
             color={"white"}
@@ -136,15 +149,9 @@ function AccountLayoutContent({
             className={"ml-auto text-white"}
           />
         </div>
-        <div
-          className={cn(
-            "w-full md:px-4",
-            state === "loading" ? "animate-pulse opacity-80" : "",
-          )}
-        >
+        <div className={cn("mt-20 w-full md:px-5")}>
           <Outlet />
         </div>
-        `
       </main>
     </SidebarProvider>
   );
