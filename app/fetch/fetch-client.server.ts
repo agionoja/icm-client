@@ -2,114 +2,165 @@ import type { FormEncType } from "react-router";
 import type {
   ApiResponseMany,
   ApiResponseOne,
-  IQueryBuilder,
   IApiException,
+  IQueryBuilder,
 } from "icm-shared";
 import qs from "qs";
-import { logger } from "~/fetch/logger";
-import { type ProgressArgs, ProgressMonitor } from "~/fetch/progess";
 import { envConfig } from "~/env-config.server";
 import { dateReviver } from "~/utils/date-reviver";
+import { createProgressStream, type ProgressInfo } from "~/fetch/progess"; // FP-style progress function
+import { logger } from "~/fetch/logger"; // FP-style logger
 
 /** HTTP methods supported by the fetch client */
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-/**
- * Marker interface for paginated responses.
- * Ensures type safety for methods dealing with pagination.
- */
 export interface Paginated {
   readonly __isPaginated: true;
 }
-
-/**
- * Marker interface for non-paginated responses.
- * Ensures type safety for methods not dealing with pagination.
- */
 export interface NonPaginated {
   readonly __isPaginated: false;
 }
 
-export type ResponseKey<K extends string> = {
-  responseKey: K;
-};
+export type ResponseKey<K extends string> = { responseKey: K };
 
-/**
- * Headers object type for HTTP requests.
- * Includes optional `Content-Type` and `Authorization` headers,
- * and allows custom headers via a string key-value map.
- */
 type Headers = {
   "Content-Type"?: FormEncType;
   Authorization?: `Bearer ${string}` | "";
 } & { [key: string]: string };
 
 /**
- * Options for the fetch client.
+ * The progress args passed to the fetch client.
  *
- * @template TReturnType - The expected return type of the response.
- * @template Key - The key used to extract the main data object from the response.
- * @template TQueryType - The type of data used for query generation.
+ * Note: We remove contentLength because that is determined
+ * from the response's headers.
  */
+export type ProgressArgs = {
+  onProgress: (info: ProgressInfo) => void;
+  updateInterval?: number;
+  throttleSpeed?: number;
+} & { turnOff?: boolean };
+
 export type FetchOptions<
   TReturnType,
   TKey extends ResponseKey<string>,
   TQueryType = TReturnType,
 > = Omit<RequestInit, "method" | "headers"> & {
-  /** HTTP method (e.g., GET, POST) */
   method?: Method;
-  /** Headers for the request */
   headers?: Headers;
-  /** Whether the request contains FormData */
   isFormData?: boolean;
-  /** Query builder for filtering, sorting, and pagination */
   query?: IQueryBuilder<TQueryType>;
-  /** Authorization token for the request */
   token?: string;
-  /** Flag to include metadata in the response */
-  hasMetadata?: boolean;
-  /** Key to extract the primary data from the response */
   responseKey: TKey["responseKey"];
-  /** Options for monitoring progress of the request */
-  progressArgs?: Omit<ProgressArgs, "contentLength"> & { turnOff?: boolean };
+  progressArgs?: ProgressArgs;
 };
 
-/**
- * Universal date reviver that handles multiple date string formats.
- * Converts:
- * - ISO dates (e.g., "2024-12-07T07:04:56.654Z")
- * - .NET dates (e.g., "/Date(1234567890)/")
- * - ISO-like dates (e.g., "2024-12-07" or "2024-12-07T07:04:56")
- *
- * @param _key - The key of the JSON property being parsed.
- * @param value - The value of the JSON property.
- * @returns The parsed value, with strings converted to `Date` where applicable.
- */
-
-/**
- * Helper function to parse JSON with the `dateReviver` function.
- *
- * @param response - The `Response` object from a fetch request.
- * @returns The parsed JSON object, with dates revived.
- */
-async function parseJsonWithDates(response: Response): Promise<any> {
+// Utility Functions
+async function parseJsonWithDates(response: Response) {
   const text = await response.text();
   return JSON.parse(text, dateReviver);
 }
 
+function buildQueryString<T>(query?: IQueryBuilder<T>): string {
+  return query ? qs.stringify(query, { encode: true }) : "";
+}
+
+function buildApiUrl(
+  endpoint: `/${string}`,
+  method: Method,
+  queryString: string,
+): string {
+  const baseUrl = envConfig(process.env).API_URI;
+  const url = `${baseUrl}${endpoint}`;
+  return method === "GET" && queryString ? `${url}?${queryString}` : url;
+}
+
+function createHeaders(options: {
+  isFormData: boolean;
+  token?: string;
+  headers?: Headers;
+}): Headers {
+  const { isFormData, token, headers = {} } = options;
+
+  // Remove Content-Type for FormData requests
+  const cleanedHeaders = isFormData
+    ? Object.fromEntries(
+        Object.entries(headers).filter(
+          ([key]) => key.toLowerCase() !== "content-type",
+        ),
+      )
+    : headers;
+
+  return {
+    ...cleanedHeaders,
+    ...(!isFormData && !cleanedHeaders["Content-Type"]
+      ? { "Content-Type": "application/json" }
+      : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+async function handleResponseError(
+  response: Response,
+  endpoint: string,
+): Promise<IApiException> {
+  return await parseJsonWithDates(response).catch(() => ({
+    message: "Unexpected error",
+    statusCode: response.status,
+    status: response.statusText,
+    error: "FetchError",
+    timestamp: new Date().toISOString(),
+    path: endpoint,
+    errors: null,
+  }));
+}
+
 /**
- * Fetch client that handles API requests with support for query builders,
- * token-based authentication, progress monitoring, and response transformation.
- *
- * @template TReturnType - The expected type of the data in the response.
- * @template Key - The key used to extract the primary data from the response.
- * @template TQueryType - The type of data used for query generation.
- * @template TPagination - Indicates whether the response is paginated or not.
- *
- * @param endpoint - The API endpoint to fetch (e.g., `/users`).
- * @param options - Configuration options for the fetch request.
- * @returns The parsed API response, either as paginated or non-paginated data.
+ * Sets up the FP-style progress monitor on the response body.
+ * If progressArgs.onProgress exists and progress is not turned off,
+ * it reads the content-length from the response headers and creates
+ * a TransformStream using createProgressStream. Otherwise, returns
+ * the original response.body.
  */
+function setupProgressMonitor(
+  response: Response,
+  progressArgs?: ProgressArgs,
+): ReadableStream<Uint8Array> | null {
+  if (!progressArgs?.onProgress || progressArgs.turnOff || !response.body) {
+    return response.body;
+  }
+
+  const contentLength = parseInt(
+    response.headers.get("content-length") || "0",
+    10,
+  );
+  // Call the FP-style createProgressStream by passing contentLength, onProgress callback,
+  // and options (throttleSpeed, updateInterval)
+  const progressStream = createProgressStream(
+    contentLength,
+    progressArgs.onProgress,
+    {
+      throttleSpeed: progressArgs.throttleSpeed,
+      updateInterval: progressArgs.updateInterval,
+    },
+  );
+  return response.body.pipeThrough(progressStream);
+}
+
+function transformResponseData<T, K extends string>(
+  jsonResponse: any,
+  responseKey: K,
+): { data: { [key in K]: T } } {
+  return {
+    ...jsonResponse,
+    data: {
+      [responseKey]: jsonResponse.data
+        ? jsonResponse.data[Object.keys(jsonResponse.data)[0]]
+        : null,
+    },
+  };
+}
+
+// Main Fetch Client
 export async function fetchClient<
   TReturnType,
   TKey extends ResponseKey<string>,
@@ -133,56 +184,34 @@ export async function fetchClient<
 > {
   if (!responseKey) throw new Error("Response Key is required");
 
-  let api = `${envConfig(process.env).API_URI}${endpoint}`;
-  if (!isFormData) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const queryString = query ? qs.stringify(query, { encode: true }) : "";
-  const method = (rest.method || "GET") as Method;
-  if (method === "GET" && queryString) {
-    api = `${api}?${queryString}`;
-  }
+  const method = rest.method || "GET";
+  const queryString = buildQueryString(query);
+  const apiUrl = buildApiUrl(endpoint, method, queryString);
+  const requestHeaders = createHeaders({ isFormData, token, headers });
   const startTime = Date.now();
 
   try {
-    const response = await fetch(api, {
+    const response = await fetch(apiUrl, {
       method,
+      headers: requestHeaders,
       ...rest,
-      headers: {
-        ...headers,
-      },
     });
 
     const responseSize = parseInt(
       response.headers.get("content-length") || "0",
+      10,
     );
 
     if (!response.ok) {
+      const error = await handleResponseError(response, endpoint);
       logger.logRequest(
         method,
         endpoint,
         queryString,
         startTime,
-        response,
-        null,
+        response.status,
         responseSize,
-      );
-
-      const error: IApiException = await parseJsonWithDates(response).catch(
-        () => ({
-          message: "Unexpected error",
-          statusCode: response.status,
-          status: response.statusText,
-          error: "FetchError",
-          timestamp: new Date().toISOString(),
-          path: endpoint,
-          errors: null,
-        }),
+        error as unknown as Error,
       );
       return { exception: error, data: null, message: null };
     }
@@ -192,42 +221,27 @@ export async function fetchClient<
       endpoint,
       queryString,
       startTime,
-      response,
-      null,
+      response.status,
       responseSize,
     );
 
-    let responseBody: ReadableStream<Uint8Array> | null = response.body;
-
-    if (progressArgs?.onProgress && responseBody && !progressArgs.turnOff) {
-      const progressStream = ProgressMonitor.createProgressStream({
-        contentLength: responseSize,
-        ...progressArgs,
-      });
-      responseBody = responseBody.pipeThrough(progressStream);
-    }
-
-    const jsonResponse = await (responseBody
-      ? parseJsonWithDates(new Response(responseBody))
-      : parseJsonWithDates(response));
-
-    const transformedResponse = {
-      ...jsonResponse,
-      data: {
-        [responseKey]: jsonResponse.data
-          ? jsonResponse.data[Object.keys(jsonResponse.data)[0]]
-          : null,
-      },
-    };
+    // Use the FP-style progress monitor if applicable
+    const responseBody = setupProgressMonitor(response, progressArgs);
+    const responseToParse = responseBody
+      ? new Response(responseBody)
+      : response;
+    const jsonResponse = await parseJsonWithDates(responseToParse);
+    const transformedResponse = transformResponseData<
+      TReturnType,
+      TKey["responseKey"]
+    >(jsonResponse, responseKey);
 
     return transformedResponse as TPagination extends Paginated
       ? ApiResponseMany<TReturnType, TKey["responseKey"]>
       : ApiResponseOne<TReturnType, TKey["responseKey"]>;
   } catch (err) {
-    logger.logRequest(method, endpoint, queryString, startTime, null, err);
-
-    const error: IApiException = {
-      message: "Oh no, something went very wrong",
+    const error = {
+      message: (err as Error).message || "Network error",
       statusCode: 500,
       status: "INTERNAL_SERVER_ERROR",
       error: "FetchError",
@@ -236,10 +250,16 @@ export async function fetchClient<
       errors: null,
     };
 
-    return {
-      exception: error,
-      data: null,
-      message: null,
-    };
+    logger.logRequest(
+      method,
+      endpoint,
+      queryString,
+      startTime,
+      500,
+      0,
+      error as unknown as Error,
+    );
+
+    return { exception: error, data: null, message: null };
   }
 }

@@ -48,7 +48,7 @@ export function DataTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead
-                  className="px-4 py-4 text-left text-xs text-gray-400 md:px-6 md:text-md"
+                  className="px-4 py-0 text-left text-xs text-gray-400 md:px-6 md:text-md"
                   key={header.id}
                 >
                   {header.isPlaceholder
@@ -177,7 +177,7 @@ export function DataTableWithFeatures<TData, TValue>({
   children,
 }: DataTableWithFeaturesProps<TData, TValue>) {
   return (
-    <div className="mx-auto flex h-full w-full flex-col bg-white">
+    <div className="mx-auto mt-14 flex w-full flex-col bg-white md:mt-20">
       <DataTableToolbar>{children}</DataTableToolbar>
       <DataTable data={data} columns={columns} caption={caption} />
       <DataTablePagination metadata={metadata} />

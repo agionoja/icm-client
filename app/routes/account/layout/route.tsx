@@ -13,7 +13,7 @@ import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
 import { authRouteConfig, routesConfig } from "~/routes.config";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
 import { cn } from "~/lib/utils";
 import { getCookieByName } from "~/cookies/get-cookie-by-name";
@@ -101,12 +101,6 @@ function AccountLayoutContent({
   const { state } = useNavigation();
   const submit = useSubmit();
 
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   useSessionTimeout(loaderData.sessionTimeout, () => {
     const formData = new FormData();
     formData.append("_action", loaderData.sessionTimeoutKey);
@@ -149,7 +143,7 @@ function AccountLayoutContent({
             className={"ml-auto text-white"}
           />
         </div>
-        <div className={cn("mt-20 w-full md:px-5")}>
+        <div className={cn("w-full md:px-5")}>
           <Outlet />
         </div>
       </main>

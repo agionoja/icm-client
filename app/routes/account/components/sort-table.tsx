@@ -162,6 +162,8 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { SortKey } from "icm-shared";
 import { cn } from "~/lib/utils";
 
+// TODO: pass the pagination metadata as props so that we don't fetch depending on the metadata
+
 interface SortHeaderProps<T> {
   field: SortKey<T>;
   label: string;
@@ -255,7 +257,7 @@ export function SortTable<T>({ field, label, className }: SortHeaderProps<T>) {
       onMouseEnter={handlePrefetch}
       onFocus={handlePrefetch}
       className={cn(
-        "flex items-center justify-between hover:bg-transparent",
+        "flex items-center justify-between border-none p-0 hover:bg-transparent",
         className,
       )}
       aria-label={`Sort by ${label}`}

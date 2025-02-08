@@ -7,7 +7,7 @@ import { cn } from "~/lib/utils";
 const loadingVariants = cva("flex items-center justify-center", {
   variants: {
     variant: {
-      page: "fixed inset-0 bg-background/80 backdrop-blur-sm z-[999]",
+      page: "fixed inset-0 bg-primary/10 backdrop-blur-sm z-[999]",
       overlay: "absolute inset-0 bg-background/50 z-[100]",
       inline: "p-2",
     } as const,

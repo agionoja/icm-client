@@ -1,126 +1,222 @@
-import type { Method } from "~/fetch/fetch-client.server";
+// types.ts
+export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+export type LogLevel = "info" | "error" | "warn" | "debug";
 
-export const logger = {
+export type LoggerConfig = {
   colors: {
-    method: {
-      GET: "\x1b[32m", // Green like NestJS
-      POST: "\x1b[33m", // Yellow like NestJS
-      PUT: "\x1b[34m", // Blue like NestJS
-      PATCH: "\x1b[35m", // Magenta like NestJS
-      DELETE: "\x1b[31m", // Red like NestJS
-    },
+    method: Record<Method, string>;
     status: {
-      success: "\x1b[32m", // Green
-      error: "\x1b[31m", // Red
-    },
-    timing: {
-      fast: "\x1b[32m", // Green (<300ms)
-      medium: "\x1b[33m", // Yellow (300-1000ms)
-      slow: "\x1b[31m", // Red (>1000ms)
-    },
-    prefix: {
-      system: "\x1b[33m", // Yellow for system prefix like NestJS
-      details: "\x1b[96m", // Cyan for details like NestJS
-    },
-    // uri: "\x1b[96m", // Bright cyan for URI
-    uri: "\x1b[32m", // Bright cyan for URI
-    timestamp: "\x1b[36m", // Brighter cyan for timestamp (more visible than gray)
-    reset: "\x1b[0m",
-  },
-
-  formatBytes(bytes: number): string {
-    if (!bytes) return "0 B";
-
-    if (bytes > 1000000) {
-      return `${(bytes / 1000000).toFixed(2)} MB`;
-    }
-
-    if (bytes > 1000) {
-      return `${(bytes / 1000).toFixed(2)} KB`;
-    }
-
-    return `${bytes} B`;
-  },
-
-  getTimingColor(duration: number): string {
-    if (duration < 300) return logger.colors.timing.fast;
-    if (duration < 1000) return logger.colors.timing.medium;
-    return logger.colors.timing.slow;
-  },
-
-  getTimestamp(): string {
-    return new Date().toISOString();
-  },
-
-  getMethodEmoji(method: Method): string {
-    const emojiMap: Record<Method, string> = {
-      GET: "📥",
-      POST: "📤",
-      PUT: "📝",
-      PATCH: "🔄",
-      DELETE: "🗑️",
+      success: string;
+      error: string;
+      warn: string;
     };
-    return emojiMap[method] || "🌐";
-  },
+    timing: {
+      fast: string;
+      medium: string;
+      slow: string;
+    };
+    prefix: {
+      system: string;
+      details: string;
+    };
+    uri: string;
+    timestamp: string;
+    reset: string;
+  };
+  emojiMap: Record<Method, string>;
+};
 
-  logRequest(
+export type LogEntry = {
+  timestamp: string;
+  method: Method;
+  endpoint: string;
+  query?: string;
+  duration: number;
+  status?: number;
+  responseSize?: number;
+  error?: Error;
+};
+// Pure function to format bytes
+export const formatBytes = (bytes: number): string => {
+  if (!bytes) return "0 B";
+  if (bytes > 1_000_000) return `${(bytes / 1_000_000).toFixed(2)} MB`;
+  if (bytes > 1_000) return `${(bytes / 1_000).toFixed(2)} KB`;
+  return `${bytes} B`;
+};
+
+// Pure function to determine timing color
+export const getTimingColor = (
+  duration: number,
+  config: LoggerConfig,
+): string => {
+  if (duration < 300) return config.colors.timing.fast;
+  if (duration < 1_000) return config.colors.timing.medium;
+  return config.colors.timing.slow;
+};
+
+// Pure function to create timestamp in "DD/MM/YYYY, HH:mm:ss" format
+export const createTimestamp = (date: Date = new Date()): string => {
+  const pad = (num: number) => num.toString().padStart(2, "0");
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
+// Pure function to get method emoji
+export const getMethodEmoji = (method: Method, config: LoggerConfig): string =>
+  config.emojiMap[method] || "🌐";
+
+// Pure function to create log message parts
+export const createLogMessage = (
+  entry: LogEntry,
+  config: LoggerConfig,
+): string[] => {
+  const { colors } = config;
+  const methodColor = colors.method[entry.method];
+  const timingColor = getTimingColor(entry.duration, config);
+  const statusColor =
+    entry.status && entry.status < 400
+      ? colors.status.success
+      : entry.status && entry.status < 500
+        ? colors.status.warn
+        : colors.status.error;
+
+  return [
+    // Timestamp
+    `${colors.timestamp}${entry.timestamp}${colors.reset}`,
+
+    // System prefix
+    `${colors.prefix.system}[FetchClient]${colors.reset}`,
+
+    // Method with emoji
+    `${methodColor}${getMethodEmoji(entry.method, config)} ${entry.method}${colors.reset}`,
+
+    // Endpoint with query
+    `${colors.uri}${entry.endpoint}${entry.query ? `?${entry.query}` : ""}${colors.reset}`,
+
+    // Status or error
+    entry.status
+      ? `${statusColor}${entry.status}${colors.reset}`
+      : `${colors.status.error}ERROR${colors.reset}`,
+
+    // Duration
+    `${timingColor}+${entry.duration}ms${colors.reset}`,
+
+    // Size if available
+    ...(entry.responseSize
+      ? [
+          `${colors.prefix.details}${formatBytes(entry.responseSize)}${colors.reset}`,
+        ]
+      : []),
+  ];
+};
+
+// Pure function to create error message
+export const createErrorMessage = (
+  error: Error,
+  config: LoggerConfig,
+): string[] => [
+  `${config.colors.timestamp}${createTimestamp()}${config.colors.reset}`,
+  `${config.colors.status.error}[FetchClient Error]${config.colors.reset}`,
+  `${config.colors.status.error}${error.message || "Unknown error"}${config.colors.reset}`,
+  ...(error.stack ? [`\n${error.stack}`] : []),
+];
+
+// Side effect handler
+export const outputLog = (
+  messages: string[],
+  level: LogLevel = "info",
+): void => {
+  const logger = {
+    info: console.log,
+    error: console.error,
+    warn: console.warn,
+    debug: console.debug,
+  }[level];
+
+  logger(messages.join(" "));
+};
+
+// Logger factory function
+export const createLogger = (config: LoggerConfig) => {
+  const baseEntry = (
     method: Method,
     endpoint: string,
     query: string | null,
     startTime: number,
-    response: Response | null,
-    error: any = null,
-    responseSize?: number,
-  ) {
-    const duration = Date.now() - startTime;
-    const { colors } = logger;
-    const methodColor = colors.method[method];
-    const timingColor = logger.getTimingColor(duration);
-    const statusColor = response?.ok
-      ? colors.status.success
-      : colors.status.error;
-    const reset = colors.reset;
+  ): LogEntry => ({
+    timestamp: createTimestamp(),
+    method,
+    endpoint,
+    query: query || undefined,
+    duration: Date.now() - startTime,
+  });
 
-    // Build the log message in NestJS style
-    const parts = [
-      // Timestamp
-      `${colors.timestamp}${logger.getTimestamp()}${reset}`,
+  return {
+    logRequest: (
+      method: Method,
+      endpoint: string,
+      query: string | null,
+      startTime: number,
+      status?: number,
+      responseSize?: number,
+      error?: Error,
+    ) => {
+      const entry: LogEntry = {
+        ...baseEntry(method, endpoint, query, startTime),
+        status,
+        responseSize,
+        error,
+      };
 
-      // System prefix (like NestJS)
-      `${colors.prefix.system}[FetchClient]${reset}`,
-
-      // Method with emoji (like NestJS info/error/warn prefix)
-      `${methodColor}${logger.getMethodEmoji(method)} ${method}${reset}`,
-
-      // Endpoint with query
-      `${colors.uri}${endpoint}${query ? `?${query}` : ""}${reset}`,
-
-      // Status
-      response
-        ? `${statusColor}${response.status}${reset}`
-        : `${colors.status.error}ERROR${reset}`,
-
-      // Duration
-      `${timingColor}+${duration}ms${reset}`,
-    ];
-
-    // Add size if available
-    if (responseSize) {
-      parts.push(
-        `${colors.prefix.details}${logger.formatBytes(responseSize)}${reset}`,
+      const message = createLogMessage(entry, config);
+      outputLog(
+        message,
+        error ? "error" : status && status >= 400 ? "warn" : "info",
       );
-    }
 
-    console.log(parts.join(" "));
+      if (error) {
+        const errorMessage = createErrorMessage(error, config);
+        outputLog(errorMessage, "error");
+      }
+    },
+  };
+};
 
-    // Log error details in NestJS style if present
-    if (error) {
-      console.error(
-        `${colors.timestamp}${logger.getTimestamp()}${reset}`,
-        `${colors.status.error}[FetchClient Error]${reset}`,
-        `${colors.status.error}${error.message || "Unknown error"}${reset}`,
-        error.stack ? `\n${error.stack}` : "",
-      );
-    }
+// Default configuration
+export const defaultLoggerConfig: LoggerConfig = {
+  colors: {
+    method: {
+      GET: "\x1b[38;5;34m", // Green
+      POST: "\x1b[38;5;220m", // Yellow
+      PUT: "\x1b[38;5;33m", // Blue
+      PATCH: "\x1b[38;5;207m", // Magenta
+      DELETE: "\x1b[38;5;196m", // Red
+    },
+    status: {
+      success: "\x1b[38;5;34m", // Green
+      error: "\x1b[38;5;196m", // Red
+      warn: "\x1b[38;5;208m", // Orange
+    },
+    timing: {
+      fast: "\x1b[38;5;34m", // Green
+      medium: "\x1b[38;5;220m", // Yellow
+      slow: "\x1b[38;5;196m", // Red
+    },
+    prefix: {
+      system: "\x1b[38;5;220m", // Yellow
+      details: "\x1b[38;5;45m", // Cyan
+    },
+    uri: "\x1b[38;5;45m", // Cyan
+    timestamp: "\x1b[38;5;247m", // Gray
+    reset: "\x1b[0m",
+  },
+  emojiMap: {
+    GET: "📥", // Inbox tray
+    POST: "📤", // Outbox tray
+    PUT: "📝", // Pencil
+    PATCH: "🔄", // Refresh
+    DELETE: "🗑️", // Trash
   },
 };
+
+// Default logger instance
+export const logger = createLogger(defaultLoggerConfig);
