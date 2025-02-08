@@ -1,165 +1,218 @@
-export interface ProgressInfo {
-  loaded: number;
-  total: number;
-  percent: number;
-  transferSpeed: number;
-  timeRemaining: number;
-  startTime: number;
+/**
+ * Represents a number of bytes.
+ */
+type Bytes = number;
+
+/**
+ * Represents a time duration in milliseconds.
+ */
+type Milliseconds = number;
+
+/**
+ * Represents a time duration in seconds.
+ */
+type Seconds = number;
+
+/**
+ * Represents a data transfer speed in bytes per second.
+ */
+type BytesPerSecond = number;
+export type OnProgress = (info: ProgressInfo) => void;
+
+/**
+ * Represents the current progress state of a data transfer.
+ */
+export type ProgressState = Readonly<{
+  /** Number of bytes received so far. */
+  bytesReceived: Bytes;
+  /** Total content length in bytes. */
+  contentLength: Bytes;
+  /** Timestamp when the transfer started. */
+  startTime: Milliseconds;
+  /** Timestamp of the last progress update. */
+  lastUpdate: Milliseconds;
+  /** Number of bytes received in the last update interval. */
+  lastBytes: Bytes;
+  /** Current status of the transfer. */
   status: "pending" | "active" | "completed" | "error";
-}
+  /** Optional throttle speed in bytes per second. */
+  throttleSpeed?: BytesPerSecond;
+}>;
 
-export type ProgressCallback = (progress: ProgressInfo) => void;
+/**
+ * Represents detailed progress information for a data transfer.
+ */
+export type ProgressInfo = Readonly<{
+  /** Number of bytes loaded so far. */
+  loaded: Bytes;
+  /** Total content length in bytes. */
+  total: Bytes;
+  /** Percentage of completion. */
+  percent: number;
+  /** Current transfer speed in bytes per second. */
+  transferSpeed: BytesPerSecond;
+  /** Estimated time remaining in seconds. */
+  timeRemaining: Seconds;
+  /** Elapsed time since the transfer started, in seconds. */
+  elapsedTime: Seconds;
+  /** Current status of the transfer. */
+  status: ProgressState["status"];
+}>;
 
-export type ProgressArgs = {
-  contentLength: number;
-  onProgress: ProgressCallback;
-  updateInterval?: number;
-  throttleSpeed?: number;
+/**
+ * Represents an effect triggered by progress updates.
+ */
+type ProgressEffect =
+  | { type: "callback"; info: ProgressInfo }
+  | { type: "delay"; duration: Milliseconds };
+
+/**
+ * Creates an initial progress state.
+ * @param contentLength Total content length in bytes.
+ * @param throttleSpeed Optional throttle speed in bytes per second.
+ * @returns The initial progress state.
+ */
+const createInitialState = (
+  contentLength: Bytes,
+  throttleSpeed?: BytesPerSecond,
+): ProgressState => ({
+  bytesReceived: 0,
+  contentLength,
+  startTime: Date.now(),
+  lastUpdate: Date.now(),
+  lastBytes: 0,
+  status: "pending",
+  throttleSpeed,
+});
+
+/**
+ * Calculates updated progress information based on the current state.
+ * @param state The current progress state.
+ * @param final Whether this is the final update.
+ * @returns The updated progress state and any triggered effects.
+ */
+const calculateProgress = (
+  state: ProgressState,
+  final: boolean = false,
+): [ProgressState, ProgressEffect[]] => {
+  const now = Date.now();
+  const timeElapsed = (now - state.lastUpdate) / 1000;
+  const isCompleted = final || state.bytesReceived >= state.contentLength;
+
+  const newState: ProgressState = {
+    ...state,
+    lastUpdate: now,
+    lastBytes: state.bytesReceived,
+    status: isCompleted ? "completed" : "active",
+  };
+
+  const bytesPerSecond =
+    timeElapsed > 0 ? (state.bytesReceived - state.lastBytes) / timeElapsed : 0;
+
+  const percent = state.contentLength
+    ? Math.min((state.bytesReceived / state.contentLength) * 100, 100)
+    : 0;
+
+  const timeRemaining =
+    bytesPerSecond > 0
+      ? (state.contentLength - state.bytesReceived) / bytesPerSecond
+      : 0;
+
+  const info: ProgressInfo = {
+    loaded: state.bytesReceived,
+    total: state.contentLength,
+    percent,
+    transferSpeed: bytesPerSecond,
+    timeRemaining: isCompleted ? 0 : timeRemaining,
+    elapsedTime: (now - state.startTime) / 1000,
+    status: newState.status,
+  };
+
+  const effects: ProgressEffect[] = [{ type: "callback", info }];
+
+  if (state.throttleSpeed && !isCompleted) {
+    const chunkSize = state.bytesReceived - state.lastBytes;
+    const idealTime = (chunkSize / state.throttleSpeed) * 1000;
+    const actualTime = now - state.lastUpdate;
+    if (actualTime < idealTime) {
+      effects.push({ type: "delay", duration: idealTime - actualTime });
+    }
+  }
+
+  return [newState, effects];
 };
 
-export class ProgressMonitor {
-  private bytesReceived: number = 0;
-  private lastUpdate: number = Date.now();
-  private lastBytes: number = 0;
-  private readonly contentLength: number;
-  private readonly onProgressCallback: ProgressCallback;
-  private readonly startTime: number;
-  private readonly updateInterval: number;
-  private isCompleted: boolean = false;
-  private readonly throttleSpeed?: number; // Speed limit in bytes per second
+/**
+ * Updates the progress state with a new chunk of data.
+ * @param state The current progress state.
+ * @param chunk The size of the new data chunk in bytes.
+ * @param final Whether this is the final update.
+ * @returns The updated progress state and any triggered effects.
+ */
+const updateProgress = (
+  state: ProgressState,
+  chunk: Bytes,
+  final: boolean = false,
+): [ProgressState, ProgressEffect[]] => {
+  const newBytes = state.bytesReceived + chunk;
+  const updatedState = { ...state, bytesReceived: newBytes };
 
-  constructor({
-    contentLength,
-    onProgress,
-    updateInterval = 100,
-    throttleSpeed = undefined,
-  }: ProgressArgs) {
-    this.contentLength = contentLength;
-    this.onProgressCallback = onProgress;
-    this.startTime = Date.now();
-    this.updateInterval = updateInterval;
-    this.throttleSpeed = throttleSpeed;
+  const shouldUpdate =
+    final ||
+    Date.now() - state.lastUpdate >= 100 ||
+    newBytes === state.contentLength;
 
-    // Send initial pending status
-    this.onProgressCallback({
-      loaded: 0,
-      total: contentLength,
-      percent: 0,
-      transferSpeed: 0,
-      timeRemaining: 0,
-      startTime: this.startTime,
-      status: "pending",
-    });
-  }
+  return shouldUpdate
+    ? calculateProgress(updatedState, final)
+    : [updatedState, []];
+};
 
-  /**
-   * Update progress with new chunk of data
-   */
-  public async updateProgress(chunk: Uint8Array): Promise<void> {
-    // If throttling is enabled, introduce artificial delay
-    if (this.throttleSpeed) {
-      const chunkSize = chunk.length;
-      const idealTime = (chunkSize / this.throttleSpeed) * 1000; // Time in ms it should take at throttled speed
-      const actualTime = Date.now() - this.lastUpdate;
+/**
+ * Creates a transform stream that tracks progress and throttles speed if necessary.
+ * @param contentLength Total content length in bytes.
+ * @param onProgress Callback function for progress updates.
+ * @param options Optional configuration parameters.
+ * @returns A TransformStream that monitors progress.
+ */
+export const createProgressStream = (
+  contentLength: Bytes,
+  onProgress: OnProgress,
+  options: {
+    throttleSpeed?: BytesPerSecond;
+    updateInterval?: Milliseconds;
+  } = {},
+): TransformStream<Uint8Array, Uint8Array> => {
+  let state = createInitialState(contentLength, options.throttleSpeed);
 
-      if (actualTime < idealTime) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, idealTime - actualTime),
-        );
-      }
-    }
+  return new TransformStream({
+    async transform(chunk, controller) {
+      const [newState, effects] = updateProgress(state, chunk.length);
+      state = newState;
 
-    this.bytesReceived += chunk.length;
-    const now = Date.now();
-    const timeElapsed = (now - this.lastUpdate) / 1000;
-
-    // Check if this is the final chunk
-    const isFinalChunk = this.bytesReceived >= this.contentLength;
-
-    // Send updates either when interval has passed or it's the final chunk
-    if (
-      timeElapsed >= this.updateInterval / 1000 ||
-      (isFinalChunk && !this.isCompleted)
-    ) {
-      const bytesPerSecond =
-        (this.bytesReceived - this.lastBytes) / timeElapsed;
-      const percentComplete = this.contentLength
-        ? (this.bytesReceived / this.contentLength) * 100
-        : 0;
-      const timeRemaining = this.contentLength
-        ? (this.contentLength - this.bytesReceived) / bytesPerSecond
-        : 0;
-
-      // Determine status
-      let status: ProgressInfo["status"] = "active";
-      if (isFinalChunk) {
-        status = "completed";
-        this.isCompleted = true;
-      }
-
-      this.onProgressCallback({
-        loaded: this.bytesReceived,
-        total: this.contentLength,
-        percent: Math.min(percentComplete, 100),
-        transferSpeed: bytesPerSecond,
-        timeRemaining: status === "completed" ? 0 : timeRemaining,
-        startTime: this.startTime,
-        status,
-      });
-
-      this.lastUpdate = now;
-      this.lastBytes = this.bytesReceived;
-    }
-  }
-
-  /**
-   * Create a transform stream that monitors progress
-   */
-  public static createProgressStream(
-    progressArgs: ProgressArgs,
-  ): TransformStream<Uint8Array, Uint8Array> {
-    const monitor = new ProgressMonitor(progressArgs);
-
-    return new TransformStream({
-      async transform(chunk, controller) {
-        await monitor.updateProgress(chunk);
-        controller.enqueue(chunk);
-      },
-      flush() {
-        if (
-          monitor.bytesReceived === monitor.contentLength &&
-          !monitor.isCompleted
-        ) {
-          monitor.onProgressCallback({
-            loaded: monitor.bytesReceived,
-            total: monitor.contentLength,
-            percent: 100,
-            transferSpeed: 0,
-            timeRemaining: 0,
-            startTime: monitor.startTime,
-            status: "completed",
-          });
+      for (const effect of effects) {
+        switch (effect.type) {
+          case "callback":
+            onProgress(effect.info);
+            break;
+          case "delay":
+            await new Promise((resolve) =>
+              setTimeout(resolve, effect.duration),
+            );
+            break;
         }
-      },
-    });
-  }
-
-  // Existing helper methods remain the same
-  public static formatBytes(bytes: number): string {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  }
-
-  public static formatTime(seconds: number): string {
-    if (!isFinite(seconds) || seconds < 0) return "Unknown";
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const minutes = Math.floor(seconds / 60);
-    seconds = Math.round(seconds % 60);
-    if (minutes < 60) return `${minutes}m ${seconds}s`;
-    const hours = Math.floor(minutes / 60);
-    return `${hours}h ${minutes % 60}m ${seconds}s`;
-  }
-}
+      }
+      controller.enqueue(chunk);
+    },
+    flush() {
+      if (state.bytesReceived < state.contentLength) {
+        const [finalState, effects] = updateProgress(state, 0, true);
+        state = finalState;
+        effects.forEach((effect) => {
+          if (effect.type === "callback") {
+            onProgress(effect.info);
+          }
+        });
+      }
+    },
+  });
+};

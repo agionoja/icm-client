@@ -6,24 +6,28 @@ import {
 } from "~/fetch/fetch-client.server";
 import type { UserColumn } from "~/routes/account/admin/users/columns";
 import { z } from "zod";
-import { baseSchemaFactory, parseQueryParams } from "~/utils/query";
+import { parseQueryParams, schemaFactory } from "~/utils/query";
 
-const usersQuerySchema = baseSchemaFactory<IUser>({
-  sortDefault: ["firstname"],
-}).extend({
-  role: z.nativeEnum(Role).optional(),
-  active: z
-    .enum(["true", "false", ""])
-    .transform((val) => {
-      if (val === "true") return true;
-      if (val === "false") return false;
-      return undefined;
-    })
-    .optional(),
-});
+const usersQuerySchema = schemaFactory<IUser>().merge(
+  z.object({
+    filter: z
+      .object({
+        role: z.nativeEnum(Role).optional(),
+        isActive: z
+          .enum(["true", "false", ""])
+          .transform((val) => {
+            if (val === "true") return true;
+            if (val === "false") return false;
+            return undefined;
+          })
+          .optional(),
+      })
+      .optional(),
+  }),
+);
 
 export async function getUsers(request: Request, token?: string) {
-  const { limit, page, search, role, active, sort } = parseQueryParams(
+  const { limit, page, search, filter, sort } = parseQueryParams(
     request,
     usersQuerySchema,
   );
@@ -34,26 +38,22 @@ export async function getUsers(request: Request, token?: string) {
       responseKey: "users",
       token,
       query: {
-        sort: [...sort],
+        sort,
+        filter,
         paginate: {
           limit,
           page,
         },
-        filter: {
-          isActive: active,
-          role: role,
+        search: {
+          firstname: search,
+          email: search,
+          lastname: search,
+          role: search as Role,
+          phone: search,
         },
-        search: search
-          ? {
-              firstname: search,
-              email: search,
-              lastname: search,
-              role: search as Role,
-            }
-          : undefined,
         countFilter:
-          active !== undefined
-            ? { isActive: active }
+          filter?.isActive !== undefined
+            ? { isActive: filter.isActive }
             : { isActive: { exists: true } },
         ignoreFilterFlags: ["isActive"],
         select: [

@@ -72,7 +72,7 @@ export default function Users({ loaderData }: Route.ComponentProps) {
   return (
     <CacheProvider
       intervalEnabled={false}
-      focusEnabled={true}
+      focusEnabled={false}
       mutableRevalidate={mutableRevalidate}
       loaderData={loaderData}
     >

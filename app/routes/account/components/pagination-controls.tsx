@@ -156,7 +156,7 @@ export const PaginationControls = ({
       <Button
         variant="ghost"
         size="sm"
-        className="h-6 w-6 md:h-8 md:w-8"
+        className="h-8 w-8"
         disabled={!metadata.previous || isLoading}
         onClick={() =>
           metadata.previous && handlePageChange(metadata.previous.page)
@@ -182,7 +182,7 @@ export const PaginationControls = ({
           variant={metadata.currentPage === page.number ? "default" : "ghost"}
           size="sm"
           className={cn(
-            `h-8 px-2 text-sm font-medium tabular-nums disabled:opacity-100 md:px-3 ${
+            `h-8 px-3 text-sm font-medium tabular-nums disabled:opacity-100 md:px-3 ${
               page.type === "edge"
                 ? "border-2 border-transparent hover:border-gray-200"
                 : ""
@@ -209,7 +209,7 @@ export const PaginationControls = ({
       <Button
         variant="ghost"
         size="sm"
-        className="h-6 w-6 p-0 md:h-8 md:w-8"
+        className="h-8 w-8"
         disabled={!metadata.next || isLoading}
         onClick={() => metadata.next && handlePageChange(metadata.next.page)}
         onMouseEnter={() => metadata.next && prefetchPage(metadata.next.page)}
