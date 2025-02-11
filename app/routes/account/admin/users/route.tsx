@@ -47,7 +47,7 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "normal",
     revalidate: mutableRevalidate.revalidate,
-    maxAge: 60,
+    maxAge: 60 * 19,
   });
 }
 
