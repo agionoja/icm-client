@@ -4,208 +4,241 @@ import {
   useNavigation,
   useSearchParams,
 } from "react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { PaginationMetadata } from "icm-shared";
-import { constructKey, useStorageCleared } from "~/lib/cache";
+import { constructKey } from "~/lib/cache";
+
+const KEY_THROTTLE_DELAY = 200;
 
 interface PaginationPage {
   number: number;
   type: "edge" | "middle";
 }
 
-export function usePagination({
-  metadata,
-  maxVisiblePages = 5,
-  maxPrefetchAge = 1000 * 60,
+// ─── Hook: URL Synchronization ────────────────────────────────────
+function useSyncUrlWithServerPage({
+  currentPage,
+  searchParams,
+  location,
+  setSearchParams,
 }: {
-  metadata: PaginationMetadata;
-  maxVisiblePages?: number;
-  maxPrefetchAge?: number;
+  currentPage: number;
+  searchParams: URLSearchParams;
+  location: ReturnType<typeof useLocation>;
+  setSearchParams: ReturnType<typeof useSearchParams>[1];
 }) {
-  // Hook dependencies and state
-  const location = useLocation();
-  const { state } = useNavigation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const fetcher = useFetcher();
-  const storageClearCount = useStorageCleared();
-
-  // Prefetch tracking and throttling
-  const [prefetchedKeys, setPrefetchedKeys] = useState<Map<string, number>>(
-    new Map(),
-  );
-  const isPrefetching = useRef(false);
-  const lastKeyPressTime = useRef<number>(0);
-  const keyPressThrottle = 200;
-
-  const isLoading = state !== "idle";
-
-  // Cache invalidation and state synchronization
   useEffect(() => {
-    const handleCacheState = () => {
-      const urlPage = Number(searchParams.get("page") || "1");
-      const serverPage = metadata.currentPage;
-
-      if (urlPage === serverPage) return;
-
+    const urlPage = Number(searchParams.get("page") || "1");
+    if (urlPage !== currentPage) {
       console.warn(
-        `Cache mismatch detected (URL: ${urlPage} vs Server: ${serverPage})`,
+        `Cache mismatch (URL: ${urlPage} vs Server: ${currentPage})`,
       );
-
       try {
         const currentKey = constructKey(location);
         localStorage.removeItem(currentKey);
-        console.log("Invalidated cache for:", currentKey);
-
         const newParams = new URLSearchParams(searchParams);
-        newParams.set("page", serverPage.toString());
-        setSearchParams(newParams, {
-          preventScrollReset: false,
-        });
+        newParams.set("page", currentPage.toString());
+        setSearchParams(newParams, { preventScrollReset: false });
       } catch (error) {
-        console.error("Cache synchronization failed:", error);
+        console.error("Cache sync failed:", error);
+      }
+    }
+  }, [currentPage, searchParams, location, setSearchParams]);
+}
+
+// ─── Hook: Visible Pages Calculation ──────────────────────────────
+function useVisiblePages(
+  currentPage: number,
+  pageCount: number,
+  maxVisiblePages: number,
+): PaginationPage[] {
+  return useMemo(() => {
+    const pages: PaginationPage[] = [{ number: 1, type: "edge" }];
+    const start = Math.max(
+      2,
+      currentPage - Math.floor((maxVisiblePages - 2) / 2),
+    );
+    const end = Math.min(pageCount - 1, start + maxVisiblePages - 3);
+
+    for (let i = start; i <= end; i++)
+      pages.push({ number: i, type: "middle" });
+    if (pageCount > 1) pages.push({ number: pageCount, type: "edge" });
+
+    return pages;
+  }, [currentPage, pageCount, maxVisiblePages]);
+}
+
+// ─── Hook: Prefetching Logic ──────────────────────────────────────
+function usePrefetching({
+  currentPage,
+  pageCount,
+  previousPage,
+  nextPage,
+  searchParams,
+  fetcher,
+  isLoading,
+}: {
+  currentPage: number;
+  pageCount: number;
+  previousPage?: number;
+  nextPage?: number;
+  searchParams: URLSearchParams;
+  fetcher: ReturnType<typeof useFetcher>;
+  isLoading: boolean;
+}) {
+  const prefetchLock = useRef(false);
+  const queuedPage = useRef<number | null>(null);
+  const lastPrefetched = useRef<number | null>(null);
+
+  const prefetchPage = useCallback(
+    async (page: number) => {
+      if (page === currentPage || page < 1 || page > pageCount) return;
+      const params = new URLSearchParams(searchParams);
+      params.set("page", page.toString());
+      try {
+        await fetcher.load(`?${params}`);
+      } catch (error) {
+        console.error("Prefetch failed:", error);
+      }
+    },
+    [currentPage, pageCount, searchParams, fetcher],
+  );
+
+  const runPrefetchChain = useCallback(
+    async (page: number) => {
+      lastPrefetched.current = page;
+      if (previousPage) await prefetchPage(previousPage);
+      if (nextPage) await prefetchPage(nextPage);
+    },
+    [previousPage, nextPage, prefetchPage],
+  );
+
+  const prefetchAdjacent = useCallback(() => {
+    if (lastPrefetched.current === currentPage) return;
+    if (prefetchLock.current) {
+      queuedPage.current = currentPage;
+      return;
+    }
+
+    prefetchLock.current = true;
+    (async () => {
+      await runPrefetchChain(currentPage);
+      prefetchLock.current = false;
+
+      if (queuedPage.current && queuedPage.current !== lastPrefetched.current) {
+        const next = queuedPage.current;
+        queuedPage.current = null;
+        prefetchLock.current = true;
+        await runPrefetchChain(next);
+        prefetchLock.current = false;
+      }
+    })();
+  }, [currentPage, runPrefetchChain]);
+
+  useEffect(() => {
+    if (!isLoading) prefetchAdjacent();
+  }, [currentPage, isLoading, prefetchAdjacent]);
+
+  return { prefetchPage };
+}
+
+// ─── Hook: Keyboard Navigation ────────────────────────────────────
+function useKeyboardNavigation({
+  previousPage,
+  nextPage,
+  handlePageChange,
+  isLoading,
+}: {
+  previousPage?: number;
+  nextPage?: number;
+  handlePageChange: (page: number) => void;
+  isLoading: boolean;
+}) {
+  const lastKeyPress = useRef(0);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLElement &&
+        ["INPUT", "TEXTAREA"].includes(e.target.tagName)
+      )
+        return;
+      if (isLoading || Date.now() - lastKeyPress.current < KEY_THROTTLE_DELAY)
+        return;
+
+      lastKeyPress.current = Date.now();
+
+      if (e.key === "ArrowLeft" && previousPage) {
+        handlePageChange(previousPage);
+      } else if (e.key === "ArrowRight" && nextPage) {
+        handlePageChange(nextPage);
       }
     };
 
-    handleCacheState();
-  }, [metadata.currentPage, searchParams, location, setSearchParams]);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [previousPage, nextPage, handlePageChange, isLoading]);
+}
 
-  // Pagination UI calculations
-  const getVisiblePages = useCallback(() => {
-    const pages: PaginationPage[] = [];
+// ─── Main Hook ────────────────────────────────────────────────────
+export function usePagination({
+  metadata,
+  maxVisiblePages = 5,
+}: {
+  metadata: PaginationMetadata;
+  maxVisiblePages?: number;
+}) {
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { state } = useNavigation();
+  const fetcher = useFetcher();
 
-    pages.push({ number: 1, type: "edge" });
+  const isLoading = state !== "idle";
 
-    const start = Math.max(
-      2,
-      metadata.currentPage - Math.floor((maxVisiblePages - 2) / 2),
-    );
-    const end = Math.min(metadata.pageCount - 1, start + maxVisiblePages - 3);
+  useSyncUrlWithServerPage({
+    currentPage: metadata.currentPage,
+    searchParams,
+    location,
+    setSearchParams,
+  });
 
-    for (let i = start; i <= end; i++) {
-      pages.push({ number: i, type: "middle" });
-    }
-
-    if (metadata.pageCount > 1) {
-      pages.push({ number: metadata.pageCount, type: "edge" });
-    }
-
-    return pages;
-  }, [metadata.currentPage, metadata.pageCount, maxVisiblePages]);
-
-  // Prefetch management
-  const prefetchPage = useCallback(
-    async (page: number) => {
-      if (
-        page === metadata.currentPage ||
-        page < 1 ||
-        page > metadata.pageCount ||
-        isPrefetching.current
-      ) {
-        return;
-      }
-
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("page", page.toString());
-      const prefetchKey = constructKey({
-        ...location,
-        search: newParams.toString(),
-      });
-
-      // Check if this specific key has been prefetched and is not stale
-      const prefetchTime = prefetchedKeys.get(prefetchKey);
-      if (prefetchTime && Date.now() - prefetchTime < maxPrefetchAge) {
-        return;
-      }
-
-      isPrefetching.current = true;
-
-      try {
-        console.debug(`Prefetching page: ${page}`);
-        await fetcher.load(`?${newParams.toString()}`);
-
-        setPrefetchedKeys((prev) => new Map(prev).set(prefetchKey, Date.now()));
-      } finally {
-        isPrefetching.current = false;
-      }
-    },
-    [fetcher, searchParams, location, metadata, prefetchedKeys],
+  const visiblePages = useVisiblePages(
+    metadata.currentPage,
+    metadata.pageCount,
+    maxVisiblePages,
   );
 
-  // Strategic prefetching logic
-  const prefetchAdjacentPages = useCallback(() => {
-    const { currentPage } = metadata;
+  const { prefetchPage } = usePrefetching({
+    currentPage: metadata.currentPage,
+    pageCount: metadata.pageCount,
+    previousPage: metadata.previous?.page,
+    nextPage: metadata.next?.page,
+    searchParams,
+    fetcher,
+    isLoading,
+  });
 
-    if (metadata.next) prefetchPage(metadata.next.page);
-    if (metadata.previous) prefetchPage(metadata.previous.page);
-
-    requestAnimationFrame(() => {
-      getVisiblePages().forEach((page) => {
-        if (Math.abs(page.number - currentPage) <= 2) {
-          prefetchPage(page.number);
-        }
-      });
-    });
-  }, [metadata, prefetchPage, getVisiblePages]);
-
-  // Page navigation handler
   const handlePageChange = useCallback(
     (page: number) => {
       if (page === metadata.currentPage || isLoading) return;
-
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("page", page.toString());
-      setSearchParams(newParams, { preventScrollReset: false });
+      const params = new URLSearchParams(searchParams);
+      params.set("page", page.toString());
+      setSearchParams(params, { preventScrollReset: false });
     },
     [metadata.currentPage, isLoading, searchParams, setSearchParams],
   );
 
-  // Keyboard navigation handler
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement ||
-        isLoading
-      ) {
-        return;
-      }
-
-      const now = Date.now();
-      if (now - lastKeyPressTime.current < keyPressThrottle) {
-        event.preventDefault();
-        return;
-      }
-
-      if (event.key === "ArrowLeft" && metadata.previous) {
-        lastKeyPressTime.current = now;
-        handlePageChange(metadata.previous.page);
-      } else if (event.key === "ArrowRight" && metadata.next) {
-        lastKeyPressTime.current = now;
-        handlePageChange(metadata.next.page);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [metadata.previous, metadata.next, handlePageChange, isLoading]);
-
-  // Reset prefetch state on cache clearance or key change
-  useEffect(() => {
-    setPrefetchedKeys(new Map());
-  }, [storageClearCount]);
-
-  // Automatic prefetching on idle
-  useEffect(() => {
-    if (!isLoading) {
-      prefetchAdjacentPages();
-    }
-  }, [metadata.currentPage, isLoading, prefetchAdjacentPages]);
+  useKeyboardNavigation({
+    previousPage: metadata.previous?.page,
+    nextPage: metadata.next?.page,
+    handlePageChange,
+    isLoading,
+  });
 
   return {
     isLoading,
-    visiblePages: getVisiblePages(),
+    visiblePages,
     handlePageChange,
     prefetchPage,
-    prefetchedKeys,
   };
 }
