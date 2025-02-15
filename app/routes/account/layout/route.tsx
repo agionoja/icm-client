@@ -143,7 +143,7 @@ function AccountLayoutContent({
             className={"ml-auto text-white"}
           />
         </div>
-        <div className={cn("w-full md:px-5")}>
+        <div className={cn("mt-12 w-full md:mt-20 md:px-5")}>
           <Outlet />
         </div>
       </main>
