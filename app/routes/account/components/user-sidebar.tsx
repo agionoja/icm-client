@@ -82,7 +82,7 @@ export function UserSidebar() {
               <SidebarMenuItem key={index}>
                 <SidebarMenuButton
                   asChild
-                  isActive={location.pathname === item.pathname}
+                  isActive={location.pathname.includes(item.pathname)}
                 >
                   <Link prefetch={"intent"} to={item.pathname}>
                     <item.icon />
@@ -113,7 +113,7 @@ export function UserSidebar() {
                 {data[1].group.map((item, index) => (
                   <SidebarMenuItem key={index}>
                     <SidebarMenuButton
-                      isActive={location.pathname === item.pathname}
+                      isActive={location.pathname.includes(item.pathname)}
                       asChild
                     >
                       <NavLink prefetch={"intent"} to={item.pathname}>

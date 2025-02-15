@@ -177,7 +177,7 @@ export function DataTableWithFeatures<TData, TValue>({
   children,
 }: DataTableWithFeaturesProps<TData, TValue>) {
   return (
-    <div className="mx-auto mt-14 flex w-full flex-col bg-white md:mt-20">
+    <div className="mx-auto flex w-full flex-col bg-white">
       <DataTableToolbar>{children}</DataTableToolbar>
       <DataTable data={data} columns={columns} caption={caption} />
       <DataTablePagination metadata={metadata} />
