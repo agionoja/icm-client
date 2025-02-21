@@ -80,4 +80,5 @@ export default [
   // Resources Routes
   route(resources.spinServer.getPath, resources.spinServer.getFile),
   route(resources.wallet.getPath, resources.wallet.getFile),
+  route(resources.user.getPath, resources.user.getFile),
 ] satisfies RouteConfig;

@@ -264,6 +264,12 @@ export const routesConfig = {
       path: "resources/fund-wallet/:reference",
       file: paths.resources("wallet", "ts"),
     }),
+
+    user: defineRoute({
+      path: "resources/user/:id",
+      file: paths.resources("user", "ts"),
+      params: { id: z.string() },
+    }),
   },
 };
 export const accountRouteConfig = routesConfig.account;

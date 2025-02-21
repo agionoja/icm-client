@@ -73,7 +73,7 @@ export class RouteBuilder<
     }
 
     const queryString = this.buildQueryString(queryParams);
-    return queryString ? `${url}?${queryString}` : url;
+    return queryString ? `/${url}?${queryString}` : `/${url}`;
   }
 
   /**

@@ -20,7 +20,7 @@ export const meta: Route.MetaFunction = () => {
     {
       name: "description",
       content:
-        "View and manage user accounts, including updates, role assignments, and account statuses.",
+        "Browse, search, and manage user accounts. Update user details, assign roles, and manage account statuses efficiently.",
     },
   ];
 };

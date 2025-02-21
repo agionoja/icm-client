@@ -1,29 +1,28 @@
 import type { Route } from "./+types/route";
-import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server";
-import type { UserUnion } from "icm-shared";
 import { getToken } from "~/session";
 import {
   cacheClientLoader,
   CacheProvider,
   type MutableRevalidate,
 } from "~/lib/cache";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
 import { data } from "react-router";
+import { getUser } from "~/routes/account/admin/user/query";
+import { useRouteComponentErrorToast } from "~/hooks/useRouteComponentErrorToast";
+
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: "Admin - User Details" },
+    {
+      name: "description",
+      content:
+        "View detailed information about a specific user, including profile details, assigned roles, and account status.",
+    },
+  ];
+};
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const token = await getToken(request);
-  const response = await fetchClient<UserUnion, ResponseKey<"user">>(
-    `/users/${params.id}`,
-    {
-      token,
-      responseKey: "user",
-      query: {
-        ignoreFilterFlags: ["isActive"],
-        select: ["+isActive", "+isVerified", "+isSuspended"],
-      },
-    },
-  );
+  const response = await getUser(params.id, token);
 
   if (response.exception?.statusCode === 404) {
     throw new Response(null, {
@@ -33,13 +32,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   if (response.exception) {
-    return data(response, {
-      status: response.exception.statusCode,
-      statusText: response.exception.message,
-    });
+    return data(
+      { response },
+      {
+        status: response.exception.statusCode,
+        statusText: response.exception.message,
+      },
+    );
   }
 
-  return response;
+  return { response };
 }
 
 const mutableRevalidate: MutableRevalidate = { revalidate: false };
@@ -53,16 +55,11 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 clientLoader.hydrate = true as const;
 
 function UserContent({ loaderData }: Pick<Route.ComponentProps, "loaderData">) {
-  const error = loaderData.exception;
-  useEffect(() => {
-    if (error) {
-      toast(error.message, { type: "error" });
-    }
-  }, [error]);
+  useRouteComponentErrorToast(loaderData.response.exception);
 
   return (
     <div>
-      <span>{loaderData.data?.user.firstname}</span>
+      <span>{loaderData.response.data?.user.firstname}</span>
     </div>
   );
 }

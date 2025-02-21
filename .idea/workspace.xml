@@ -5,11 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8c3b7f2-1fa4-4cda-a717-5df5e12ba38d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/routes/account/admin/user/query.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/resources/user.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/data-table-with-features.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/data-table-with-features.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/admin-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/admin-sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/components/user-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/components/user-sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/layout/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/user/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/user/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/columns.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/account/admin/users/route.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils/route-config-utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils/route-config-utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/react-router.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/react-router.config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +24,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript File" />
         <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -79,10 +84,12 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Docker.Dockerfile production-dependencies-env.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;agi&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/agionoja/code/bun-quickstart&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/agionoja/.bun/bin/bun&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -92,6 +99,7 @@
     &quot;npm.build.executor&quot;: &quot;Run&quot;,
     &quot;npm.build:start.executor&quot;: &quot;Run&quot;,
     &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;npm.exec.executor&quot;: &quot;Run&quot;,
     &quot;npm.start.executor&quot;: &quot;Run&quot;,
     &quot;npm.typecheck.executor&quot;: &quot;Run&quot;,
     &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/home/agionoja/code/icm/icm-client/node_modules/prettier&quot;,
@@ -105,24 +113,30 @@
   }
 }</component>
   <component name="RunManager" selected="npm.dev">
-    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="build" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
+    <configuration name="Dockerfile production-dependencies-env" type="docker-deploy" factoryName="dockerfile" temporary="true" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="imageTag" value="node20-alpine_production-dependencies-env" />
+          <option name="buildCliOptions" value="--target production-dependencies-env" />
+          <option name="buildOnly" value="true" />
+          <option name="sourceFilePath" value="Dockerfile" />
+        </settings>
+      </deployment>
       <method v="2" />
     </configuration>
-    <configuration name="build:start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="build:start" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
+    <configuration name="Dockerfile" type="docker-deploy" factoryName="dockerfile" temporary="true" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="buildOnly" value="true" />
+          <option name="sourceFilePath" value="Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="dockerfile" temporary="true">
+      <deployment type="dockerfile">
+        <settings />
+      </deployment>
       <method v="2" />
     </configuration>
     <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
@@ -130,16 +144,6 @@
       <command value="run" />
       <scripts>
         <script value="dev" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="start" />
       </scripts>
       <node-interpreter value="project" />
       <envs />
@@ -155,13 +159,18 @@
       <envs />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Docker.Dockerfile" />
+      <item itemvalue="Docker.Dockerfile production-dependencies-env" />
+      <item itemvalue="npm.dev" />
+      <item itemvalue="npm.typecheck" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="npm.dev" />
+        <item itemvalue="Docker.Dockerfile production-dependencies-env" />
+        <item itemvalue="Docker.Dockerfile" />
         <item itemvalue="npm.typecheck" />
-        <item itemvalue="npm.start" />
-        <item itemvalue="npm.build:start" />
-        <item itemvalue="npm.build" />
       </list>
     </recent_temporary>
   </component>
@@ -244,6 +253,15 @@
       <workItem from="1739445616449" duration="644000" />
       <workItem from="1739455996463" duration="3584000" />
       <workItem from="1739481030162" duration="335000" />
+      <workItem from="1739631233363" duration="1594000" />
+      <workItem from="1739644725600" duration="6010000" />
+      <workItem from="1739698518143" duration="3431000" />
+      <workItem from="1739871110301" duration="610000" />
+      <workItem from="1739899259648" duration="3745000" />
+      <workItem from="1739988456962" duration="603000" />
+      <workItem from="1740081813235" duration="602000" />
+      <workItem from="1740107272221" duration="599000" />
+      <workItem from="1740163103515" duration="422000" />
     </task>
     <servers />
   </component>
