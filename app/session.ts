@@ -1,15 +1,10 @@
-import { createCookieSessionStorage, redirect } from "react-router";
+import { createCookieSessionStorage, href, redirect } from "react-router";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { baseCookieOptions } from "~/cookies/base-cookie-options";
 import { Role, type UserUnion } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
-import {
-  adminRouteConfig,
-  authRouteConfig,
-  userRouteConfig,
-} from "~/routes.config";
 import { undefined } from "zod";
 
 type SessionData = {
@@ -27,8 +22,8 @@ type CreateSession = {
 };
 
 export const RoleRedirects = {
-  [Role.ADMIN]: adminRouteConfig.dashboard.generate(),
-  [Role.USER]: userRouteConfig.dashboard.generate(),
+  [Role.ADMIN]: href("/admin/dashboard"),
+  [Role.USER]: href("/user/dashboard"),
   [Role.SUPER_ADMIN]: "/super-admin/dashboard",
 };
 
@@ -151,10 +146,7 @@ export async function requireUser(
     return url.pathname + url.search + url.hash;
   })(),
 ) {
-  const redirectUrl = authRouteConfig.login.generate(
-    {},
-    { redirect: redirectTo },
-  );
+  const redirectUrl = href("/auth/login") + `?redirect=${redirectTo}`;
 
   if (!(await hasSession(request))) {
     throw await redirectWithError(redirectUrl, UNAUTHORIZED_ERROR_MESSAGE);
@@ -194,10 +186,8 @@ export async function restrictTo(request: Request, ...roles: Role[]) {
   if (!role || !RoleRedirects[role]) {
     // Session has expired and wasn't caught my requireUser
     const url = new URL(request.url);
-    const redirectUrl = authRouteConfig.login.generate(
-      {},
-      { redirect: url.pathname + url.search + url.hash },
-    );
+    const redirectUrl =
+      href("/auth/login") + `?redirect=${url.pathname + url.search + url.hash}`;
     throw redirect(redirectUrl);
   }
   if (!roles.includes(role)) {
@@ -215,7 +205,7 @@ export async function restrictTo(request: Request, ...roles: Role[]) {
  */
 export async function logout(
   request: Request,
-  redirectTo = authRouteConfig.login.generate(),
+  redirectTo = href("/auth/login"),
   init?: ResponseInit,
 ) {
   const headers = new Headers(init?.headers);

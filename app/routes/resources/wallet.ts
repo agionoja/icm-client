@@ -3,7 +3,7 @@ import { fetchClient, type ResponseKey } from "~/fetch/fetch-client.server";
 import { getToken, requireUser, restrictTo } from "~/session";
 import { type IWalletTopUpTransaction, Role } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
-import { userRouteConfig } from "~/routes.config";
+import { href } from "react-router";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireUser(request);
@@ -19,13 +19,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   if (exception) {
     throw await redirectWithError(
-      userRouteConfig.fundWallet.getPath,
+      href("/user/wallet/fund-wallet"),
       exception.message,
     );
   }
 
   throw await redirectWithSuccess(
-    userRouteConfig.fundWallet.getPath,
+    href("/user/wallet/fund-wallet"),
     message || "Account funded successfully.",
   );
 }

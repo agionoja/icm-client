@@ -10,8 +10,5 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer],
     },
   },
-  ssr: {
-    external: ["class-transformer/storage"],
-  },
   plugins: [reactRouter(), tsconfigPaths()],
 });

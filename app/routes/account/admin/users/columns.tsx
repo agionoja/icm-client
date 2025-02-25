@@ -9,8 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { formatDate } from "~/utils/format-date";
-import { Form, useFetcher, useNavigate } from "react-router";
-import { adminRouteConfig, resourcesRouteConfig } from "~/routes.config";
+import { Form, href, useFetcher, useNavigate } from "react-router";
 import { HorizontalDots } from "~/components/icons";
 import { SortTable } from "~/routes/account/components/sort-table";
 
@@ -118,7 +117,7 @@ function ActionsCell<TData extends UserColumn>({ row }: { row: Row<TData> }) {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() =>
-            navigate(adminRouteConfig.user.generate({ id: original._id }))
+            navigate(href("/admin/users/:id", { id: original._id }))
           }
           className={"w-full hover:bg-sidebar-accent"}
         >
@@ -127,18 +126,13 @@ function ActionsCell<TData extends UserColumn>({ row }: { row: Row<TData> }) {
         <DropdownMenuItem className={"hover:bg-sidebar-accent"}>
           <Form
             method={"DELETE"}
-            action={resourcesRouteConfig.user.generate({ id: original._id })}
+            action={href("/resources/user/:id", { id: original._id })}
           >
             <button
               onClick={() => {
-                console.log(
-                  resourcesRouteConfig.user.generate({ id: original._id }),
-                );
                 fetcher.submit(
-                  resourcesRouteConfig.user.generate(
-                    { id: original._id },
-                    { method: "DELETE" },
-                  ),
+                  href("/resources/user/:id", { id: original._id }),
+                  { method: "DELETE" },
                 );
               }}
               type={"submit"}

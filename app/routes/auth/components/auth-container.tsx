@@ -3,9 +3,8 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react";
-import { Link, useNavigate } from "react-router";
+import { href, Link, useNavigate } from "react-router";
 import { ArrowLeft, ArrowRight } from "~/components/icons";
-import { landingRouteConfig } from "~/routes.config";
 
 type Props = {
   previous?: string;
@@ -41,9 +40,9 @@ const Footer = () => (
     <nav className="auth-container-px mx-auto">
       <ul className="flex list-inside list-disc gap-4 text-sm md:text-md">
         {[
-          { to: landingRouteConfig.home.getPath, label: "Home" },
-          { to: landingRouteConfig.services.getPath, label: "Services" },
-          { to: landingRouteConfig.contact.getPath, label: "Contact" },
+          { to: href("/"), label: "Home" },
+          { to: href("/services"), label: "Services" },
+          { to: href("/contact"), label: "Contact" },
         ].map(({ to, label }) => (
           <li key={to}>
             <Link prefetch="intent" className="font-bold" to={to}>

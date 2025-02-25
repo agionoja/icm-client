@@ -11,12 +11,7 @@ import {
 import { UserSidebar } from "~/routes/account/components/user-sidebar";
 import { AdminSidebar } from "~/routes/account/components/admin-sidebar";
 import logo from "~/assets/logos/svg/logo-mark-white.svg";
-import { Form, Link, useLocation } from "react-router";
-import {
-  authRouteConfig,
-  landingRouteConfig,
-  settingsRouteConfig,
-} from "~/routes.config";
+import { Form, href, Link, useLocation } from "react-router";
 import { LogOutIcon, SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import avatar from "~/routes/account/assets/avatar.svg";
@@ -42,7 +37,7 @@ function AppSidebarFooter({ ...navUserProps }: NavUserProps) {
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
-          <Form method="POST" action={authRouteConfig.logout.getPath}>
+          <Form method="POST" action={href("/auth/logout")}>
             <SidebarMenuButton asChild>
               <button type={"submit"} className={"w-full"}>
                 <LogOutIcon />
@@ -71,7 +66,7 @@ function AppSidebarHeader() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <Link prefetch={"intent"} to={landingRouteConfig.home.getPath}>
+            <Link prefetch={"intent"} to={"/"}>
               <img src={logo} height={30} width={20} alt="ICM Logo" />
               <span>ICM Tech.</span>
             </Link>
@@ -90,13 +85,13 @@ function NavUser({ email, firstname, lastname, photo }: NavUserProps) {
     <SidebarMenuItem>
       <SidebarMenuButton
         asChild
-        isActive={location.pathname.includes(settingsRouteConfig.route.getPath)}
+        isActive={location.pathname.includes(href("/settings"))}
         size={"lg"}
         className={
           "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         }
       >
-        <Link prefetch={"intent"} to={settingsRouteConfig.route.getPath}>
+        <Link prefetch={"intent"} to={href("/settings")}>
           <Avatar className={"h-8 w-8 rounded-lg"}>
             <AvatarImage src={photo?.url || avatar} alt={firstname} />
             <AvatarFallback className={"rounded-lg uppercase"}>

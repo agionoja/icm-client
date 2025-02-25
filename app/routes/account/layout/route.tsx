@@ -1,5 +1,12 @@
 import type { Route } from "./+types/route";
-import { Outlet, redirect, useNavigation, useSubmit } from "react-router";
+import {
+  href,
+  Outlet,
+  redirect,
+  useFetcher,
+  useNavigation,
+  useSubmit,
+} from "react-router";
 import {
   commitSession,
   getJwtMaxAgeInMs,
@@ -11,7 +18,6 @@ import {
 import { useSessionTimeout } from "~/hooks/use-session-timeout";
 import { SESSION_TIMEOUT_KEY } from "~/toast/timeout-toast";
 import { getUserDataCookie, setUserDataCookie } from "~/cookies/user-cookie";
-import { authRouteConfig, routesConfig } from "~/routes.config";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import React from "react";
 import { AppSidebar } from "~/routes/account/components/app-sidebar";
@@ -69,10 +75,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   return {
     defaultOpen: defaultOpen ?? true,
     sessionTimeout: await getJwtMaxAgeInMs(request),
-    redirectTo: authRouteConfig.login.generate(
-      {},
-      { redirect: url.pathname + url.search + url.hash },
-    ),
+    redirectTo:
+      href("/auth/login") + `?redirect=${url.pathname + url.search + url.hash}`,
     sessionTimeoutKey: SESSION_TIMEOUT_KEY,
     user: {
       firstname: user.firstname,
@@ -88,7 +92,7 @@ const mutableRevalidate: MutableRevalidate = { revalidate: false };
 export async function clientLoader(args: Route.ClientLoaderArgs) {
   return cacheClientLoader(args, {
     type: "swr",
-    key: routesConfig.account.layout.getFile,
+    key: "_accountLayout",
     revalidate: mutableRevalidate.revalidate,
   });
 }
@@ -108,7 +112,7 @@ function AccountLayoutContent({
 
     return submit(formData, {
       method: "POST",
-      action: authRouteConfig.logout.getPath,
+      action: href("/auth/logout"),
     });
   });
 
@@ -128,7 +132,7 @@ function AccountLayoutContent({
       />
 
       <Loading
-        loading={state === "loading"}
+        loading={state === "loading" || state === "submitting"}
         variant="page"
         className="fixed z-[1000]"
       />

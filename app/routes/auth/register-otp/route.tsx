@@ -6,9 +6,8 @@ import {
 } from "~/components/ui/input-otp";
 import { AuthForm } from "~/routes/auth/components/auth-form";
 import { Button } from "~/components/ui/button";
-import { useNavigation } from "react-router";
+import { href, useNavigation } from "react-router";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
-
 import type { Route } from "./+types/route";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
@@ -17,7 +16,6 @@ import {
   isFormValid,
 } from "~/cookies/registration-multi-step-form";
 import { redirectWithError } from "remix-toast";
-import { authRouteConfig } from "~/routes.config";
 
 export async function action({ request }: Route.ActionArgs) {
   await throttleNetwork(5);
@@ -30,7 +28,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (!isFormValid(formStep)) {
     throw await redirectWithError(
-      authRouteConfig.registerPassword.generate(),
+      href("/auth/register/password"),
       "Complete entering your details",
     );
   }

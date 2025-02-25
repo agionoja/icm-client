@@ -1,6 +1,5 @@
 import { ChevronDown, HomeIcon, UserIcon } from "lucide-react";
-import { userRouteConfig } from "~/routes.config";
-import { Link, NavLink, useLocation } from "react-router";
+import { href, Link, NavLink, useLocation } from "react-router";
 import {
   SidebarContent,
   SidebarGroup,
@@ -23,12 +22,12 @@ const data = [
       {
         title: "Dashboard",
         icon: HomeIcon,
-        pathname: userRouteConfig.dashboard.getPath,
+        pathname: href("/user/dashboard"),
       },
       {
         title: "Wallet",
         icon: UserIcon,
-        pathname: userRouteConfig.wallet.getPath,
+        pathname: href("/user/wallet"),
       },
     ],
   },
@@ -39,32 +38,32 @@ const data = [
       {
         title: "Airtime",
         icon: UserIcon,
-        pathname: userRouteConfig.airtime.getPath,
+        pathname: href("/user/airtime"),
       },
       {
         title: "Data",
         icon: UserIcon,
-        pathname: userRouteConfig.data.getPath,
+        pathname: href("/user/data"),
       },
       {
         title: "Crypto",
         icon: UserIcon,
-        pathname: userRouteConfig.crypto.getPath,
+        pathname: href("/user/crypto"),
       },
       {
         title: "Airline",
         icon: UserIcon,
-        pathname: userRouteConfig.airline.getPath,
+        pathname: href("/user/airline"),
       },
       {
         title: "TV",
         icon: UserIcon,
-        pathname: userRouteConfig.cable.getPath,
+        pathname: href("/user/cable"),
       },
       {
         title: "Gift Card",
         icon: UserIcon,
-        pathname: userRouteConfig.giftCard.getPath,
+        pathname: href("/user/gift-card"),
       },
     ],
   },
