@@ -1,0 +1,749 @@
+{
+  "buildManifest": {
+    "serverBundles": {
+      "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0": {
+        "id": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+        "file": "build/server/nodejs-eyJydW50aW1lIjoibm9kZWpzIn0/index.js",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    },
+    "routeIdToServerBundleId": {
+      "root": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/landing/home/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/landing/services/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/landing/contact/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/landing/about/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/logout": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/login/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/register/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/welcome/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/register-options/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/register-email/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/register-password/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/register-otp/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/forgot-password/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth/reset-password/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/settings/index/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/settings/personal-info/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/settings/configuration/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/settings/security/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/dashboard/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/airline/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/airtime/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/cable/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/crypto/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/data/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/gift-card/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/wallet/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/wallet/fund-wallet/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/user/transactions/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/dashboard/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/airline/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/airtime/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/analytics/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/cable/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/crypto/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/data/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/gift-card/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/wallets/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/wallets/add-wallet/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/services/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/tv/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/users/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/account/admin/user/route": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/resources/spin-server": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/resources/wallet": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/resources/user": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0"
+    },
+    "routes": {
+      "root": {
+        "path": "",
+        "id": "root",
+        "file": "app/root.tsx",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/landing/layout/route": {
+        "id": "routes/landing/layout/route",
+        "parentId": "root",
+        "file": "app/routes/landing/layout/route.tsx",
+        "config": {}
+      },
+      "routes/landing/home/route": {
+        "id": "routes/landing/home/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "app/routes/landing/home/route.tsx",
+        "index": true,
+        "config": {}
+      },
+      "routes/landing/services/route": {
+        "id": "routes/landing/services/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "app/routes/landing/services/route.tsx",
+        "path": "services",
+        "config": {}
+      },
+      "routes/landing/contact/route": {
+        "id": "routes/landing/contact/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "app/routes/landing/contact/route.tsx",
+        "path": "contact",
+        "config": {}
+      },
+      "routes/landing/about/route": {
+        "id": "routes/landing/about/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "app/routes/landing/about/route.tsx",
+        "path": "about",
+        "config": {}
+      },
+      "routes/auth/logout": {
+        "id": "routes/auth/logout",
+        "parentId": "root",
+        "file": "app/routes/auth/logout.ts",
+        "path": "auth/logout",
+        "config": {}
+      },
+      "routes/auth/layout/route": {
+        "id": "routes/auth/layout/route",
+        "parentId": "root",
+        "file": "app/routes/auth/layout/route.tsx",
+        "config": {}
+      },
+      "routes/auth/login/route": {
+        "id": "routes/auth/login/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/login/route.tsx",
+        "path": "auth/login",
+        "config": {}
+      },
+      "routes/auth/register/route": {
+        "id": "routes/auth/register/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/register/route.tsx",
+        "path": "auth/register",
+        "config": {}
+      },
+      "routes/auth/welcome/route": {
+        "id": "routes/auth/welcome/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/welcome/route.tsx",
+        "path": "auth/register/welcome",
+        "config": {}
+      },
+      "routes/auth/register-options/route": {
+        "id": "routes/auth/register-options/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/register-options/route.tsx",
+        "path": "auth/register/options",
+        "config": {}
+      },
+      "routes/auth/register-email/route": {
+        "id": "routes/auth/register-email/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/register-email/route.tsx",
+        "path": "auth/register/email",
+        "config": {}
+      },
+      "routes/auth/register-password/route": {
+        "id": "routes/auth/register-password/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/register-password/route.tsx",
+        "path": "auth/register/password",
+        "config": {}
+      },
+      "routes/auth/register-otp/route": {
+        "id": "routes/auth/register-otp/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/register-otp/route.tsx",
+        "path": "auth/register/otp",
+        "config": {}
+      },
+      "routes/auth/forgot-password/route": {
+        "id": "routes/auth/forgot-password/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/forgot-password/route.tsx",
+        "path": "auth/forgot-password",
+        "config": {}
+      },
+      "routes/auth/reset-password/route": {
+        "id": "routes/auth/reset-password/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "app/routes/auth/reset-password/route.tsx",
+        "path": "auth/reset-password/:token",
+        "config": {}
+      },
+      "routes/account/layout/route": {
+        "id": "routes/account/layout/route",
+        "parentId": "root",
+        "file": "app/routes/account/layout/route.tsx",
+        "config": {}
+      },
+      "routes/account/settings/route": {
+        "id": "routes/account/settings/route",
+        "parentId": "routes/account/layout/route",
+        "file": "app/routes/account/settings/route.tsx",
+        "path": "settings",
+        "config": {}
+      },
+      "routes/account/settings/index/route": {
+        "id": "routes/account/settings/index/route",
+        "parentId": "routes/account/settings/route",
+        "file": "app/routes/account/settings/index/route.ts",
+        "index": true,
+        "config": {}
+      },
+      "routes/account/settings/personal-info/route": {
+        "id": "routes/account/settings/personal-info/route",
+        "parentId": "routes/account/settings/route",
+        "file": "app/routes/account/settings/personal-info/route.tsx",
+        "path": "personal-info",
+        "config": {}
+      },
+      "routes/account/settings/configuration/route": {
+        "id": "routes/account/settings/configuration/route",
+        "parentId": "routes/account/settings/route",
+        "file": "app/routes/account/settings/configuration/route.tsx",
+        "path": "configuration",
+        "config": {}
+      },
+      "routes/account/settings/security/route": {
+        "id": "routes/account/settings/security/route",
+        "parentId": "routes/account/settings/route",
+        "file": "app/routes/account/settings/security/route.tsx",
+        "path": "security",
+        "config": {}
+      },
+      "routes/account/user/layout/route": {
+        "id": "routes/account/user/layout/route",
+        "parentId": "routes/account/layout/route",
+        "file": "app/routes/account/user/layout/route.tsx",
+        "config": {}
+      },
+      "routes/account/user/dashboard/route": {
+        "id": "routes/account/user/dashboard/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/dashboard/route.tsx",
+        "path": "user/dashboard",
+        "config": {}
+      },
+      "routes/account/user/airline/route": {
+        "id": "routes/account/user/airline/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/airline/route.tsx",
+        "path": "user/airline",
+        "config": {}
+      },
+      "routes/account/user/airtime/route": {
+        "id": "routes/account/user/airtime/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/airtime/route.tsx",
+        "path": "user/airtime",
+        "config": {}
+      },
+      "routes/account/user/cable/route": {
+        "id": "routes/account/user/cable/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/cable/route.tsx",
+        "path": "user/cable",
+        "config": {}
+      },
+      "routes/account/user/crypto/route": {
+        "id": "routes/account/user/crypto/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/crypto/route.tsx",
+        "path": "user/crypto",
+        "config": {}
+      },
+      "routes/account/user/data/route": {
+        "id": "routes/account/user/data/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/data/route.tsx",
+        "path": "user/data",
+        "config": {}
+      },
+      "routes/account/user/gift-card/route": {
+        "id": "routes/account/user/gift-card/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/gift-card/route.tsx",
+        "path": "user/gift-card",
+        "config": {}
+      },
+      "routes/account/user/wallet/route": {
+        "id": "routes/account/user/wallet/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/wallet/route.tsx",
+        "path": "user/wallet",
+        "config": {}
+      },
+      "routes/account/user/wallet/fund-wallet/route": {
+        "id": "routes/account/user/wallet/fund-wallet/route",
+        "parentId": "routes/account/user/wallet/route",
+        "file": "app/routes/account/user/wallet/fund-wallet/route.tsx",
+        "path": "fund-wallet",
+        "config": {}
+      },
+      "routes/account/user/transactions/route": {
+        "id": "routes/account/user/transactions/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "app/routes/account/user/transactions/route.tsx",
+        "path": "user/transactions/:id/wow/:token",
+        "config": {}
+      },
+      "routes/account/admin/layout/route": {
+        "id": "routes/account/admin/layout/route",
+        "parentId": "routes/account/layout/route",
+        "file": "app/routes/account/admin/layout/route.tsx",
+        "config": {}
+      },
+      "routes/account/admin/dashboard/route": {
+        "id": "routes/account/admin/dashboard/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/dashboard/route.tsx",
+        "path": "admin/dashboard",
+        "config": {}
+      },
+      "routes/account/admin/airline/route": {
+        "id": "routes/account/admin/airline/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/airline/route.tsx",
+        "path": "admin/airline",
+        "config": {}
+      },
+      "routes/account/admin/airtime/route": {
+        "id": "routes/account/admin/airtime/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/airtime/route.tsx",
+        "path": "admin/airtime",
+        "config": {}
+      },
+      "routes/account/admin/analytics/route": {
+        "id": "routes/account/admin/analytics/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/analytics/route.tsx",
+        "path": "admin/analytics",
+        "config": {}
+      },
+      "routes/account/admin/cable/route": {
+        "id": "routes/account/admin/cable/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/cable/route.tsx",
+        "path": "admin/cable",
+        "config": {}
+      },
+      "routes/account/admin/crypto/route": {
+        "id": "routes/account/admin/crypto/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/crypto/route.tsx",
+        "path": "admin/crypto",
+        "config": {}
+      },
+      "routes/account/admin/data/route": {
+        "id": "routes/account/admin/data/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/data/route.tsx",
+        "path": "admin/data",
+        "config": {}
+      },
+      "routes/account/admin/gift-card/route": {
+        "id": "routes/account/admin/gift-card/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/gift-card/route.tsx",
+        "path": "admin/gift-card",
+        "config": {}
+      },
+      "routes/account/admin/wallets/route": {
+        "id": "routes/account/admin/wallets/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/wallets/route.tsx",
+        "path": "admin/wallets",
+        "config": {}
+      },
+      "routes/account/admin/wallets/add-wallet/route": {
+        "id": "routes/account/admin/wallets/add-wallet/route",
+        "parentId": "routes/account/admin/wallets/route",
+        "file": "app/routes/account/admin/wallets/add-wallet/route.tsx",
+        "path": "add-wallet",
+        "config": {}
+      },
+      "routes/account/admin/services/route": {
+        "id": "routes/account/admin/services/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/services/route.tsx",
+        "path": "admin/services",
+        "config": {}
+      },
+      "routes/account/admin/tv/route": {
+        "id": "routes/account/admin/tv/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/tv/route.tsx",
+        "path": "admin/tv",
+        "config": {}
+      },
+      "routes/account/admin/users/route": {
+        "id": "routes/account/admin/users/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/users/route.tsx",
+        "path": "admin/users",
+        "config": {}
+      },
+      "routes/account/admin/user/route": {
+        "id": "routes/account/admin/user/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "app/routes/account/admin/user/route.tsx",
+        "path": "admin/users/:id",
+        "config": {}
+      },
+      "routes/resources/spin-server": {
+        "id": "routes/resources/spin-server",
+        "parentId": "root",
+        "file": "app/routes/resources/spin-server.ts",
+        "path": "resources/spin-server",
+        "config": {}
+      },
+      "routes/resources/wallet": {
+        "id": "routes/resources/wallet",
+        "parentId": "root",
+        "file": "app/routes/resources/wallet.ts",
+        "path": "resources/fund-wallet/:reference",
+        "config": {}
+      },
+      "routes/resources/user": {
+        "id": "routes/resources/user",
+        "parentId": "root",
+        "file": "app/routes/resources/user.ts",
+        "path": "resources/user/:id",
+        "config": {}
+      }
+    }
+  },
+  "reactRouterConfig": {
+    "appDirectory": "/home/agionoja/code/icm/icm-client/app",
+    "basename": "/",
+    "buildDirectory": "/home/agionoja/code/icm/icm-client/build",
+    "future": {
+      "unstable_optimizeDeps": false,
+      "unstable_splitRouteModules": false,
+      "unstable_viteEnvironmentApi": false
+    },
+    "routes": {
+      "root": {
+        "path": "",
+        "id": "root",
+        "file": "root.tsx"
+      },
+      "routes/landing/layout/route": {
+        "id": "routes/landing/layout/route",
+        "parentId": "root",
+        "file": "routes/landing/layout/route.tsx"
+      },
+      "routes/landing/home/route": {
+        "id": "routes/landing/home/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "routes/landing/home/route.tsx",
+        "index": true
+      },
+      "routes/landing/services/route": {
+        "id": "routes/landing/services/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "routes/landing/services/route.tsx",
+        "path": "services"
+      },
+      "routes/landing/contact/route": {
+        "id": "routes/landing/contact/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "routes/landing/contact/route.tsx",
+        "path": "contact"
+      },
+      "routes/landing/about/route": {
+        "id": "routes/landing/about/route",
+        "parentId": "routes/landing/layout/route",
+        "file": "routes/landing/about/route.tsx",
+        "path": "about"
+      },
+      "routes/auth/logout": {
+        "id": "routes/auth/logout",
+        "parentId": "root",
+        "file": "routes/auth/logout.ts",
+        "path": "auth/logout"
+      },
+      "routes/auth/layout/route": {
+        "id": "routes/auth/layout/route",
+        "parentId": "root",
+        "file": "routes/auth/layout/route.tsx"
+      },
+      "routes/auth/login/route": {
+        "id": "routes/auth/login/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/login/route.tsx",
+        "path": "auth/login"
+      },
+      "routes/auth/register/route": {
+        "id": "routes/auth/register/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/register/route.tsx",
+        "path": "auth/register"
+      },
+      "routes/auth/welcome/route": {
+        "id": "routes/auth/welcome/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/welcome/route.tsx",
+        "path": "auth/register/welcome"
+      },
+      "routes/auth/register-options/route": {
+        "id": "routes/auth/register-options/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/register-options/route.tsx",
+        "path": "auth/register/options"
+      },
+      "routes/auth/register-email/route": {
+        "id": "routes/auth/register-email/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/register-email/route.tsx",
+        "path": "auth/register/email"
+      },
+      "routes/auth/register-password/route": {
+        "id": "routes/auth/register-password/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/register-password/route.tsx",
+        "path": "auth/register/password"
+      },
+      "routes/auth/register-otp/route": {
+        "id": "routes/auth/register-otp/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/register-otp/route.tsx",
+        "path": "auth/register/otp"
+      },
+      "routes/auth/forgot-password/route": {
+        "id": "routes/auth/forgot-password/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/forgot-password/route.tsx",
+        "path": "auth/forgot-password"
+      },
+      "routes/auth/reset-password/route": {
+        "id": "routes/auth/reset-password/route",
+        "parentId": "routes/auth/layout/route",
+        "file": "routes/auth/reset-password/route.tsx",
+        "path": "auth/reset-password/:token"
+      },
+      "routes/account/layout/route": {
+        "id": "routes/account/layout/route",
+        "parentId": "root",
+        "file": "routes/account/layout/route.tsx"
+      },
+      "routes/account/settings/route": {
+        "id": "routes/account/settings/route",
+        "parentId": "routes/account/layout/route",
+        "file": "routes/account/settings/route.tsx",
+        "path": "settings"
+      },
+      "routes/account/settings/index/route": {
+        "id": "routes/account/settings/index/route",
+        "parentId": "routes/account/settings/route",
+        "file": "routes/account/settings/index/route.ts",
+        "index": true
+      },
+      "routes/account/settings/personal-info/route": {
+        "id": "routes/account/settings/personal-info/route",
+        "parentId": "routes/account/settings/route",
+        "file": "routes/account/settings/personal-info/route.tsx",
+        "path": "personal-info"
+      },
+      "routes/account/settings/configuration/route": {
+        "id": "routes/account/settings/configuration/route",
+        "parentId": "routes/account/settings/route",
+        "file": "routes/account/settings/configuration/route.tsx",
+        "path": "configuration"
+      },
+      "routes/account/settings/security/route": {
+        "id": "routes/account/settings/security/route",
+        "parentId": "routes/account/settings/route",
+        "file": "routes/account/settings/security/route.tsx",
+        "path": "security"
+      },
+      "routes/account/user/layout/route": {
+        "id": "routes/account/user/layout/route",
+        "parentId": "routes/account/layout/route",
+        "file": "routes/account/user/layout/route.tsx"
+      },
+      "routes/account/user/dashboard/route": {
+        "id": "routes/account/user/dashboard/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/dashboard/route.tsx",
+        "path": "user/dashboard"
+      },
+      "routes/account/user/airline/route": {
+        "id": "routes/account/user/airline/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/airline/route.tsx",
+        "path": "user/airline"
+      },
+      "routes/account/user/airtime/route": {
+        "id": "routes/account/user/airtime/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/airtime/route.tsx",
+        "path": "user/airtime"
+      },
+      "routes/account/user/cable/route": {
+        "id": "routes/account/user/cable/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/cable/route.tsx",
+        "path": "user/cable"
+      },
+      "routes/account/user/crypto/route": {
+        "id": "routes/account/user/crypto/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/crypto/route.tsx",
+        "path": "user/crypto"
+      },
+      "routes/account/user/data/route": {
+        "id": "routes/account/user/data/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/data/route.tsx",
+        "path": "user/data"
+      },
+      "routes/account/user/gift-card/route": {
+        "id": "routes/account/user/gift-card/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/gift-card/route.tsx",
+        "path": "user/gift-card"
+      },
+      "routes/account/user/wallet/route": {
+        "id": "routes/account/user/wallet/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/wallet/route.tsx",
+        "path": "user/wallet"
+      },
+      "routes/account/user/wallet/fund-wallet/route": {
+        "id": "routes/account/user/wallet/fund-wallet/route",
+        "parentId": "routes/account/user/wallet/route",
+        "file": "routes/account/user/wallet/fund-wallet/route.tsx",
+        "path": "fund-wallet"
+      },
+      "routes/account/user/transactions/route": {
+        "id": "routes/account/user/transactions/route",
+        "parentId": "routes/account/user/layout/route",
+        "file": "routes/account/user/transactions/route.tsx",
+        "path": "user/transactions/:id/wow/:token"
+      },
+      "routes/account/admin/layout/route": {
+        "id": "routes/account/admin/layout/route",
+        "parentId": "routes/account/layout/route",
+        "file": "routes/account/admin/layout/route.tsx"
+      },
+      "routes/account/admin/dashboard/route": {
+        "id": "routes/account/admin/dashboard/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/dashboard/route.tsx",
+        "path": "admin/dashboard"
+      },
+      "routes/account/admin/airline/route": {
+        "id": "routes/account/admin/airline/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/airline/route.tsx",
+        "path": "admin/airline"
+      },
+      "routes/account/admin/airtime/route": {
+        "id": "routes/account/admin/airtime/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/airtime/route.tsx",
+        "path": "admin/airtime"
+      },
+      "routes/account/admin/analytics/route": {
+        "id": "routes/account/admin/analytics/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/analytics/route.tsx",
+        "path": "admin/analytics"
+      },
+      "routes/account/admin/cable/route": {
+        "id": "routes/account/admin/cable/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/cable/route.tsx",
+        "path": "admin/cable"
+      },
+      "routes/account/admin/crypto/route": {
+        "id": "routes/account/admin/crypto/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/crypto/route.tsx",
+        "path": "admin/crypto"
+      },
+      "routes/account/admin/data/route": {
+        "id": "routes/account/admin/data/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/data/route.tsx",
+        "path": "admin/data"
+      },
+      "routes/account/admin/gift-card/route": {
+        "id": "routes/account/admin/gift-card/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/gift-card/route.tsx",
+        "path": "admin/gift-card"
+      },
+      "routes/account/admin/wallets/route": {
+        "id": "routes/account/admin/wallets/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/wallets/route.tsx",
+        "path": "admin/wallets"
+      },
+      "routes/account/admin/wallets/add-wallet/route": {
+        "id": "routes/account/admin/wallets/add-wallet/route",
+        "parentId": "routes/account/admin/wallets/route",
+        "file": "routes/account/admin/wallets/add-wallet/route.tsx",
+        "path": "add-wallet"
+      },
+      "routes/account/admin/services/route": {
+        "id": "routes/account/admin/services/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/services/route.tsx",
+        "path": "admin/services"
+      },
+      "routes/account/admin/tv/route": {
+        "id": "routes/account/admin/tv/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/tv/route.tsx",
+        "path": "admin/tv"
+      },
+      "routes/account/admin/users/route": {
+        "id": "routes/account/admin/users/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/users/route.tsx",
+        "path": "admin/users"
+      },
+      "routes/account/admin/user/route": {
+        "id": "routes/account/admin/user/route",
+        "parentId": "routes/account/admin/layout/route",
+        "file": "routes/account/admin/user/route.tsx",
+        "path": "admin/users/:id"
+      },
+      "routes/resources/spin-server": {
+        "id": "routes/resources/spin-server",
+        "parentId": "root",
+        "file": "routes/resources/spin-server.ts",
+        "path": "resources/spin-server"
+      },
+      "routes/resources/wallet": {
+        "id": "routes/resources/wallet",
+        "parentId": "root",
+        "file": "routes/resources/wallet.ts",
+        "path": "resources/fund-wallet/:reference"
+      },
+      "routes/resources/user": {
+        "id": "routes/resources/user",
+        "parentId": "root",
+        "file": "routes/resources/user.ts",
+        "path": "resources/user/:id"
+      }
+    },
+    "serverBuildFile": "index.js",
+    "serverModuleFormat": "esm",
+    "ssr": true
+  },
+  "viteConfig": {
+    "build": {
+      "assetsDir": "assets"
+    }
+  }
+}

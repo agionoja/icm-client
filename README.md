@@ -2,6 +2,8 @@
 
 A modern, production-ready template for building full-stack React applications using React Router.
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+
 ## Features
 
 - 🚀 Server-side rendering
@@ -54,16 +56,16 @@ To build and run using Docker:
 
 ```bash
 # For npm
-sudo docker build -t icm-client .
+docker build -t my-app .
 
-## For pnpm
-#sudo docker build -f Dockerfile.pnpm -t my-app .
-#
-## For bun
-#sudo docker build -f Dockerfile.bun -t my-app .
+# For pnpm
+docker build -f Dockerfile.pnpm -t my-app .
+
+# For bun
+docker build -f Dockerfile.bun -t my-app .
 
 # Run the container
-sudo docker run -p 3030:3030 my-app
+docker run -p 3000:3000 my-app
 ```
 
 The containerized application can be deployed to any platform that supports Docker, including:

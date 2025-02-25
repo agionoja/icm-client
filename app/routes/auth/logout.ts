@@ -21,7 +21,6 @@ export async function action({ request }: Route.ActionArgs) {
           });
         }
         default: {
-          console.log("Default logout");
           return logout(request);
         }
       }

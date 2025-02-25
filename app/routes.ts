@@ -1,83 +1,101 @@
-import { routesConfig as Routes } from "./routes.config";
 import {
+  type RouteConfig,
   index,
   layout,
   route,
-  type RouteConfig,
+  prefix,
 } from "@react-router/dev/routes";
-
-const { account, landing, auth, resources } = Routes;
-const { settings, user, admin } = account;
 
 export default [
   // Landing Routes
-  layout(landing.layout.getFile, [
-    index(landing.home.getFile),
-    route(landing.services.getPath, landing.services.getFile),
-    route(landing.contact.getPath, landing.contact.getFile),
-    route(landing.about.getPath, landing.about.getFile),
+  layout("routes/landing/layout/route.tsx", [
+    index("routes/landing/home/route.tsx"),
+    route("services", "routes/landing/services/route.tsx"),
+    route("contact", "routes/landing/contact/route.tsx"),
+    route("about", "routes/landing/about/route.tsx"),
   ]),
 
   // Authentication Routes
-  route(auth.logout.getPath, auth.logout.getFile),
-  layout(auth.layout.getFile, [
-    route(auth.login.getPath, auth.login.getFile),
-    route(auth.register.getPath, auth.register.getFile),
-    route(auth.registerWelcome.getPath, auth.registerWelcome.getFile),
-    route(auth.registerOptions.getPath, auth.registerOptions.getFile),
-    route(auth.registerEmail.getPath, auth.registerEmail.getFile),
-    route(auth.registerPassword.getPath, auth.registerPassword.getFile),
-    route(auth.registerOtp.getPath, auth.registerOtp.getFile),
-    route(auth.forgotPassword.getPath, auth.forgotPassword.getFile),
-    route(auth.resetPassword.getPath, auth.resetPassword.getFile),
-  ]),
+  route("auth/logout", "routes/auth/logout.ts"),
+  layout(
+    "routes/auth/layout/route.tsx",
+    prefix("auth", [
+      route("login", "routes/auth/login/route.tsx"),
+      route("register", "routes/auth/register/route.tsx"),
+      route("register/welcome", "routes/auth/welcome/route.tsx"),
+      route("register/options", "routes/auth/register-options/route.tsx"),
+      route("register/email", "routes/auth/register-email/route.tsx"),
+      route("register/password", "routes/auth/register-password/route.tsx"),
+      route("register/otp", "routes/auth/register-otp/route.tsx"),
+      route("forgot-password", "routes/auth/forgot-password/route.tsx"),
+      route("reset-password/:token", "routes/auth/reset-password/route.tsx"),
+    ]),
+  ),
 
-  // Account Routes - Settings, User, Admin
-  layout(account.layout.getFile, [
+  // Account Routes
+  layout("routes/account/layout/route.tsx", [
     // Settings Routes
-    route(settings.route.getPath, settings.route.getFile, [
-      index(settings.index.getFile),
-      route(settings.personalInfo.getPath, settings.personalInfo.getFile),
-      route(settings.configuration.getPath, settings.configuration.getFile),
-      route(settings.security.getPath, settings.security.getFile),
+    route("settings", "routes/account/settings/route.tsx", [
+      index("routes/account/settings/index/route.ts"),
+      route("personal-info", "routes/account/settings/personal-info/route.tsx"),
+      route("configuration", "routes/account/settings/configuration/route.tsx"),
+      route("security", "routes/account/settings/security/route.tsx"),
     ]),
 
     // User Routes
-    layout(user.layout.getFile, [
-      route(user.airline.getPath, user.airline.getFile),
-      route(user.airtime.getPath, user.airtime.getFile),
-      route(user.cable.getPath, user.cable.getFile),
-      route(user.crypto.getPath, user.crypto.getFile),
-      route(user.dashboard.getPath, user.dashboard.getFile),
-      route(user.data.getPath, user.data.getFile),
-      route(user.giftCard.getPath, user.giftCard.getFile),
-      route(user.wallet.getPath, user.wallet.getFile, [
-        route(user.fundWallet.getPath, user.fundWallet.getFile),
+    layout(
+      "routes/account/user/layout/route.tsx",
+      prefix("user", [
+        route("dashboard", "routes/account/user/dashboard/route.tsx"),
+        route("airline", "routes/account/user/airline/route.tsx"),
+        route("airtime", "routes/account/user/airtime/route.tsx"),
+        route("cable", "routes/account/user/cable/route.tsx"),
+        route("crypto", "routes/account/user/crypto/route.tsx"),
+        route("data", "routes/account/user/data/route.tsx"),
+        route("gift-card", "routes/account/user/gift-card/route.tsx"),
+        route("wallet", "routes/account/user/wallet/route.tsx", [
+          route(
+            "fund-wallet",
+            "routes/account/user/wallet/fund-wallet/route.tsx",
+          ),
+        ]),
+        route(
+          "transactions/:id/wow/:token",
+          "routes/account/user/transactions/route.tsx",
+        ),
       ]),
-      route(user.transactions.getPath, user.transactions.getFile),
-    ]),
+    ),
 
     // Admin Routes
-    layout(admin.layout.getFile, [
-      route(admin.airline.getPath, admin.airline.getFile),
-      route(admin.airtime.getPath, admin.airtime.getFile),
-      route(admin.analytics.getPath, admin.analytics.getFile),
-      route(admin.cable.getPath, admin.cable.getFile),
-      route(admin.crypto.getPath, admin.crypto.getFile),
-      route(admin.dashboard.getPath, admin.dashboard.getFile),
-      route(admin.data.getPath, admin.data.getFile),
-      route(admin.giftCard.getPath, admin.giftCard.getFile),
-      route(admin.wallet.getPath, admin.wallet.getFile, [
-        route(admin.addWallet.getPath, admin.addWallet.getFile),
+    layout(
+      "routes/account/admin/layout/route.tsx",
+      prefix("admin", [
+        route("dashboard", "routes/account/admin/dashboard/route.tsx"),
+        route("airline", "routes/account/admin/airline/route.tsx"),
+        route("airtime", "routes/account/admin/airtime/route.tsx"),
+        route("analytics", "routes/account/admin/analytics/route.tsx"),
+        route("cable", "routes/account/admin/cable/route.tsx"),
+        route("crypto", "routes/account/admin/crypto/route.tsx"),
+        route("data", "routes/account/admin/data/route.tsx"),
+        route("gift-card", "routes/account/admin/gift-card/route.tsx"),
+        route("wallets", "routes/account/admin/wallets/route.tsx", [
+          route(
+            "add-wallet",
+            "routes/account/admin/wallets/add-wallet/route.tsx",
+          ),
+        ]),
+        route("services", "routes/account/admin/services/route.tsx"),
+        route("tv", "routes/account/admin/tv/route.tsx"),
+        route("users", "routes/account/admin/users/route.tsx"),
+        route("users/:id", "routes/account/admin/user/route.tsx"),
       ]),
-      route(admin.services.getPath, admin.services.getFile),
-      route(admin.tv.getPath, admin.tv.getFile),
-      route(admin.users.getPath, admin.users.getFile),
-      route(admin.user.getPath, admin.user.getFile),
-    ]),
+    ),
   ]),
 
   // Resources Routes
-  route(resources.spinServer.getPath, resources.spinServer.getFile),
-  route(resources.wallet.getPath, resources.wallet.getFile),
+  ...prefix("resources", [
+    route("spin-server", "routes/resources/spin-server.ts"),
+    route("fund-wallet/:reference", "routes/resources/wallet.ts"),
+    route("user/:id", "routes/resources/user.ts"),
+  ]),
 ] satisfies RouteConfig;

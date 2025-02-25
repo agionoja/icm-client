@@ -9,8 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { formatDate } from "~/utils/format-date";
-import { Form, useNavigate } from "react-router";
-import { adminRouteConfig } from "~/routes.config";
+import { Form, href, useFetcher, useNavigate } from "react-router";
 import { HorizontalDots } from "~/components/icons";
 import { SortTable } from "~/routes/account/components/sort-table";
 
@@ -98,6 +97,7 @@ export const columns: ColumnDef<UserColumn>[] = [
 function ActionsCell<TData extends UserColumn>({ row }: { row: Row<TData> }) {
   const navigate = useNavigate();
   const original = row.original;
+  const fetcher = useFetcher();
 
   return (
     <DropdownMenu>
@@ -115,18 +115,30 @@ function ActionsCell<TData extends UserColumn>({ row }: { row: Row<TData> }) {
         >
           Copy user ID
         </DropdownMenuItem>
-        <DropdownMenuItem className={"hover:bg-sidebar-accent"}>
-          <button
-            onClick={() =>
-              navigate(adminRouteConfig.user.generate({ id: original._id }))
-            }
-          >
-            View User
-          </button>
+        <DropdownMenuItem
+          onClick={() =>
+            navigate(href("/admin/users/:id", { id: original._id }))
+          }
+          className={"w-full hover:bg-sidebar-accent"}
+        >
+          View User
         </DropdownMenuItem>
         <DropdownMenuItem className={"hover:bg-sidebar-accent"}>
-          <Form method={"DELETE"} action={"/resources/users"}>
-            <button type={"submit"} name={"_action"} value={"deactivate"}>
+          <Form
+            method={"DELETE"}
+            action={href("/resources/user/:id", { id: original._id })}
+          >
+            <button
+              onClick={() => {
+                fetcher.submit(
+                  href("/resources/user/:id", { id: original._id }),
+                  { method: "DELETE" },
+                );
+              }}
+              type={"submit"}
+              name={"_action"}
+              value={"deactivate"}
+            >
               Deactivate user
             </button>
           </Form>

@@ -1,9 +1,8 @@
 import logo from "~/assets/logos/svg/primary-logo-full-color.svg";
-import { Link, NavLink } from "react-router";
+import { href, Link, NavLink } from "react-router";
 import { useState } from "react";
 import { Close, Hamburger } from "~/components/icons";
 import { buttonVariants } from "~/components/ui/button";
-import { authRouteConfig } from "~/routes.config";
 import { cn } from "~/lib/utils";
 
 type Props = {
@@ -16,7 +15,7 @@ export function Header({ isLoggedIn, roleRedirectUrl }: Props) {
     <>
       <header
         className={
-          "flex px-5 md:px-28 w-full items-start justify-between py-6 md:items-center"
+          "flex w-full items-start justify-between px-5 py-6 md:items-center md:px-28"
         }
       >
         <img width={146} height={40} src={logo} alt="ICM Teach logo" />
@@ -28,7 +27,7 @@ export function Header({ isLoggedIn, roleRedirectUrl }: Props) {
         ) : (
           <Link
             className={cn(buttonVariants({ variant: "default" }))}
-            to={authRouteConfig.registerWelcome.getPath}
+            to={href("/auth/register/welcome")}
           >
             Get Started
           </Link>

@@ -1,6 +1,6 @@
 import type { Route } from "./+types/route";
 import { AuthContainer } from "~/routes/auth/components/auth-container";
-import { data, redirect, useFetcher, useNavigation } from "react-router";
+import { data, href, redirect, useFetcher, useNavigation } from "react-router";
 import { useEffect, useReducer, useRef } from "react";
 import {
   getRegistrationProgressFromCookie,
@@ -14,7 +14,6 @@ import { parsePhoneNumberWithError } from "libphonenumber-js";
 import { throttleNetwork } from "~/utils/throttle-network";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { authRouteConfig } from "~/routes.config";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
 
 export async function action({ request }: Route.ActionArgs) {
@@ -33,7 +32,7 @@ export async function action({ request }: Route.ActionArgs) {
       return data({ error }, { headers, status: error?.statusCode });
     }
 
-    return redirect(authRouteConfig.registerPassword.getPath, { headers });
+    return redirect(href("/auth/register/password"), { headers });
   }
 
   return data({ error: null }, { headers });
@@ -79,7 +78,7 @@ export default function EmailRegister({
 
       submit(formData, {
         method: "POST",
-        action: authRouteConfig.registerEmail.getPath,
+        action: href("/auth/register/email"),
       });
     }
   }, [state, submit]); // Trigger submission whenever the form state changes

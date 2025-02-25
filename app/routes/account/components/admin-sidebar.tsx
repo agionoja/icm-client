@@ -1,4 +1,3 @@
-import { adminRouteConfig } from "~/routes.config";
 import { ChevronDown, HomeIcon, UserIcon } from "lucide-react";
 import {
   SidebarContent,
@@ -9,7 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
-import { Link, NavLink, useLocation } from "react-router";
+import { href, Link, NavLink, useLocation } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -23,27 +22,27 @@ const data = [
       {
         title: "Dashboard",
         icon: HomeIcon,
-        pathname: adminRouteConfig.dashboard.getPath,
+        pathname: href("/admin/dashboard"),
       },
       {
         title: "Users",
         icon: UserIcon,
-        pathname: adminRouteConfig.users.getPath,
+        pathname: href("/admin/users"),
       },
       {
         title: "Services",
         icon: UserIcon,
-        pathname: adminRouteConfig.services.getPath,
+        pathname: href("/admin/services"),
       },
       {
         title: "Analytics",
         icon: UserIcon,
-        pathname: adminRouteConfig.analytics.getPath,
+        pathname: href("/admin/analytics"),
       },
       {
         title: "Wallets",
         icon: UserIcon,
-        pathname: adminRouteConfig.wallet.getPath,
+        pathname: href("/admin/wallets"),
       },
     ],
   },
@@ -54,32 +53,32 @@ const data = [
       {
         title: "Airtime",
         icon: UserIcon,
-        pathname: adminRouteConfig.airtime.getPath,
+        pathname: href("/admin/airtime"),
       },
       {
         title: "Data",
         icon: UserIcon,
-        pathname: adminRouteConfig.data.getPath,
+        pathname: href("/admin/airline"),
       },
       {
         title: "Crypto",
         icon: UserIcon,
-        pathname: adminRouteConfig.crypto.getPath,
+        pathname: href("/admin/crypto"),
       },
       {
         title: "Airline",
         icon: UserIcon,
-        pathname: adminRouteConfig.airline.getPath,
+        pathname: href("/admin/airline"),
       },
       {
         title: "TV",
         icon: UserIcon,
-        pathname: adminRouteConfig.tv.getPath,
+        pathname: href("/admin/tv"),
       },
       {
         title: "Gift Card",
         icon: UserIcon,
-        pathname: adminRouteConfig.giftCard.getPath,
+        pathname: href("/admin/gift-card"),
       },
     ],
   },

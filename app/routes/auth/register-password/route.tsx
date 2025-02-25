@@ -4,7 +4,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { AuthForm } from "~/routes/auth/components/auth-form";
 import type { Route } from "./+types/route";
-import { data, redirect, useNavigation, useSubmit } from "react-router";
+import { data, href, redirect, useNavigation, useSubmit } from "react-router";
 import {
   getRegistrationProgressFromCookie,
   isFormValid,
@@ -13,7 +13,6 @@ import {
 } from "~/cookies/registration-multi-step-form";
 import { register } from "~/routes/auth/register-password/queries";
 import { parsePhoneNumberWithError } from "libphonenumber-js";
-import { authRouteConfig } from "~/routes.config";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { useEffect, useReducer, useRef } from "react";
 import { toast } from "react-toastify";
@@ -23,7 +22,7 @@ export async function action({ request }: Route.LoaderArgs) {
   const setFormCookie = await setRegistrationProgressCookie(values, request);
   switch (_action) {
     case "register": {
-      const registerEmailUrl = authRouteConfig.registerEmail.getPath;
+      const registerEmailUrl = href("/auth/register/email");
       try {
         const formStep = await getRegistrationProgressFromCookie(request);
         if (!isFormValid(formStep)) {
@@ -49,7 +48,7 @@ export async function action({ request }: Route.LoaderArgs) {
         }
 
         return await redirectWithSuccess(
-          authRouteConfig.registerOtp.getPath,
+          href("/auth/register/otp"),
           message || "Account created successfully.",
         );
       } catch (e) {
@@ -72,7 +71,7 @@ export async function action({ request }: Route.LoaderArgs) {
 export async function loader({ request }: Route.LoaderArgs) {
   const formStep = await getRegistrationProgressFromCookie(request);
   if (!isFormValid(formStep)) {
-    throw redirect(authRouteConfig.registerEmail.generate());
+    throw redirect(href("/auth/register/email"));
   }
 
   return { formStep };

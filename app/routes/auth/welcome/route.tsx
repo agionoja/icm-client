@@ -1,7 +1,6 @@
 import { AuthContainer } from "../components/auth-container";
-import { Link } from "react-router";
+import { href, Link } from "react-router";
 import { AuthHeading } from "~/routes/auth/components/auth-heading";
-import { authRouteConfig } from "~/routes.config";
 import { cn } from "~/lib/utils";
 import { buttonVariants } from "~/components/ui/button";
 
@@ -36,7 +35,7 @@ function Main() {
 export default function Welcome() {
   return (
     <>
-      <AuthContainer next={authRouteConfig.registerWelcome.getPath}>
+      <AuthContainer next={href("/auth/register/welcome")}>
         <div className="flex h-full w-full flex-col items-center gap-4 md:gap-8">
           <AuthHeading
             heading={"Welcome to ICM Tech"}
