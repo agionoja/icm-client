@@ -6,7 +6,7 @@ import type {
   IQueryBuilder,
 } from "icm-shared";
 import qs from "qs";
-import { envConfig } from "~/env-config.server";
+import { env } from "~/env-config.server";
 import { dateReviver } from "~/utils/date-reviver";
 import { createProgressStream, type ProgressInfo } from "~/fetch/progess"; // FP-style progress function
 import { logger } from "~/fetch/logger"; // FP-style logger
@@ -69,7 +69,7 @@ function buildApiUrl(
   method: Method,
   queryString: string,
 ): string {
-  const baseUrl = envConfig(process.env).API_URI;
+  const baseUrl = env.API_URI;
   const url = `${baseUrl}${endpoint}`;
   return method === "GET" && queryString ? `${url}?${queryString}` : url;
 }

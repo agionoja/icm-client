@@ -10,7 +10,7 @@ import { Button } from "~/components/ui/button";
 import { GloIcon, MTNIcon } from "~/components/icons";
 import EtisalatIcon from "~/assets/icons/9mobile-logo.png";
 import AirtelIcon from "~/assets/icons/airtel-logo-white-text-vertical.jpg";
-import { useFetcher } from "react-router";
+import { Form, useFetcher } from "react-router";
 import { Label } from "~/components/ui/label";
 import { Loading } from "~/components/loading";
 
@@ -83,13 +83,13 @@ function Type() {
   );
 }
 export function DataAirtimeForm() {
-  const { Form, state } = useFetcher();
+  // const { Form, state } = useFetcher();
   return (
     <Form
       method={"POST"}
       className="max-w-lg 2xl::max-w-xl flex flex-col gap-3 2xl:gap-4 mx-auto p-6 bg-white rounded-lg shadow-md"
     >
-      <Loading variant={"page"} loading={state === "submitting"} />
+      {/*<Loading variant={"page"} loading={state === "submitting"} />*/}
       {/* Network Select */}
       <Network />
       {/* Type Select */}

@@ -5,8 +5,6 @@ import validator from "validator";
 import { z } from "zod";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
-import { Loading } from "~/components/loading";
-import { useFetcher } from "react-router";
 
 export async function action({ request }: Route.LoaderArgs) {
   await throttleNetwork(Math.random() * (4 - 3) + 3);
@@ -27,6 +25,7 @@ export async function action({ request }: Route.LoaderArgs) {
 
 export default function RouteComponent({ actionData }: Route.ComponentProps) {
   useEffect(() => {
+    console.log(actionData);
     if (actionData) {
       toast(actionData.message, {
         type: actionData.error ? "success" : "error",
