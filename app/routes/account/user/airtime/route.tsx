@@ -14,7 +14,6 @@ export async function action({ request }: Route.LoaderArgs) {
 
   const isValid = validator.isMobilePhone(`${formData.phoneNumber}`, "en-NG");
 
-  console.log(formData);
   return {
     message: isValid
       ? "Airtime purchase was successful!"
@@ -25,7 +24,6 @@ export async function action({ request }: Route.LoaderArgs) {
 
 export default function RouteComponent({ actionData }: Route.ComponentProps) {
   useEffect(() => {
-    console.log(actionData);
     if (actionData) {
       toast(actionData.message, {
         type: actionData.error ? "success" : "error",
