@@ -9,7 +9,7 @@ export const meta: Route.MetaFunction = () => {
   return [
     { title: "User - User Management" },
     {
-      name: "description",
+      alt: "description",
       content:
         "View and manage user accounts, including updates, role assignments, and account statuses.",
     },

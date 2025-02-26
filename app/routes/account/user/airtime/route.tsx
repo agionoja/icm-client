@@ -5,15 +5,18 @@ import validator from "validator";
 import { z } from "zod";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
+import { AccountPadding } from "~/components/account-padding";
 
 export async function action({ request }: Route.LoaderArgs) {
-  await throttleNetwork(Math.random() * (4 - 3) + 3);
+  // await throttleNetwork(Math.random() * (4 - 3) + 3);
+  await throttleNetwork(0);
   const formData = z
     .object({ phoneNumber: z.string() })
     .parse(Object.fromEntries(await request.formData()));
 
   const isValid = validator.isMobilePhone(`${formData.phoneNumber}`, "en-NG");
 
+  console.log(!isValid);
   return {
     message: isValid
       ? "Airtime purchase was successful!"
@@ -33,8 +36,30 @@ export default function RouteComponent({ actionData }: Route.ComponentProps) {
   }, [actionData]);
 
   return (
-    <>
-      <DataAirtimeForm />
-    </>
+    <AccountPadding>
+      <DataAirtimeForm
+        inputs={[
+          {
+            label: "Phone Number",
+            inputProps: {
+              placeholder: "Enter amount",
+              name: "phoneNumber",
+              type: "tel",
+            },
+          },
+          {
+            label: "Amount to pay",
+            inputProps: {
+              placeholder: "Enter amount",
+              name: "amount",
+              type: "number",
+              min: 100,
+              max: 100_000,
+              step: 100,
+            },
+          },
+        ]}
+      />
+    </AccountPadding>
   );
 }

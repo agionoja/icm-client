@@ -13,7 +13,7 @@ export const meta: Route.MetaFunction = () => {
   return [
     { title: "Admin - User Details" },
     {
-      name: "description",
+      alt: "description",
       content:
         "View detailed information about a specific user, including profile details, assigned roles, and account status.",
     },

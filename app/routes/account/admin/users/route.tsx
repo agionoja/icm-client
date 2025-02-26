@@ -18,7 +18,7 @@ export const meta: Route.MetaFunction = () => {
   return [
     { title: "Admin - User Management" },
     {
-      name: "description",
+      alt: "description",
       content:
         "Browse, search, and manage user accounts. Update user details, assign roles, and manage account statuses efficiently.",
     },

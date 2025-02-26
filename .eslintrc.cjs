@@ -49,8 +49,8 @@ module.exports = {
         },
         formComponents: ["Form"],
         linkComponents: [
-          { name: "Link", linkAttribute: "to" },
-          { name: "NavLink", linkAttribute: "to" },
+          { alt: "Link", linkAttribute: "to" },
+          { alt: "NavLink", linkAttribute: "to" },
         ],
         "import/resolver": {
           typescript: {},
