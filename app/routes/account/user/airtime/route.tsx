@@ -18,15 +18,16 @@ export async function action({ request }: Route.LoaderArgs) {
     message: isValid
       ? "Airtime purchase was successful!"
       : "Invalid phone number",
-    error: isValid,
+    error: !isValid,
   };
 }
 
 export default function RouteComponent({ actionData }: Route.ComponentProps) {
   useEffect(() => {
+    console.log(actionData);
     if (actionData) {
       toast(actionData.message, {
-        type: actionData.error ? "success" : "error",
+        type: actionData.error ? "error" : "success",
       });
     }
   }, [actionData]);
