@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_ENV=production react-router build",
-    "build:local": "cross-env NODE_ENV=development react-router build",
-    "dev": "react-router dev",
+    "build": "cross-env react-router build",
+    "build:vercel": "cross-env DEPLOYMENT=vercel react-router build",
+    "dev": "cross-env ENVIRONMENT=development react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },

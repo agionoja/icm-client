@@ -1,9 +1,9 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { promisify } from "node:util";
-import { envConfig } from "~/env-config.server";
+import { env } from "~/env-config.server";
 
 const ENCRYPTION_ALGORITHM = "aes-256-cbc";
-const SECRET_KEY = envConfig(process.env).SESSION_SECRET;
+const SECRET_KEY = env.SESSION_SECRET;
 const IV_LENGTH = 16;
 
 function getKey() {
