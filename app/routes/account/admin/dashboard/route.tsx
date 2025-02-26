@@ -15,7 +15,7 @@ export const meta: Route.MetaFunction = () => {
   return [
     { title: "Admin - Dashboard" },
     {
-      name: "description",
+      alt: "description",
       content:
         "Admin Dashboard: Get an overview of key metrics, recent transactions, and user activity to manage and monitor system performance effectively.",
     },
@@ -60,6 +60,7 @@ export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
       {() => {
         return (
           <>
+            <h1>{loaderData.user?.firstname}</h1>
             <Outlet />
           </>
         );

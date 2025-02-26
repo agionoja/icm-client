@@ -39,7 +39,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 pt-12 overflow-auto">
       <Table className="relative w-full caption-top border-collapse">
         {caption && <caption className="sr-only">{caption}</caption>}
 

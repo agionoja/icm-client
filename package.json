@@ -7,6 +7,7 @@
     "build:vercel": "cross-env DEPLOYMENT=vercel react-router build",
     "dev": "cross-env ENVIRONMENT=development react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "start:local": "cross-env NODE_ENV=development react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {

@@ -6,7 +6,7 @@ export const meta: Route.MetaFunction = () => {
   return [
     { title: "User - Settings" },
     {
-      name: "description",
+      alt: "description",
       content:
         "Admin Dashboard: Get an overview of key metrics, recent transactions, and user activity to manage and monitor system performance effectively.",
     },
