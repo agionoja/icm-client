@@ -1,22 +1,26 @@
 import type { Route } from "./+types/route";
-import { DataAirtimeForm } from "~/routes/account/user/components/data-airtime-form";
-import { throttleNetwork } from "~/utils/throttle-network";
+import { AirtimePurchaseForm } from "~/routes/account/user/components/data-airtime-form";
 import validator from "validator";
 import { z } from "zod";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { AccountPadding } from "~/components/account-padding";
+import { href, useFetcher } from "react-router";
+import { throttleNetwork } from "~/utils/throttle-network";
 
 export async function action({ request }: Route.LoaderArgs) {
-  // await throttleNetwork(Math.random() * (4 - 3) + 3);
-  await throttleNetwork(0);
-  const formData = z
-    .object({ phoneNumber: z.string() })
-    .parse(Object.fromEntries(await request.formData()));
+  await throttleNetwork(Math.random() * (1.5 - 1) + 1);
+  const formData = await request.formData();
+  const parsedForm = z
+    .object({
+      phoneNumber: z.string(),
+      network: z.enum(["mtn", "glo", "airtel", "etisalat"]),
+      // amount: z.coerce.number(),
+    })
+    .parse(Object.fromEntries(formData));
 
-  const isValid = validator.isMobilePhone(`${formData.phoneNumber}`, "en-NG");
+  const isValid = validator.isMobilePhone(`${parsedForm.phoneNumber}`, "en-NG");
 
-  console.log(!isValid);
   return {
     message: isValid
       ? "Airtime purchase was successful!"
@@ -25,24 +29,33 @@ export async function action({ request }: Route.LoaderArgs) {
   };
 }
 
-export default function RouteComponent({ actionData }: Route.ComponentProps) {
+export default function RouteComponent() {
+  const fetcherKey = href("/user/airtime");
+  const fetcher = useFetcher<Route.ComponentProps["actionData"]>({
+    key: fetcherKey,
+  });
+
   useEffect(() => {
-    console.log(actionData);
-    if (actionData) {
-      toast(actionData.message, {
-        type: actionData.error ? "error" : "success",
+    if (fetcher.data) {
+      toast(fetcher.data.message, {
+        type: fetcher.data.error ? "error" : "success",
       });
     }
-  }, [actionData]);
+  }, [fetcher.data]);
 
   return (
     <AccountPadding>
-      <DataAirtimeForm
+      <AirtimePurchaseForm
+        formProps={{
+          action: href("/user/airtime"),
+          fetcherKey,
+        }}
         inputs={[
           {
             label: "Phone Number",
             inputProps: {
-              placeholder: "Enter amount",
+              placeholder: "Enter phone number",
+              required: true,
               name: "phoneNumber",
               type: "tel",
             },
@@ -51,6 +64,7 @@ export default function RouteComponent({ actionData }: Route.ComponentProps) {
             label: "Amount to pay",
             inputProps: {
               placeholder: "Enter amount",
+              required: true,
               name: "amount",
               type: "number",
               min: 100,
