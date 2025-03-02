@@ -23,7 +23,7 @@ type CreateSession = {
 
 export const RoleRedirects = {
   [Role.ADMIN]: href("/admin/dashboard"),
-  [Role.USER]: href("/user/dashboard"),
+  [Role.USER]: href("/dashboard"),
   [Role.SUPER_ADMIN]: "/super-admin/dashboard",
 };
 

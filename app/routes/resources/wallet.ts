@@ -4,6 +4,7 @@ import { getToken, requireUser, restrictTo } from "~/session";
 import { type IWalletTopUpTransaction, Role } from "icm-shared";
 import { redirectWithError, redirectWithSuccess } from "remix-toast";
 import { href } from "react-router";
+import apiEndpoints from "~/api-endpoints";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireUser(request);
@@ -12,20 +13,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const { exception, message } = await fetchClient<
     IWalletTopUpTransaction,
     ResponseKey<"transaction">
-  >(`/transactions/wallet/verify/${params.reference}`, {
+  >(apiEndpoints.transactions.wallet.verify(params.reference), {
     responseKey: "transaction",
     token,
   });
 
   if (exception) {
     throw await redirectWithError(
-      href("/user/wallet/fund-wallet"),
+      href("/wallet/fund-wallet"),
       exception.message,
     );
   }
 
   throw await redirectWithSuccess(
-    href("/user/wallet/fund-wallet"),
+    href("/wallet/fund-wallet"),
     message || "Account funded successfully.",
   );
 }

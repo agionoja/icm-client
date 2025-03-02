@@ -45,7 +45,7 @@ export default [
     // User Routes
     layout(
       "routes/account/user/layout/route.tsx",
-      prefix("user", [
+      prefix("", [
         route("dashboard", "routes/account/user/dashboard/route.tsx"),
         route("airline", "routes/account/user/airline/route.tsx"),
         route("airtime", "routes/account/user/airtime/route.tsx"),

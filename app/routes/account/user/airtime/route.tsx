@@ -30,7 +30,7 @@ export async function action({ request }: Route.LoaderArgs) {
 }
 
 export default function RouteComponent() {
-  const fetcherKey = href("/user/airtime");
+  const fetcherKey = href("/airtime");
   const fetcher = useFetcher<Route.ComponentProps["actionData"]>({
     key: fetcherKey,
   });
@@ -47,7 +47,7 @@ export default function RouteComponent() {
     <AccountPadding>
       <AirtimePurchaseForm
         formProps={{
-          action: href("/user/airtime"),
+          action: href("/airtime"),
           fetcherKey,
         }}
         inputs={[

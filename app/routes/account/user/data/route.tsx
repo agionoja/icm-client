@@ -30,7 +30,7 @@ export async function action({ request }: Route.LoaderArgs) {
   };
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader() {
   const dataPlan: DataPlan[] = [
     { id: "1", name: "1GB Daily", price: 500 },
     { id: "2", name: "5GB Weekly", price: 1500 },
@@ -42,7 +42,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function RouteComponent({ loaderData }: Route.ComponentProps) {
   const [dataPlan, setDataPlan] = useState<DataPlan | undefined>();
-  const fetcherKey = href("/user/airtime");
+  const fetcherKey = href("/airtime");
   const fetcher = useFetcher<Route.ComponentProps["actionData"]>({
     key: fetcherKey,
   });
@@ -80,7 +80,7 @@ export default function RouteComponent({ loaderData }: Route.ComponentProps) {
           {
             label: "Amount to pay",
             inputProps: {
-              placeholder: "Enter amount",
+              placeholder: "Data amount",
               defaultValue: dataPlan?.price,
               readOnly: true,
               required: true,

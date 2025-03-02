@@ -4,56 +4,66 @@ import type { IUser } from "icm-shared";
 import { safeRedirect } from "~/utils/safe-redirect";
 import { createSession, RoleRedirects } from "~/session";
 import { destroyUserDataCookie } from "~/cookies/user-cookie";
+import apiEndpoints from "~/api-endpoints";
 
 type LoginArgs = {
   email: string | FormDataEntryValue;
   password: string | FormDataEntryValue;
 };
 
+// Utility to create error response
+const createErrorResponse = (message: string, statusCode?: number) =>
+  data({ error: { message, statusCode } }, { status: statusCode });
+
 export async function login(
   request: Request,
   redirectTo: string | FormDataEntryValue,
   loginDto: LoginArgs,
 ) {
-  const { data: userToken, exception } = await fetchClient<
+  // Step 1: Authenticate user and get token
+  const { data: userToken, exception: authException } = await fetchClient<
     string,
     ResponseKey<"accessToken">
-  >("/auth/login", {
+  >(apiEndpoints.auth.login, {
     responseKey: "accessToken",
     method: "POST",
     body: JSON.stringify(loginDto),
   });
 
+  if (authException) {
+    return createErrorResponse(authException.message);
+  }
+
+  // Step 2: Fetch user profile with token
   const {
     data: profile,
     exception: profileException,
     message: profileMessage,
-  } = await fetchClient<IUser, ResponseKey<"user">>("/auth/profile", {
+  } = await fetchClient<IUser, ResponseKey<"user">>(apiEndpoints.auth.profile, {
     responseKey: "user",
     token: userToken?.accessToken,
   });
 
-  if (exception || profileException || !RoleRedirects[profile.user.role]) {
-    return data(
-      {
-        error: {
-          message:
-            exception?.message ||
-            profileException?.message ||
-            "Something went very wrong.",
-          statusCode: exception?.statusCode || exception?.statusCode,
-        },
-      },
-      { status: exception?.statusCode || profileException?.statusCode },
+  // Step 3: Validate profile and role
+  if (
+    profileException ||
+    !profile?.user?.role ||
+    !RoleRedirects[profile.user.role]
+  ) {
+    return createErrorResponse(
+      profileException?.message || "Something went very wrong",
+      profileException?.statusCode,
     );
   }
 
+  // Step 4: Prepare session and redirect
   const redirectUrl = safeRedirect(
     redirectTo,
-    profile?.user?.role ? (RoleRedirects[profile.user.role] ?? "/") : "/",
+    RoleRedirects[profile.user.role] ?? "/",
   );
-
   const token = userToken?.accessToken;
+  const welcomeMessage =
+    profileMessage || `Welcome back ${profile.user.firstname}!`;
 
   throw await createSession(
     {
@@ -61,7 +71,7 @@ export async function login(
       request,
       token,
       remember: true,
-      message: profileMessage || `Welcome back ${profile?.user.firstname}!`,
+      message: welcomeMessage,
       redirectTo: redirectUrl,
     },
     {

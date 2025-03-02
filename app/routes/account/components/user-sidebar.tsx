@@ -22,12 +22,12 @@ const data = [
       {
         title: "Dashboard",
         icon: HomeIcon,
-        pathname: href("/user/dashboard"),
+        pathname: href("/dashboard"),
       },
       {
         title: "Wallet",
         icon: UserIcon,
-        pathname: href("/user/wallet"),
+        pathname: href("/wallet"),
       },
     ],
   },
@@ -38,32 +38,32 @@ const data = [
       {
         title: "Airtime",
         icon: UserIcon,
-        pathname: href("/user/airtime"),
+        pathname: href("/airtime"),
       },
       {
         title: "Data",
         icon: UserIcon,
-        pathname: href("/user/data"),
+        pathname: href("/data"),
       },
       {
         title: "Crypto",
         icon: UserIcon,
-        pathname: href("/user/crypto"),
+        pathname: href("/crypto"),
       },
       {
         title: "Airline",
         icon: UserIcon,
-        pathname: href("/user/airline"),
+        pathname: href("/airline"),
       },
       {
         title: "TV",
         icon: UserIcon,
-        pathname: href("/user/cable"),
+        pathname: href("/cable"),
       },
       {
         title: "Gift Card",
         icon: UserIcon,
-        pathname: href("/user/gift-card"),
+        pathname: href("/gift-card"),
       },
     ],
   },
